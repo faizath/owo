@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>JavaFX WebView</title>
+  <script>
+    function onButtonClicked() {
+      window.javaBridge.handleClick("Button was clicked!");
+    }
+  </script>
+</head>
+<body>
+  <h1>Hello from HTML</h1>
+  <button onclick="onButtonClicked()">Click Me</button>
+</body>
+</html>
