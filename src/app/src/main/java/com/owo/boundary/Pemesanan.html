@@ -130,7 +130,6 @@
             font-weight: 600;
         }
 
-        /* Hero Section - Improved Design */
         .hero-section {
             background: #4E148C9E;
             padding: 40px 60px 60px;
@@ -628,7 +627,6 @@
         </div>
     </header>
 
-    <!-- Hero Section with Booking Form -->
     <section class="hero-section">
         <div class="booking-container">
             <div class="booking-tabs">
@@ -682,7 +680,6 @@
         </div>
     </section>
 
-    <!-- Hotel Listings -->
     <section class="hotel-listings">
         <!-- Hotel 1: Nandini Jungle -->
         <div class="hotel-card">
@@ -829,7 +826,6 @@
         </div>
     </section>
 
-    <!-- Modal for Room Availability Check -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <div class="modal-icon" id="modalIcon">
@@ -838,13 +834,11 @@
             <h3 class="modal-title" id="modalTitle">Mengecek Ketersediaan</h3>
             <p class="modal-message" id="modalMessage">Mohon tunggu, kami sedang mengecek ketersediaan kamar untuk tanggal yang Anda pilih...</p>
             <div class="modal-buttons" id="modalButtons">
-                <!-- Buttons will be added dynamically -->
             </div>
         </div>
     </div>
 
     <script>
-        // Room availability simulation
         function checkAvailability() {
             const modal = document.getElementById('modalOverlay');
             const icon = document.getElementById('modalIcon');
@@ -853,7 +847,6 @@
             const buttons = document.getElementById('modalButtons');
             const hotelListings = document.querySelector('.hotel-listings');
             
-            // Show loading state
             modal.classList.add('active');
             icon.className = 'modal-icon loading';
             icon.textContent = '⏳';
@@ -861,35 +854,41 @@
             message.textContent = 'Mohon tunggu, kami sedang mengecek ketersediaan kamar untuk tanggal yang Anda pilih...';
             buttons.innerHTML = '';
         
-            
-            // Random availability (70% chance available)
-            const isAvailable = Math.random() > 0.3;
-            
-            if (isAvailable) {
-                // Room available
-                icon.className = 'modal-icon success';
-                icon.textContent = '✓';
-                title.textContent = 'Kamar Tersedia!';
-                message.textContent = 'Kamar tersedia untuk tanggal yang Anda pilih. Silakan lanjutkan untuk melakukan pemesanan.';
-                buttons.innerHTML = `
-                    <button class="modal-button primary" onclick="proceedToBooking()">Lanjutkan</button>
-                    <button class="modal-button secondary" onclick="closeModal()">Tutup</button>
-                `;
-                hotelListings.classList.add('show');
-            } else {
-                // Room not available
-                icon.className = 'modal-icon error';
-                icon.textContent = '✗';
-                title.textContent = 'Kamar Tidak Tersedia';
-                message.textContent = 'Maaf, kamar tidak tersedia untuk tanggal yang Anda pilih. Silakan pilih tanggal lain atau coba hotel lainnya.';
-                buttons.innerHTML = `
-                    <button class="modal-button primary" onclick="closeModal()">Pilih Tanggal Lain</button>
-                    <button class="modal-button secondary" onclick="closeModal()">Tutup</button>
-                `;
-            }
+            setTimeout(() => {
+                const isAvailable = Math.random() > 0.3;
+                
+                if (isAvailable) {
+                    icon.className = 'modal-icon success';
+                    icon.textContent = '✓';
+                    title.textContent = 'Kamar Tersedia!';
+                    message.textContent = 'Kamar tersedia untuk tanggal yang Anda pilih. Apakah Anda ingin melanjutkan pencarian hotel?';
+                    buttons.innerHTML = `
+                        <button class="modal-button primary" onclick="showHotelListings()">Lanjutkan</button>
+                        <button class="modal-button secondary" onclick="closeModalAndReset()">Tutup</button>
+                    `;
+                } else {
+                    // Room not available
+                    icon.className = 'modal-icon error';
+                    icon.textContent = '✗';
+                    title.textContent = 'Kamar Tidak Tersedia';
+                    message.textContent = 'Maaf, kamar tidak tersedia untuk tanggal yang Anda pilih. Silakan pilih tanggal lain atau coba hotel lainnya.';
+                    buttons.innerHTML = `
+                        <button class="modal-button primary" onclick="closeModalAndReset()">Pilih Tanggal Lain</button>
+                        <button class="modal-button secondary" onclick="closeModalAndReset()">Tutup</button>
+                    `;
+                }
+            }, 2000);
         }
         
-        function proceedToBooking() {
+        function showHotelListings() {
+            const hotelListings = document.querySelector('.hotel-listings');
+            hotelListings.classList.add('show');
+            closeModal();
+        }
+
+        function closeModalAndReset(){
+            const hotelListings = document.querySelector('.hotel-listings');
+            hotelListings.classList.remove('show');
             closeModal();
         }
         
@@ -901,14 +900,12 @@
             window.location.href = 'CekKetersediaan.html';
         }
         
-        // Heart icon functionality
         document.querySelectorAll('.heart-icon').forEach(heart => {
             heart.addEventListener('click', function() {
                 this.classList.toggle('liked');
             });
         });
         
-        // Tab switching
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', function() {
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -916,7 +913,6 @@
             });
         });
         
-        // Close modal when clicking outside
         document.getElementById('modalOverlay').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeModal();
