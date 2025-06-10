@@ -1,4 +1,4 @@
-name: Gradle Mock Test
+name: Gradle Unit Tests
 
 on:
   push:
