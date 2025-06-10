@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OWO - Hotel Booking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: white;
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        /* Header - Improved Design */
+        .header {
+            width: 100%;
+            height: 70px;                    
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 60px;
+            position: sticky;                
+            top: 0;                         
+            z-index: 1000;                  
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        }
+
+        .logo-image {
+            height: 148px; 
+            width: 48px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .header-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            max-width: 500px;
+            margin: 0 40px;
+        }
+
+        .search-container {
+            width: 100%;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            font-size: 14px;
+            color: #6B7280;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #613DC1;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .nav-item {
+            color: #613DC1;
+            font-size: 18px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .nav-item:hover {
+            color: #4E148C;
+        }
+
+        .user-section {                     
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .notification-icon {                
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+        }
+
+        .user-profile {                     
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {                      
+            width: 35px;
+            height: 35px;
+        }
+
+        .user-greeting {
+            color: #613DC1;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .hero-section {
+            background: #4E148C9E;
+            padding: 40px 60px 60px;
+            position: relative;
+        }
+
+        .booking-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .booking-tabs {
+            display: flex;
+            margin-bottom: 0;
+        }
+
+        .tab {
+            padding: 16px 32px;
+            color: white;
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            transition: background 0.3s ease;
+        }
+
+        .tab:first-child {
+            border-top-left-radius: 16px;
+        }
+
+        .tab.active {
+            background: #4E148C
+        }
+
+        .tab:last-child {
+            border-top-right-radius: 16px;
+        }
+
+        .booking-form {
+            background: white;
+            border-radius: 0 16px 16px 16px;
+            padding: 32px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            color: #374151;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .form-input {
+            padding: 14px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            font-size: 16px;
+            color: #111827;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            border-color: #613DC1;
+        }
+
+        .form-bottom {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 24px;
+            align-items: end;
+        }
+
+        .form-select {
+            padding: 14px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #111827;
+            background: white;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-select:focus {
+            border-color: #613DC1;
+        }
+
+        .check-availability-btn {
+            padding: 14px 28px;
+            background: #613DC1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            white-space: nowrap;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+        }
+
+        .check-availability-btn:hover {
+            background: #4E148C;
+        }
+
+        /* Hotel Listings - Improved */
+        .hotel-listings {
+            padding: 60px;
+            background: #F9FAFB;
+            display: none;
+        }
+
+        .hotel-listings.show{
+            display: block;
+        }
+
+        .hotel-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 24px;
+            display: flex;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .hotel-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .hotel-image {
+            width: 400px;
+            height: 280px;
+            object-fit: cover;
+        }
+
+        .hotel-content {
+            flex: 1;
+            padding: 24px 32px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hotel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .hotel-title {
+            color: #613DC1;
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .heart-icon {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            color: #D1D5DB;
+            transition: color 0.3s ease;
+        }
+
+        .heart-icon:hover,
+        .heart-icon.liked {
+            color: #EF4444;
+        }
+
+        .hotel-stars {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .star {
+            width: 20px;
+            height: 20px;
+            color: #FBBF24;
+        }
+
+        .hotel-location {
+            color: #613DC1;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+
+        .hotel-rating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: auto;
+        }
+
+        .rating-score {
+            font-size: 16px;
+            font-weight: 700;
+            color: #111827;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .rating-badge {
+            background: #F3F4F6;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .hotel-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 24px;
+        }
+
+        .hotel-price {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .price-amount {
+            color: #111827;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .price-period {
+            color: #6B7280;
+            font-size: 14px;
+        }
+
+        .book-button {
+            padding: 12px 24px;
+            background: #613DC1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+        }
+
+        .book-button:hover {
+            background: #4E148C;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .modal-icon.success {
+            background: #D1FAE5;
+            color: #059669;
+        }
+
+        .modal-icon.error {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .modal-icon.loading {
+            background: #DBEAFE;
+            color: #2563EB;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #111827;
+        }
+
+        .modal-message {
+            font-size: 16px;
+            color: #6B7280;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .modal-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+        }
+
+        .modal-button.primary {
+            background: #613DC1;
+            color: white;
+        }
+
+        .modal-button.primary:hover {
+            background: #4E148C;
+        }
+
+        .modal-button.secondary {
+            background: #F3F4F6;
+            color: #374151;
+        }
+
+        .modal-button.secondary:hover {
+            background: #E5E7EB;
+        }
+        .rating-star {
+            width: 40px;
+            height: 40px;
+            margin-right: 0px;
+            vertical-align: middle;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .header {
+                padding: 0 20px;
+            }
+            
+            .hero-section {
+                padding: 40px;
+            }
+            
+            .hotel-listings {
+                padding: 40px;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-bottom {
+                grid-template-columns: 1fr;
+            }
+            
+            .hotel-card {
+                flex-direction: column;
+            }
+            
+            .hotel-image {
+                width: 100%;
+                height: 200px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 20px;
+                flex-wrap: wrap;
+                height: auto;
+                padding-top: 16px;
+                padding-bottom: 16px;
+            }
+            
+            .header-center {
+                order: 3;
+                width: 100%;
+                margin: 16px 0 0 0;
+            }
+            
+            .nav-menu {
+                gap: 20px;
+            }
+            
+            .nav-item {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <a href="#" class="logo">
+            <img src = "../assets/logo_owo.png" alt="OWO Logo" class="logo-image">
+        </a>
+        
+        <div class="header-center">
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Search ticket">
+            </div>
+        </div>
+        
+        <div class="header-right">
+            <nav class="nav-menu">
+                <a href="#" class="nav-item">Pesawat</a>
+                <a href="#" class="nav-item">Hotel</a>
+                <a href="#" class="nav-item">Tentang Kami</a>
+            </nav>
+            <div class="user-section">                      
+                <svg class="notification-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12.0201 2.91C8.71009 2.91 6.02009 5.6 6.02009 8.91V11.8C6.02009 12.41 5.76009 13.34 5.45009 13.86L4.30009 15.77C3.59009 16.95 4.08009 18.26 5.38009 18.7C9.69009 20.14 14.3401 20.14 18.6501 18.7C19.8601 18.3 20.3901 16.87 19.7301 15.77L18.5801 13.86C18.2801 13.34 18.0201 12.41 18.0201 11.8V8.91C18.0201 5.61 15.3201 2.91 12.0201 2.91Z" stroke="#613DC1" stroke-width="2" stroke-miterlimit="10" stroke-linecap="round"/>
+                    <path d="M13.8699 3.2C13.5599 3.11 13.2399 3.04 12.9099 3C11.9499 2.88 11.0299 2.95 10.1699 3.2C10.4599 2.46 11.1799 1.94 12.0199 1.94C12.8599 1.94 13.5799 2.46 13.8699 3.2Z" stroke="#613DC1" stroke-width="2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M15.02 19.06C15.02 20.71 13.67 22.06 12.02 22.06C11.2 22.06 10.44 21.72 9.90002 21.18C9.36002 20.64 9.02002 19.88 9.02002 19.06" stroke="#613DC1" stroke-width="2" stroke-miterlimit="10"/>
+                </svg>
+                
+                <div class="user-profile">                 
+                    <svg class="user-avatar" width="35" height="35" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22.7251 23.9625C22.5938 23.9438 22.4251 23.9438 22.2751 23.9625C18.9751 23.85 16.3501 21.15 16.3501 17.8313C16.3501 14.4375 19.0876 11.6813 22.5001 11.6813C25.8938 11.6813 28.6501 14.4375 28.6501 17.8313C28.6313 21.15 26.0251 23.85 22.7251 23.9625Z" stroke="#613DC1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M35.1373 36.3375C31.7998 39.3938 27.3748 41.25 22.4998 41.25C17.6248 41.25 13.1998 39.3938 9.8623 36.3375C10.0498 34.575 11.1748 32.85 13.1811 31.5C18.3186 28.0875 26.7186 28.0875 31.8186 31.5C33.8248 32.85 34.9498 34.575 35.1373 36.3375Z" stroke="#613DC1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M22.5 41.25C32.8553 41.25 41.25 32.8553 41.25 22.5C41.25 12.1447 32.8553 3.75 22.5 3.75C12.1447 3.75 3.75 12.1447 3.75 22.5C3.75 32.8553 12.1447 41.25 22.5 41.25Z" stroke="#613DC1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="user-greeting">Hi, Owo!</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero-section">
+        <div class="booking-container">
+            <div class="booking-tabs">
+                <button class="tab">Pesawat</button>
+                <button class="tab active">Hotel</button>
+            </div>
+            
+            <div class="booking-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Di mana Anda ingin menginap?</label>
+                        <input type="text" class="form-input" value="Bali / Denpasar" id="destination">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Check-in</label>
+                        <input type="date" class="form-input" value="2025-05-10" id="checkin">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Checkout</label>
+                        <input type="date" class="form-input" value="2025-05-11" id="checkout">
+                    </div>
+                </div>
+                
+                <div class="form-bottom">
+                    <div class="form-group">
+                        <label class="form-label">Jumlah Tamu</label>
+                        <select class="form-select" id="guests">
+                            <option value="1">1</option>
+                            <option value="2" selected>2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Jumlah Kamar</label>
+                        <select class="form-select" id="rooms">
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                        </select>
+                    </div>
+                    
+                    <button class="check-availability-btn" onclick="checkAvailability()">
+                        Cek Ketersediaan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="hotel-listings">
+        <!-- Hotel 1: Nandini Jungle -->
+        <div class="hotel-card">
+            <img src="../assets/nandini.png" alt="Nandini Jungle by Hanging Gardens" class="hotel-image">
+            
+            <div class="hotel-content">
+                <div class="hotel-header">
+                    <h3 class="hotel-title">Nandini Jungle by Hanging Gardens</h3>
+                    <svg class="heart-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </div>
+                
+                <div class="hotel-stars">
+                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                </div>
+                
+                <p class="hotel-location">Indonesia</p>
+                
+                <div class="hotel-rating">
+                    <img src="../assets/logo_owo2.png" alt="Owo" class="rating-star">
+                    <span class="rating-score">4.6/5</span>
+                    <span class="rating-badge">Location 4.5/5</span>
+                </div>
+                
+                <div class="hotel-footer">
+                    <div class="hotel-price">
+                        <span class="price-amount">Rp3,329,114</span>
+                        <span class="price-period">a night</span>
+                    </div>
+                    <button class="book-button" onclick="bookHotel('Nandini Jungle by Hanging Gardens')">Pesan Sekarang</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hotel 2: Ramayana Suites -->
+        <div class="hotel-card">
+            <img src="../assets/ramayana.png" alt="Ramayana Suites and Resort" class="hotel-image">
+            
+            <div class="hotel-content">
+                <div class="hotel-header">
+                    <h3 class="hotel-title">Ramayana Suites and Resort</h3>
+                    <svg class="heart-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </div>
+                
+                <div class="hotel-stars">
+                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                </div>
+                
+                <p class="hotel-location">Indonesia</p>
+                
+                <div class="hotel-rating">
+                    <img src="../assets/logo_owo2.png" alt="Owo" class="rating-star">
+                    <span class="rating-score">4.4/5</span>
+                    <span class="rating-badge">Location 4.7/5</span>
+                </div>
+                
+                <div class="hotel-footer">
+                    <div class="hotel-price">
+                        <span class="price-amount">Rp1,158,395</span>
+                        <span class="price-period">a night</span>
+                    </div>
+                    <button class="book-button" onclick="bookHotel('Ramayana Suites and Resort')">Pesan Sekarang</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hotel 3: The Garcia Ubud -->
+        <div class="hotel-card">
+            <img src="../assets/garcia.png" alt="The Garcia Ubud Hotel & Resort" class="hotel-image">
+            
+            <div class="hotel-content">
+                <div class="hotel-header">
+                    <h3 class="hotel-title">The Garcia Ubud Hotel & Resort</h3>
+                    <svg class="heart-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </div>
+                
+                <div class="hotel-stars">
+                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                </div>
+                
+                <p class="hotel-location">Indonesia</p>
+                
+                <div class="hotel-rating">
+                    <img src="../assets/logo_owo2.png" alt="Owo" class="rating-star">
+                    <span class="rating-score">4.0/5</span>
+                    <span class="rating-badge">Great for couples</span>
+                </div>
+                
+                <div class="hotel-footer">
+                    <div class="hotel-price">
+                        <span class="price-amount">Rp1,488,858</span>
+                        <span class="price-period">a night</span>
+                    </div>
+                    <button class="book-button" onclick="bookHotel('The Garcia Ubud Hotel & Resort')">Pesan Sekarang</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-icon" id="modalIcon">
+                ⏳
+            </div>
+            <h3 class="modal-title" id="modalTitle">Mengecek Ketersediaan</h3>
+            <p class="modal-message" id="modalMessage">Mohon tunggu, kami sedang mengecek ketersediaan kamar untuk tanggal yang Anda pilih...</p>
+            <div class="modal-buttons" id="modalButtons">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function checkAvailability() {
+            const modal = document.getElementById('modalOverlay');
+            const icon = document.getElementById('modalIcon');
+            const title = document.getElementById('modalTitle');
+            const message = document.getElementById('modalMessage');
+            const buttons = document.getElementById('modalButtons');
+            const hotelListings = document.querySelector('.hotel-listings');
+            
+            modal.classList.add('active');
+            icon.className = 'modal-icon loading';
+            icon.textContent = '⏳';
+            title.textContent = 'Mengecek Ketersediaan';
+            message.textContent = 'Mohon tunggu, kami sedang mengecek ketersediaan kamar untuk tanggal yang Anda pilih...';
+            buttons.innerHTML = '';
+        
+            setTimeout(() => {
+                const isAvailable = Math.random() > 0.3;
+                
+                if (isAvailable) {
+                    icon.className = 'modal-icon success';
+                    icon.textContent = '✓';
+                    title.textContent = 'Kamar Tersedia!';
+                    message.textContent = 'Kamar tersedia untuk tanggal yang Anda pilih. Apakah Anda ingin melanjutkan pencarian hotel?';
+                    buttons.innerHTML = `
+                        <button class="modal-button primary" onclick="showHotelListings()">Lanjutkan</button>
+                        <button class="modal-button secondary" onclick="closeModalAndReset()">Tutup</button>
+                    `;
+                } else {
+                    // Room not available
+                    icon.className = 'modal-icon error';
+                    icon.textContent = '✗';
+                    title.textContent = 'Kamar Tidak Tersedia';
+                    message.textContent = 'Maaf, kamar tidak tersedia untuk tanggal yang Anda pilih. Silakan pilih tanggal lain atau coba hotel lainnya.';
+                    buttons.innerHTML = `
+                        <button class="modal-button primary" onclick="closeModalAndReset()">Pilih Tanggal Lain</button>
+                        <button class="modal-button secondary" onclick="closeModalAndReset()">Tutup</button>
+                    `;
+                }
+            }, 2000);
+        }
+        
+        function showHotelListings() {
+            const hotelListings = document.querySelector('.hotel-listings');
+            hotelListings.classList.add('show');
+            closeModal();
+        }
+
+        function closeModalAndReset(){
+            const hotelListings = document.querySelector('.hotel-listings');
+            hotelListings.classList.remove('show');
+            closeModal();
+        }
+        
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+        
+        function bookHotel(hotelName) {
+            window.location.href = 'CekKetersediaan.html';
+        }
+        
+        document.querySelectorAll('.heart-icon').forEach(heart => {
+            heart.addEventListener('click', function() {
+                this.classList.toggle('liked');
+            });
+        });
+        
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
