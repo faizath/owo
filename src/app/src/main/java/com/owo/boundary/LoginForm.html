@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OwO - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Poppins", sans-serif;
+            background: white;
+            height: 100vh;
+            overflow: auto;
+            margin: 0;
+            position: relative;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: visible;
+        }
+
+        .background-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .background-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .logo {
+            position: absolute;
+            top: -15px; 
+            left: 45px; 
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            z-index: 3; 
+        }
+
+        .logo-image {
+            height: 145px; 
+            width: 300px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .login-section {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: calc(45vh-68px);
+            background: white;
+            border-top-left-radius: 40px;
+            border-top-right-radius: 40px;
+            border-bottom-right-radius: 10px;
+            border-bottom-left-radius: 10px;
+            box-shadow: -4px -4px 4px rgba(0, 0, 0, 0.25);
+            z-index: 4;
+            padding: 30px 40px 25px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            justify-content: flex-start;
+            padding-top: 20px;
+        }
+
+        .welcome-title {
+            color: #4e148c;
+            font-size: 28px;
+            font-family: "Poppins", sans-serif;
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 30px;
+            line-height: 1.2;
+        }
+
+        .login-form {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex: 1;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-label {
+            color: #4e148c;
+            font-size: 15px;
+            font-family: "Poppins", sans-serif;
+            font-weight: 400;
+            line-height: 1.4;
+        }
+
+        .input-field {
+            height: 45px;
+            padding: 12px 15px;
+            background: white;
+            border: 1px solid #4e148c;
+            border-radius: 10px;
+            font-size: 13px;
+            font-family: "Poppins", sans-serif;
+            font-weight: 400;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-field::placeholder {
+            color: #aba7af;
+            font-size: 12px;
+        }
+
+        .input-field:focus {
+            border-color: #858ae3;
+            box-shadow: 0 0 0 2px rgba(133, 138, 227, 0.1);
+        }
+
+        .forgot-password {
+            text-align: left;
+            margin-top: 4px;
+            margin-bottom: 8px;
+        }
+
+        .forgot-link {
+            color: #ff0004;
+            font-size: 12px;
+            font-family: "Poppins", sans-serif;
+            font-weight: 400;
+            text-decoration: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .forgot-link:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        .login-button {
+            width: 100%;
+            height: 48px;
+            background: #858ae3;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 18px;
+            font-family: "Poppins", sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .login-button:hover {
+            background: #7379d9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(133, 138, 227, 0.3);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .login-button:disabled {
+            background: #aba7af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: loading 1.5s infinite;
+        }
+
+        .decorative-elements {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .character-1 {
+            position: absolute;
+            left: 30%;
+            top: 15%;
+            width: 280px;
+            height: 291px;
+            transform: rotate(-5deg);
+        }
+
+        .character-1 img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .character-2 {
+            position: absolute;
+            right: 30%;
+            top: 15%;
+            width: 300px;
+            height: 280px;
+            transform: rotate(10deg);
+        }
+
+        .character-2 img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Confetti 1 - Top left */
+        .confetti-1 {
+            position: absolute;
+            left: 20%;
+            top: 5%;
+            width: 150px;
+            height: 500px;
+            transform: rotate(-20deg);
+        }
+
+        .confetti-1 img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .confetti-2 {
+            position: absolute;
+            right: 20%;
+            top: 8%;
+            width: 150px;
+            height: 500px;
+            transform: rotate(15deg);
+        }
+
+        .confetti-2 img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+
+        @media (max-width: 900px) {
+            .welcome-title {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+            
+            .login-section {
+                height: 40vh;
+                padding: 25px 30px 20px;
+            }
+            
+            .login-container {
+                max-width: 400px;
+            }
+
+            .character-1 {
+                left: 10%;
+                top: 18%;
+                width: 120px;
+                height: 150px;
+            }
+
+            .character-2 {
+                right: 10%;
+                top: 12%;
+                width: 100px;
+                height: 130px;
+            }
+
+            .confetti-1, .confetti-2 {
+                width: 45px;
+                height: 45px;
+            }
+
+            .confetti-1 {
+                left: 20%;
+                top: 3%;
+            }
+
+            .confetti-2 {
+                right: 20%;
+                top: 5%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .login-section {
+                height: 45vh;
+                padding: 20px 25px 18px;
+            }
+            
+            .welcome-title {
+                font-size: 22px;
+                margin-bottom: 18px;
+            }
+            
+            .login-container {
+                max-width: 350px;
+            }
+            
+            .logo {
+                top: 15px;
+                left: 15px;
+                font-size: 18px;
+                padding: 10px 15px;
+            }
+            
+            .input-field {
+                height: 42px;
+                padding: 10px 12px;
+            }
+            
+            .login-button {
+                height: 45px;
+                font-size: 16px;
+            }
+            
+            .login-form {
+                gap: 14px;
+            }
+
+            .character-1 {
+                left: 5%;
+                width: 90px;
+                height: 110px;
+                top: 20%;
+            }
+
+            .character-2 {
+                right: 5%;
+                width: 80px;
+                height: 100px;
+                top: 15%;
+            }
+
+            .confetti-1 {
+                left: 15%;
+                width: 35px;
+                height: 35px;
+                top: 5%;
+            }
+
+            .confetti-2 {
+                right: 15%;
+                width: 35px;
+                height: 35px;
+                top: 8%;
+            }
+        }
+
+        @media (max-height: 700px) {
+            .login-section {
+                height: 45vh;
+                padding: 20px 30px 15px;
+            }
+            
+            .welcome-title {
+                font-size: 22px;
+                margin-bottom: 15px;
+            }
+            
+            .login-form {
+                gap: 12px;
+            }
+            
+            .input-field {
+                height: 40px;
+            }
+            
+            .login-button {
+                height: 42px;
+            }
+
+            .character-1, .character-2 {
+                top: 12%;
+            }
+
+            .confetti-1, .confetti-2 {
+                top: 8%;
+            }
+        }
+
+        @media (max-height: 600px) {
+            .login-section {
+                height: 50vh;
+                padding: 15px 25px 12px;
+            }
+            
+            .welcome-title {
+                font-size: 20px;
+                margin-bottom: 12px;
+            }
+            
+            .login-form {
+                gap: 10px;
+            }
+
+            .character-1, .character-2 {
+                bottom: 35%;
+            }
+
+            .confetti-1, .confetti-2 {
+                bottom: 55%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Background Image -->
+        <div class="background-image">
+            <img src="../assets/bg_image_login.png" alt="Beach Background" />
+        </div>
+        
+        <!-- Logo -->
+        <a href="#" class="logo">
+            <img src = "../assets/logo_owo_white.png" alt="OWO Logo" class="logo-image">
+        </a>
+        
+        <div class="decorative-elements">
+            <div class="character-1">
+                <img src="../assets/woman_jump.png" alt="Character 1"/>
+            </div>
+            
+            <div class="character-2">
+                <img src="../assets/man_login.png" alt="Character 2" />
+            </div>
+            
+            <div class="confetti-1">
+                <img src="../assets/confetti1.png" alt="Confetti 1"/>
+            </div>
+            
+            <div class="confetti-2">
+                <img src="../assets/confetti2.png" alt="Confetti 2" />
+            </div>
+        </div>
+        
+        <div class="login-section">
+            <div class="login-container">
+                <h1 class="welcome-title">Welcome back, Login to continue!</h1>
+                
+                <form id="loginForm" class="login-form">
+                    <div class="input-group">
+                        <label for="email" class="input-label">Email or Username</label>
+                        <input 
+                        type="text" 
+                        id="email" 
+                        name="email" 
+                        placeholder="Input Email or Username"
+                        class="input-field"
+                        required
+                        />
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="password" class="input-label">Password</label>
+                        <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        placeholder="Input Password"
+                        class="input-field"
+                        required
+                        />
+                    </div>
+                    
+                    <div class="forgot-password">
+                        <a href="#" class="forgot-link">Forgot Password?</a>
+                    </div>
+                    
+                    <button type="submit" class="login-button">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const loginForm = document.getElementById("loginForm");
+            const loginButton = document.querySelector(".login-button");
+            const emailInput = document.getElementById("email");
+            const passwordInput = document.getElementById("password");
+
+            function validateForm() {
+                const email = emailInput.value.trim();
+                const password = passwordInput.value.trim();
+                
+                loginButton.disabled = !(email.length > 0 && password.length > 0);
+            }
+
+            emailInput.addEventListener("input", validateForm);
+            passwordInput.addEventListener("input", validateForm);
+
+            validateForm();
+
+            loginForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+
+                const email = emailInput.value.trim();
+                const password = passwordInput.value.trim();
+
+                if (!email || !password) {
+                    alert("Please fill in all fields");
+                    return;
+                }
+
+                setTimeout(() => {
+                    loginButton.disabled = false;
+                    loginButton.textContent = "Login";
+
+                    window.location.href = 'Pemesanan.html'
+
+                    loginForm.reset();
+                    validateForm();
+                }, 2000);
+            });
+
+            const inputFields = document.querySelectorAll(".input-field");
+            inputFields.forEach((field) => {
+                field.addEventListener("focus", function() {
+                    this.parentElement.classList.add("focused");
+                });
+
+                field.addEventListener("blur", function() {
+                    this.parentElement.classList.remove("focused");
+                });
+            });
+
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" && document.activeElement.classList.contains("input-field")) {
+                    const inputs = Array.from(inputFields);
+                    const currentIndex = inputs.indexOf(document.activeElement);
+
+                    if (currentIndex < inputs.length - 1) {
+                        inputs[currentIndex + 1].focus();
+                    } else {
+                        loginButton.click();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
