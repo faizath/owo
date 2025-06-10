@@ -1,44 +1,52 @@
 package com.owo.entity;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Pemesanan {
-    private String id;
-    private String userID;
-    private String tiketID;
+    private int id;
+    private String customerId;
+    private Tiket tiket;
+    private LocalDateTime tanggalPesan;
     private String status;
-    private LocalDate tanggalPemesanan;
 
-    public Pemesanan(String id, String userID, String tiketID, String status, LocalDate tanggalPemesanan) {
+    public Pemesanan(int id, String customerId, Tiket tiket) {
         this.id = id;
-        this.userID = userID;
-        this.tiketID = tiketID;
-        this.status = status;
-        this.tanggalPemesanan = tanggalPemesanan;
+        this.customerId = customerId;
+        this.tiket = tiket;
+        this.tanggalPesan = LocalDateTime.now();
+        this.status = "PENDING";
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
-    public String getUserID() {
-        return userID;
+    public String getCustomerId() {
+        return customerId;
     }
 
-    public void setUserID(String userID) {
-        this.userID = userID;
+    public void setCustomerId(String customerId) {
+        this.customerId = customerId;
     }
 
-    public String getTiketID() {
-        return tiketID;
+    public Tiket getTiket() {
+        return tiket;
     }
 
-    public void setTiketID(String tiketID) {
-        this.tiketID = tiketID;
+    public void setTiket(Tiket tiket) {
+        this.tiket = tiket;
+    }
+
+    public LocalDateTime getTanggalPesan() {
+        return tanggalPesan;
+    }
+
+    public void setTanggalPesan(LocalDateTime tanggalPesan) {
+        this.tanggalPesan = tanggalPesan;
     }
 
     public String getStatus() {
@@ -49,11 +57,14 @@ public class Pemesanan {
         this.status = status;
     }
 
-    public LocalDate getTanggalPemesanan() {
-        return tanggalPemesanan;
-    }
-
-    public void setTanggalPemesanan(LocalDate tanggalPemesanan) {
-        this.tanggalPemesanan = tanggalPemesanan;
+    @Override
+    public String toString() {
+        return "Pemesanan{" +
+                "id=" + id +
+                ", customerId='" + customerId + '\'' +
+                ", tiket=" + (tiket != null ? tiket.toString() : "null") +
+                ", tanggalPesan=" + tanggalPesan +
+                ", status='" + status + '\'' +
+                '}';
     }
 }
