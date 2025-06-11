@@ -12,16 +12,114 @@
             box-sizing: border-box;
         }
 
+        .header {
+            width: 100%;
+            height: 59px;
+            background: white;
+            padding: 0 100px;
+            display: flex;
+            align-items: center;
+            gap: 23px;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            width: 148px;
+            height: 48px;
+            background-image: url('../assets/logo_owo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 8px;
+        }
+
+        .search-container {
+            width: 426px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #D9D9D9;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #000000;
+            outline: none;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background-image: url('../assets/Search.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 40px;
+            margin-left: auto;
+        }
+
+        .nav-item {
+            color: #613DC1;
+            font-size: 20px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .notification-icon {
+            width: 45px;
+            height: 45px;
+            background-image: url('../assets/notification.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            background-image: url('../assets/profile_1.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        .user-greeting {
+            color: #613DC1;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
             background: #4E148C9E;
             min-height: 100vh;
-            padding: 20px;
+            padding-top: 20px;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding-top: 60px;
         }
 
         .back-button {
@@ -338,6 +436,101 @@
             margin-right: 4px;
         }
 
+        .footer {
+            background: white;
+            border-top: 1px solid black;
+            padding: 55px 0;
+            margin-top: 50px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 60px;
+            padding: 10 146px;
+        }
+
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .footer-logo {
+            width: 171px;
+            height: 59px;
+            background-image: url('../assets/logo_owo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 5px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .contact-icon {
+            width: 51px;
+            height: 51px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        .contact-icon.phone {
+            background-image: url('../assets/Phone.png');
+        }
+
+        .contact-icon.email {
+            background-image: url('../assets/Email.png');
+        }
+
+        .contact-text {
+            color: #2C0735;
+            font-size: 20px;
+            font-weight: 400;
+        }
+
+        .contact-link {
+            color: #2C0735;
+            text-decoration: underline;
+        }
+
+        .footer-section {
+            flex: 1;
+        }
+
+        .footer-title {
+            color: #2C0735;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .footer-link {
+            color: #2C0735;
+            font-size: 18px;
+            font-weight: 500;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid black;
+            color: black;
+            font-size: 20px;
+            font-weight: 400;
+        }
+
         @media (max-width: 768px) {
             .pesawat-header {
                 flex-direction: column;
@@ -363,6 +556,26 @@
     </style>
 </head>
 <body>
+    <header class="header">
+        <div class="logo"></div>
+        
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search ticket">
+            <div class="search-icon"></div>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="#" class="nav-item">Pesawat</a>
+            <a href="#" class="nav-item">Hotel</a>
+            <a href="#" class="nav-item">Tentang Kami</a>
+        </nav>
+        
+        <div class="user-section">
+            <div class="notification-icon"></div>
+            <div class="user-avatar"></div>
+            <span class="user-greeting">Hi, Owo!</span>
+        </div>
+    </header>
     <div class="container">
         <button class="back-button" onclick="goBack()">← Kembali ke Pencarian</button>
 
@@ -508,6 +721,46 @@
             </div>
         </div>
     </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo"></div>
+                <div class="contact-item">
+                    <div class="contact-icon email"></div>
+                    <a href="mailto:support@owo.com" class="contact-text contact-link">support@owo.com</a>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon phone"></div>
+                    <span class="contact-text">+62 1234567890</span>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3 class="footer-title">Tentang Kami</h3>
+                <a href="#" class="footer-link">Profil Perusahaan</a>
+                <a href="#" class="footer-link">Kontak</a>
+            </div>
+
+            <div class="footer-section">
+                <h3 class="footer-title">Layanan</h3>
+                <a href="#" class="footer-link">Pesawat</a>
+                <a href="#" class="footer-link">Hotel</a>
+                <a href="#" class="footer-link">Bantuan dan Keluhan</a>
+            </div>
+
+            <div class="footer-section">
+                <h3 class="footer-title">Informasi</h3>
+                <a href="#" class="footer-link">Syarat & Ketentuan</a>
+                <a href="#" class="footer-link">Kebijakan Privasi</a>
+                <a href="#" class="footer-link">Kebijakan Pembatalan</a>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            © 2025 OwO . All Rights Reserved
+        </div>
+    </footer>
 
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
