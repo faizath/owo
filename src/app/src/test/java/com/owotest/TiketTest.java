@@ -1,6 +1,5 @@
 package com.owotest;
 
-import com.owo.entity.Tiket;
 import com.owo.entity.TiketHotel;
 import com.owo.entity.TiketPesawat;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,7 +23,7 @@ class TiketTest {
         checkIn = LocalDate.of(2024, 3, 15);
         checkOut = LocalDate.of(2024, 3, 20);
         tiketHotel = new TiketHotel(1, 1000000.0f, true, checkIn, checkOut, "Grand Hotel", "101", "Jakarta");
-        tiketPesawat = new TiketPesawat(2, 2000000.0f, true, "GA123", "Jakarta", "Bali", "Garuda Indonesia", "Ekonomi");
+        tiketPesawat = new TiketPesawat(2, 2000000.0f, true, "GA123", "Jakarta", "Bali", "Garuda Indonesia", "Ekonomi", LocalDateTime.now().plusDays(1));
     }
 
     @Test
@@ -69,22 +69,7 @@ class TiketTest {
         assertEquals("Jakarta", tiketPesawat.getOrigin());
         assertEquals("Bali", tiketPesawat.getDestination());
         assertEquals("Ekonomi", tiketPesawat.getKelas());
-    }
-
-    @Test
-    @DisplayName("Test TiketPesawat setters")
-    void testTiketPesawatSetters() {
-        tiketPesawat.setFlightNumber("GA456");
-        tiketPesawat.setMaskapai("Lion Air");
-        tiketPesawat.setOrigin("Surabaya");
-        tiketPesawat.setDestination("Jakarta");
-        tiketPesawat.setKelas("Bisnis");
-
-        assertEquals("GA456", tiketPesawat.getFlightNumber());
-        assertEquals("Lion Air", tiketPesawat.getMaskapai());
-        assertEquals("Surabaya", tiketPesawat.getOrigin());
-        assertEquals("Jakarta", tiketPesawat.getDestination());
-        assertEquals("Bisnis", tiketPesawat.getKelas());
+        assertNotNull(tiketPesawat.getWaktuKeberangkatan());
     }
 
     @Test

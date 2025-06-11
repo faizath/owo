@@ -50,12 +50,9 @@ tasks.named('test') {
 
 sourceSets {
     main {
-        java {
-            srcDirs = ['src/main/java']
-        }
         resources {
-            srcDirs = ['src/main/java']
-            includes = ['**/*.html']
+            srcDir 'src/main/java'
+            exclude '**/*.java'
         }
     }
 }
