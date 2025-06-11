@@ -47,9 +47,15 @@ class TiketTest {
         
         tiketHotel.setCheckIn(newCheckIn);
         tiketHotel.setCheckOut(newCheckOut);
+        tiketHotel.setHotelName("New Grand Hotel");
+        tiketHotel.setRoomNumber("202");
+        tiketHotel.setAddress("Surabaya");
         
         assertEquals(newCheckIn, tiketHotel.getCheckIn());
         assertEquals(newCheckOut, tiketHotel.getCheckOut());
+        assertEquals("New Grand Hotel", tiketHotel.getHotelName());
+        assertEquals("202", tiketHotel.getRoomNumber());
+        assertEquals("Surabaya", tiketHotel.getAddress());
     }
 
     @Test

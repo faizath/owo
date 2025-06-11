@@ -48,7 +48,7 @@ public class TiketPesawat extends Tiket {
     public String getDestination() {
         return destination;
     }
-
+  
     public LocalDateTime getWaktuKeberangkatan() {
         return waktuKeberangkatan;
     }
