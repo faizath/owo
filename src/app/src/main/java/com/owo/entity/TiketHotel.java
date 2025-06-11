@@ -43,16 +43,8 @@ public class TiketHotel extends Tiket {
         this.checkIn = checkIn;
     }
 
-    public LocalDate getCheckOut() {
-        return checkOut;
-    }
-
     public void setCheckOut(LocalDate checkOut) {
         this.checkOut = checkOut;
-    }
-
-    public String getHotelName() {
-        return hotelName;
     }
 
     public void setHotelName(String hotelName) {
