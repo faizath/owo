@@ -48,4 +48,13 @@ public class Akun {
     public boolean checkEmail(String email) {
         return this.email.equals(email);
     }
+
+    public static Akun getAkunByEmail(String email) {
+        for (Akun akun : allAkun) {
+            if (akun.checkEmail(email)) {
+                return akun;
+            }
+        }
+        return null;
+    }
 }
