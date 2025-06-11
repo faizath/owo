@@ -350,7 +350,6 @@
             margin-right: 4px;
         }
 
-        /* Responsive Design */
         @media (max-width: 768px) {
             .hotel-header {
                 flex-direction: column;
@@ -641,7 +640,6 @@
         </div>
     </div>
 
-    <!-- Modal for Room Availability -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <div class="modal-icon" id="modalIcon">
@@ -652,11 +650,9 @@
             <div id="availabilityInfo" class="availability-info" style="display: none;">
                 <h4>Informasi Ketersediaan</h4>
                 <div class="availability-details" id="availabilityDetails">
-                    <!-- Details will be populated by JavaScript -->
                 </div>
             </div>
             <div class="modal-buttons" id="modalButtons">
-                <!-- Buttons will be added dynamically -->
             </div>
         </div>
     </div>
@@ -675,7 +671,6 @@
             const availabilityInfo = document.getElementById('availabilityInfo');
             const availabilityDetails = document.getElementById('availabilityDetails');
             
-            // Show loading state
             modal.classList.add('active');
             icon.className = 'modal-icon loading';
             icon.textContent = '⏳';
@@ -684,7 +679,6 @@
             buttons.innerHTML = '';
             availabilityInfo.style.display = 'none';
             
-            // Simulate API call
             setTimeout(() => {
                 if (availableRooms > 0) {
                     // Room available
@@ -733,7 +727,7 @@
         
         function proceedToBooking() {
             closeModal();
-            window.location.href = 'RiwayatPemesanan.html'
+            window.location.href = 'Pembayaran.html'
         }
         
         function closeModal() {
@@ -745,7 +739,6 @@
             window.location.href = 'Pemesanan.html'
         }
         
-        // Close modal when clicking outside
         document.getElementById('modalOverlay').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeModal();
