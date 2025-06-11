@@ -6,28 +6,25 @@ import com.owo.entity.Refund.RefundStatus;
 import com.owo.entity.Tiket;
 import com.owo.entity.TiketHotel;
 import com.owo.entity.TiketPesawat;
-import com.owo.App;
-import com.owo.db.SampleDatabase;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 public class RefundController {
 
-    private Pemesanan pemesanan;
-    private Refund refund;
-    private App viewer;
+    private final Map<Integer, Pemesanan> pemesananTable;
+    private final Map<String, Refund> refundTable;
 
-    public void setViewer(App viewer) {
-        this.viewer = viewer;
+    public RefundController(Map<Integer, Pemesanan> pemesananTable, Map<String, Refund> refundTable) {
+        this.pemesananTable = pemesananTable;
+        this.refundTable = refundTable;
     }
 
-    public double hitungJumlahRefund(Pemesanan pemesanan) {
+    public double hitungJumlahRefund(Pemesanan pemesanan) throws Exception {
         Tiket tiket = pemesanan.getTiket();
         LocalDateTime tanggalKeberangkatan = null;
 
@@ -38,8 +35,7 @@ public class RefundController {
         }
 
         if (tanggalKeberangkatan == null) {
-            System.err.println("Tidak bisa menentukan tanggal acara untuk tiket ID: " + tiket.getId());
-            return 0.0;
+            throw new Exception("Tidak dapat menentukan tanggal keberangkatan dari tiket.");
         }
 
         // Aturan Bisnis:
@@ -54,18 +50,14 @@ public class RefundController {
         return Math.max(0, jumlahRefund);
     }
 
-    public Refund ajukanRefund(int pemesananID, String alasan, Map<String, String> detailKartu) {
-        System.out.println("\n==> Memproses pengajuan refund untuk Pemesanan ID: " + pemesananID);
-        Pemesanan pemesanan = SampleDatabase.pemesananTable.get(pemesananID);
+    public Refund ajukanRefund(int pemesananID, String alasan, Map<String, String> detailKartu) throws Exception {
+        Pemesanan pemesanan = this.pemesananTable.get(pemesananID);
 
         if (pemesanan == null) {
-            System.err.println("   [GAGAL] Pemesanan dengan ID " + pemesananID + " tidak ditemukan.");
-            return null;
+            throw new Exception("Pemesanan dengan ID " + pemesananID + " tidak ditemukan.");
         }
-
         if (!"CONFIRMED".equalsIgnoreCase(pemesanan.getStatus())) {
-            System.err.println("   [GAGAL] Refund tidak tersedia. Status pemesanan saat ini: " + pemesanan.getStatus());
-            return null;
+            throw new Exception("Refund tidak tersedia. Status pemesanan saat ini: " + pemesanan.getStatus());
         }
 
         double jumlahRefundFinal = hitungJumlahRefund(pemesanan);
@@ -79,8 +71,7 @@ public class RefundController {
                 detailKartu.get("expiryYear"),
                 detailKartu.get("cvv"));
 
-        SampleDatabase.refundTable.put(refund.getId(), refund);
-
+        this.refundTable.put(refund.getId(), refund);
         pemesanan.setStatus("REFUND_IN_PROGRESS");
 
         System.out.println("   [SUKSES] Refund berhasil diajukan dengan ID: " + refundId);
@@ -89,46 +80,27 @@ public class RefundController {
         return refund;
     }
 
-    public void getDaftarRefund() {
-        JSONArray daftarRefundJson = new JSONArray();
-
-        for (Refund refund : SampleDatabase.refundTable.values()) {
-
-            JSONObject refundJson = new JSONObject();
-            refundJson.put("id", refund.getId());
-            refundJson.put("pemesananID", refund.getPemesananID());
-            refundJson.put("alasan", refund.getAlasan());
-            refundJson.put("status", refund.getStatus());
-            refundJson.put("jumlah", String.format("IDR %,.0f", refund.getJumlahRefund()));
-            refundJson.put("detailKartu", refund.getDetailKartu());
-
-            daftarRefundJson.put(refundJson);
-        }
+    public List<Refund> getDaftarRefund() {
+        return new ArrayList<>(this.refundTable.values());
     }
 
     public void setujuiRefund(Refund refund) {
         if (refund != null && refund.getStatus() == RefundStatus.PENDING_REVIEW) {
             refund.setStatus(RefundStatus.APPROVED);
-
-            Pemesanan pemesananTerkait = SampleDatabase.pemesananTable.get(refund.getPemesananID());
+            Pemesanan pemesananTerkait = this.pemesananTable.get(refund.getPemesananID());
             if (pemesananTerkait != null) {
                 pemesananTerkait.setStatus("REFUNDED");
             }
-            System.out.println("   [INFO] Refund " + refund.getId()
-                    + " telah disetujui. Status pemesanan diubah menjadi REFUNDED.");
         }
     }
 
     public void tolakRefund(Refund refund) {
         if (refund != null && refund.getStatus() == RefundStatus.PENDING_REVIEW) {
             refund.setStatus(RefundStatus.REJECTED);
-
-            Pemesanan pemesananTerkait = SampleDatabase.pemesananTable.get(refund.getPemesananID());
+            Pemesanan pemesananTerkait = this.pemesananTable.get(refund.getPemesananID());
             if (pemesananTerkait != null) {
                 pemesananTerkait.setStatus("CONFIRMED");
             }
-            System.out.println(
-                    "   [INFO] Refund " + refund.getId() + " ditolak. Status pemesanan dikembalikan ke CONFIRMED.");
         }
     }
 }
