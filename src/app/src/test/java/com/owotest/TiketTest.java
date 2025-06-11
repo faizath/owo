@@ -23,7 +23,7 @@ class TiketTest {
         checkIn = LocalDate.of(2024, 3, 15);
         checkOut = LocalDate.of(2024, 3, 20);
         tiketHotel = new TiketHotel(1, 1000000.0f, true, checkIn, checkOut, "Grand Hotel", "101", "Jakarta");
-        tiketPesawat = new TiketPesawat(2, 2000000.0f, true, "GA123", "Jakarta", "Bali", "Garuda Indonesia", LocalDateTime.now().plusDays(1));
+        tiketPesawat = new TiketPesawat(2, 2000000.0f, true, "GA123", "Jakarta", "Bali", "Garuda Indonesia", "Ekonomi", LocalDateTime.now().plusDays(1));
     }
 
     @Test
@@ -62,6 +62,7 @@ class TiketTest {
         assertEquals("Garuda Indonesia", tiketPesawat.getMaskapai());
         assertEquals("Jakarta", tiketPesawat.getOrigin());
         assertEquals("Bali", tiketPesawat.getDestination());
+        assertEquals("Ekonomi", tiketPesawat.getKelas());
         assertNotNull(tiketPesawat.getWaktuKeberangkatan());
     }
 
