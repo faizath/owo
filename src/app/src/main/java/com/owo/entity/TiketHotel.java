@@ -22,15 +22,39 @@ public class TiketHotel extends Tiket {
         return checkIn;
     }
 
-    public LocalDate getCheckOut() {
-        return checkOut;
-    }
-
     public void setCheckIn(LocalDate checkIn) {
         this.checkIn = checkIn;
     }
 
+    public LocalDate getCheckOut() {
+        return checkOut;
+    }
+
     public void setCheckOut(LocalDate checkOut) {
         this.checkOut = checkOut;
+    }
+
+    public String getHotelName() {
+        return hotelName;
+    }
+
+    public void setHotelName(String hotelName) {
+        this.hotelName = hotelName;
+    }
+
+    public String getRoomNumber() {
+        return roomNumber;
+    }
+
+    public void setRoomNumber(String roomNumber) {
+        this.roomNumber = roomNumber;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }
