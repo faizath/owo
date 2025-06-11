@@ -1,6 +1,5 @@
 package com.owotest;
 
-import com.owo.entity.Tiket;
 import com.owo.entity.TiketHotel;
 import com.owo.entity.TiketPesawat;
 import org.junit.jupiter.api.BeforeEach;

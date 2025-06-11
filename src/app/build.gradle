@@ -14,6 +14,7 @@ plugins {
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
+    jcenter()
 }
 
 dependencies {
@@ -24,6 +25,7 @@ dependencies {
 
     // This dependency is used by the application.
     implementation libs.guava
+    implementation 'org.mindrot:jbcrypt:0.4'
 }
 
 javafx {
@@ -50,12 +52,9 @@ tasks.named('test') {
 
 sourceSets {
     main {
-        java {
-            srcDirs = ['src/main/java']
-        }
         resources {
-            srcDirs = ['src/main/java']
-            includes = ['**/*.html']
+            srcDir 'src/main/java'
+            exclude '**/*.java'
         }
     }
 }
