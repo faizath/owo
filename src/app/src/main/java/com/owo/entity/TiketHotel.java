@@ -46,4 +46,16 @@ public class TiketHotel extends Tiket {
     public void setCheckOut(LocalDate checkOut) {
         this.checkOut = checkOut;
     }
+
+    public void setHotelName(String hotelName) {
+        this.hotelName = hotelName;
+    }
+
+    public void setRoomNumber(String roomNumber) {
+        this.roomNumber = roomNumber;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
 }

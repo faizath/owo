@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OWO - Hotel Booking</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>OWO - Travel Booking Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -14,295 +14,523 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: white;
-            min-height: 100vh;
-            padding: 0;
+            line-height: 1.6;
+            color: #333;
+            overflow-x: hidden;
         }
 
-        /* Header - Improved Design */
+        /* Header */
+
         .header {
             width: 100%;
-            height: 70px;                    
+            height: 59px;
             background: white;
+            padding: 0 100px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 0 60px;
-            position: sticky;                
-            top: 0;                         
-            z-index: 1000;                  
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            gap: 23px;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .logo {
-        display: flex;
-        align-items: center;
-        text-decoration: none;
-        }
-
-        .logo-image {
-            height: 148px; 
-            width: 48px;
-            width: auto;
-            object-fit: contain;
-        }
-
-        .header-center {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            max-width: 500px;
-            margin: 0 40px;
+            width: 148px;
+            height: 48px;
+            background-image: url('../assets/logo_owo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 8px;
         }
 
         .search-container {
-            width: 100%;
+            width: 426px;
             position: relative;
         }
 
         .search-input {
             width: 100%;
-            padding: 12px 20px;
-            border: 2px solid #E5E7EB;
-            border-radius: 12px;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-            font-size: 14px;
-            color: #6B7280;
+            padding: 12px 16px;
+            border: 1px solid #D9D9D9;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #000000;
             outline: none;
-            transition: border-color 0.3s ease;
         }
 
-        .search-input:focus {
-            border-color: #613DC1;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 40px;
+        .search-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background-image: url('../assets/Search.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
         }
 
         .nav-menu {
             display: flex;
-            gap: 32px;
-            align-items: center;
+            gap: 40px;
+            margin-left: auto;
         }
 
         .nav-item {
             color: #613DC1;
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 20px;
+            font-weight: 700;
             text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .nav-item:hover {
-            color: #4E148C;
-        }
-
-        .user-section {                     
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .notification-icon {                
-            width: 30px;
-            height: 30px;
             cursor: pointer;
         }
 
-        .user-profile {                     
+        .user-section {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
         }
 
-        .user-avatar {                      
-            width: 35px;
-            height: 35px;
+        .notification-icon {
+            width: 45px;
+            height: 45px;
+            background-image: url('../assets/notification.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            background-image: url('../assets/profile_1.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
         }
 
         .user-greeting {
             color: #613DC1;
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 20px;
+            font-weight: 700;
         }
 
-        .hero-section {
-            background: #4E148C9E;
-            padding: 40px 60px 60px;
-            position: relative;
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/src/app/src/main/java/com/owo/assets/e6dc4e217484e4de91c18916ff6bf434b601ee94.png');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            padding: 0 2rem;
         }
 
-        .booking-container {
+        .hero-content {
             max-width: 1200px;
+            width: 100%;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 3rem;
+            line-height: 1.2;
+        }
+
+        .booking-form-container {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            text-align: left;
+            color: #333;
+            max-width: 900px;
             margin: 0 auto;
         }
 
         .booking-tabs {
             display: flex;
-            margin-bottom: 0;
+            margin-bottom: 2rem;
         }
 
         .tab {
-            padding: 16px 32px;
-            color: white;
-            font-size: 16px;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-            cursor: pointer;
+            padding: 12px 24px;
             border: none;
-            background: rgba(255, 255, 255, 0.2);
-            transition: background 0.3s ease;
-        }
-
-        .tab:first-child {
-            border-top-left-radius: 16px;
+            background: #f3f4f6;
+            color: #6b7280;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-radius: 8px 8px 0 0;
         }
 
         .tab.active {
-            background: #4E148C
-        }
-
-        .tab:last-child {
-            border-top-right-radius: 16px;
-        }
-
-        .booking-form {
-            background: white;
-            border-radius: 0 16px 16px 16px;
-            padding: 32px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            background: #613DC1;
+            color: white;
         }
 
         .form-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            gap: 24px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
         }
 
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
         }
 
         .form-label {
-            color: #374151;
-            font-family: 'Poppins', sans-serif;
             font-weight: 500;
-            margin-bottom: 4px;
+            margin-bottom: 0.5rem;
+            color: #374151;
         }
 
-        .form-input {
-            padding: 14px 16px;
-            border: 2px solid #E5E7EB;
+        .form-input, .form-select {
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
             border-radius: 8px;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-            font-size: 16px;
-            color: #111827;
+            font-size: 14px;
             outline: none;
             transition: border-color 0.3s ease;
         }
 
-        .form-input:focus {
+        .form-input:focus, .form-select:focus {
             border-color: #613DC1;
         }
 
         .form-bottom {
             display: grid;
-            grid-template-columns: 1fr 1fr auto;
-            gap: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
             align-items: end;
         }
 
-        .form-select {
-            padding: 14px 16px;
-            border: 2px solid #E5E7EB;
-            border-radius: 8px;
-            font-size: 16px;
-            color: #111827;
-            background: white;
-            cursor: pointer;
-            outline: none;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-select:focus {
-            border-color: #613DC1;
-        }
-
-        .check-availability-btn {
-            padding: 14px 28px;
+        .search-btn {
             background: #613DC1;
             color: white;
             border: none;
+            padding: 12px 24px;
             border-radius: 8px;
-            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: background 0.3s ease;
-            white-space: nowrap;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
+            height: fit-content;
         }
 
-        .check-availability-btn:hover {
+        .search-btn:hover {
             background: #4E148C;
         }
 
-        /* Hotel Listings - Improved */
+        /* Destinations Section */
+        .destinations {
+            padding: 5rem 2rem;
+            background: #f9fafb;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #613DC1;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .destinations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .destination-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .destination-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+
+        .destination-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #613DC1, #4E148C);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .destination-badge {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: white;
+            color: #333;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .more-destinations-btn {
+            display: block;
+            margin: 0 auto;
+            background: transparent;
+            color: #613DC1;
+            border: 2px solid #613DC1;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .more-destinations-btn:hover {
+            background: #613DC1;
+            color: white;
+        }
+
+        /* Planning Steps */
+        .planning-steps {
+            padding: 5rem 2rem;
+            background: #f9fafb;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .step-item {
+            text-align: center;
+        }
+
+        .step-icon {
+            width: 80px;
+            height: 80px;
+            background: #e0e7ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            color: #613DC1;
+        }
+
+        .step-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #613DC1;
+            margin-bottom: 1rem;
+        }
+
+        .step-description {
+            color: #6b7280;
+        }
+
+        /* Footer */
+        .footer {
+            background: white;
+            border-top: 1px solid black;
+            padding: 55px 0;
+            margin-top: 50px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 60px;
+            padding: 10 146px;
+        }
+
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .footer-logo {
+            width: 171px;
+            height: 59px;
+            background-image: url('../assets/logo_owo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 5px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .contact-icon {
+            width: 51px;
+            height: 51px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        .contact-icon.phone {
+            background-image: url('../assets/Phone.png');
+        }
+
+        .contact-icon.email {
+            background-image: url('../assets/Email.png');
+        }
+
+        .contact-text {
+            color: #2C0735;
+            font-size: 20px;
+            font-weight: 400;
+        }
+
+        .contact-link {
+            color: #2C0735;
+            text-decoration: underline;
+        }
+
+        .footer-section {
+            flex: 1;
+        }
+
+        .footer-title {
+            color: #2C0735;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .footer-link {
+            color: #2C0735;
+            font-size: 18px;
+            font-weight: 500;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid black;
+            color: black;
+            font-size: 20px;
+            font-weight: 400;
+        }
+
+        /* Hotel Listings */
         .hotel-listings {
             padding: 60px;
             background: #F9FAFB;
             display: none;
         }
 
-        .hotel-listings.show{
+        .hotel-listings.show {
             display: block;
         }
 
-        .hotel-card {
+
+        .hotel-card:hover, .flight-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .flight-image {
+            width: 400px;
+            height: 280px;
+            margin: 60px;
+            background: linear-gradient(45deg, #613DC1, #4E148C);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .hotel-card, .flight-card {
             background: white;
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             margin-bottom: 24px;
             display: flex;
+            align-items: stretch;
             overflow: hidden;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            min-height: 280px; 
         }
-
-        .hotel-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-        }
-
+        
         .hotel-image {
-            width: 400px;
-            height: 280px;
-            object-fit: cover;
+            flex: 0 0 300px;
+            height: auto;
+            background: linear-gradient(45deg, #613DC1, #4E148C);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.2rem;
         }
 
-        .hotel-content {
+        .hotel-content, .flight-content {
             flex: 1;
+            flex-grow: 1;
             padding: 24px 32px;
             position: relative;
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
+            min-width: 0;
         }
 
-        .hotel-header {
+        .hotel-header, .flight-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 12px;
         }
 
-        .hotel-title {
+        .hotel-title, .flight-title {
             color: #613DC1;
             font-size: 24px;
             font-weight: 700;
@@ -341,7 +569,7 @@
             margin-bottom: 16px;
         }
 
-        .hotel-rating {
+        .hotel-rating, .flight-rating {
             display: flex;
             align-items: center;
             gap: 8px;
@@ -365,14 +593,14 @@
             color: #374151;
         }
 
-        .hotel-footer {
+        .hotel-footer, .flight-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-top: 24px;
         }
 
-        .hotel-price {
+        .hotel-price, .flight-price {
             display: flex;
             align-items: baseline;
             gap: 8px;
@@ -400,11 +628,80 @@
             cursor: pointer;
             transition: background 0.3s ease;
             font-family: 'Poppins', sans-serif;
-            font-weight: 500;
         }
 
         .book-button:hover {
             background: #4E148C;
+        }
+
+        /* Flight specific styles */
+        .flight-details {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 16px;
+        }
+
+        .flight-time {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .flight-duration {
+            color: #6b7280;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .flight-path {
+            height: 2px;
+            width: 100px;
+            background: #e5e7eb;
+            position: relative;
+        }
+
+        .flight-path::before,
+        .flight-path::after {
+            content: "";
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #613dc1;
+            top: -2px;
+        }
+
+        .flight-path::before {
+            left: 0;
+        }
+
+        .flight-path::after {
+            right: 0;
+        }
+
+        .flight-info {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .flight-info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .flight-info-label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .flight-info-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
         }
 
         /* Modal Styles */
@@ -505,7 +802,6 @@
             cursor: pointer;
             transition: background 0.3s ease;
             font-family: 'Poppins', sans-serif;
-            font-weight: 500;
         }
 
         .modal-button.primary {
@@ -525,196 +821,255 @@
         .modal-button.secondary:hover {
             background: #E5E7EB;
         }
-        .rating-star {
-            width: 40px;
-            height: 40px;
-            margin-right: 0px;
-            vertical-align: middle;
-        }
 
         /* Responsive Design */
-        @media (max-width: 1024px) {
+        @media (max-width: 768px) {
             .header {
-                padding: 0 20px;
+                padding: 0 1rem;
             }
-            
-            .hero-section {
-                padding: 40px;
+
+            .search-container {
+                display: none;
             }
-            
-            .hotel-listings {
-                padding: 40px;
+
+            .nav-menu {
+                display: none;
             }
-            
-            .form-grid {
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .booking-form-container {
+                padding: 1.5rem;
+            }
+
+            .form-grid, .form-bottom {
                 grid-template-columns: 1fr;
             }
-            
-            .form-bottom {
+
+            .why-choose-grid, .support-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .steps-grid {
                 grid-template-columns: 1fr;
             }
-            
-            .hotel-card {
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .hotel-card, .flight-card {
                 flex-direction: column;
             }
-            
-            .hotel-image {
+
+            .flight-image {
                 width: 100%;
                 height: 200px;
             }
         }
 
-        @media (max-width: 768px) {
-            .header {
-                padding: 0 20px;
-                flex-wrap: wrap;
-                height: auto;
-                padding-top: 16px;
-                padding-bottom: 16px;
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
             }
-            
-            .header-center {
-                order: 3;
-                width: 100%;
-                margin: 16px 0 0 0;
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
-            
-            .nav-menu {
-                gap: 20px;
-            }
-            
-            .nav-item {
-                font-size: 16px;
-            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
         }
     </style>
 </head>
 <body>
     <!-- Header -->
     <header class="header">
-        <a href="#" class="logo">
-            <img src = "../assets/logo_owo.png" alt="OWO Logo" class="logo-image">
-        </a>
+        <div class="logo"></div>
         
-        <div class="header-center">
-            <div class="search-container">
-                <input type="text" class="search-input" placeholder="Search ticket">
-            </div>
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search ticket">
+            <div class="search-icon"></div>
         </div>
         
-        <div class="header-right">
-            <nav class="nav-menu">
-                <a href="#" class="nav-item">Pesawat</a>
-                <a href="#" class="nav-item">Hotel</a>
-                <a href="#" class="nav-item">Tentang Kami</a>
-            </nav>
-            <div class="user-section">                      
-                <svg class="notification-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12.0201 2.91C8.71009 2.91 6.02009 5.6 6.02009 8.91V11.8C6.02009 12.41 5.76009 13.34 5.45009 13.86L4.30009 15.77C3.59009 16.95 4.08009 18.26 5.38009 18.7C9.69009 20.14 14.3401 20.14 18.6501 18.7C19.8601 18.3 20.3901 16.87 19.7301 15.77L18.5801 13.86C18.2801 13.34 18.0201 12.41 18.0201 11.8V8.91C18.0201 5.61 15.3201 2.91 12.0201 2.91Z" stroke="#613DC1" stroke-width="2" stroke-miterlimit="10" stroke-linecap="round"/>
-                    <path d="M13.8699 3.2C13.5599 3.11 13.2399 3.04 12.9099 3C11.9499 2.88 11.0299 2.95 10.1699 3.2C10.4599 2.46 11.1799 1.94 12.0199 1.94C12.8599 1.94 13.5799 2.46 13.8699 3.2Z" stroke="#613DC1" stroke-width="2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M15.02 19.06C15.02 20.71 13.67 22.06 12.02 22.06C11.2 22.06 10.44 21.72 9.90002 21.18C9.36002 20.64 9.02002 19.88 9.02002 19.06" stroke="#613DC1" stroke-width="2" stroke-miterlimit="10"/>
-                </svg>
-                
-                <div class="user-profile">                 
-                    <svg class="user-avatar" width="35" height="35" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M22.7251 23.9625C22.5938 23.9438 22.4251 23.9438 22.2751 23.9625C18.9751 23.85 16.3501 21.15 16.3501 17.8313C16.3501 14.4375 19.0876 11.6813 22.5001 11.6813C25.8938 11.6813 28.6501 14.4375 28.6501 17.8313C28.6313 21.15 26.0251 23.85 22.7251 23.9625Z" stroke="#613DC1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M35.1373 36.3375C31.7998 39.3938 27.3748 41.25 22.4998 41.25C17.6248 41.25 13.1998 39.3938 9.8623 36.3375C10.0498 34.575 11.1748 32.85 13.1811 31.5C18.3186 28.0875 26.7186 28.0875 31.8186 31.5C33.8248 32.85 34.9498 34.575 35.1373 36.3375Z" stroke="#613DC1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M22.5 41.25C32.8553 41.25 41.25 32.8553 41.25 22.5C41.25 12.1447 32.8553 3.75 22.5 3.75C12.1447 3.75 3.75 12.1447 3.75 22.5C3.75 32.8553 12.1447 41.25 22.5 41.25Z" stroke="#613DC1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <span class="user-greeting">Hi, Owo!</span>
-                </div>
-            </div>
+        <nav class="nav-menu">
+            <a href="#" class="nav-item">Pesawat</a>
+            <a href="#" class="nav-item">Hotel</a>
+            <a href="#" class="nav-item">Tentang Kami</a>
+        </nav>
+        
+        <div class="user-section">
+            <div class="notification-icon"></div>
+            <div class="user-avatar"></div>
+            <span class="user-greeting">Hi, Owo!</span>
         </div>
     </header>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title fade-in-up">
+                Mulai Perjalanan Impianmu<br>
+                di Sini.
+            </h1>
 
-    <section class="hero-section">
-        <div class="booking-container">
-            <div class="booking-tabs">
-                <button class="tab">Pesawat</button>
-                <button class="tab active">Hotel</button>
-            </div>
-            
-            <div class="booking-form">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Di mana Anda ingin menginap?</label>
-                        <input type="text" class="form-input" value="Bali / Denpasar" id="destination">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Check-in</label>
-                        <input type="date" class="form-input" value="2025-05-10" id="checkin">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Checkout</label>
-                        <input type="date" class="form-input" value="2025-05-11" id="checkout">
-                    </div>
+            <div class="booking-form-container fade-in-up">
+                <div class="booking-tabs">
+                    <button class="tab active" data-tab="flight">✈️ Pesawat</button>
+                    <button class="tab" data-tab="hotel">🏨 Hotel</button>
                 </div>
-                
-                <div class="form-bottom">
-                    <div class="form-group">
-                        <label class="form-label">Jumlah Tamu</label>
-                        <select class="form-select" id="guests">
-                            <option value="1">1</option>
-                            <option value="2" selected>2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                        </select>
+
+                <!-- Flight Form -->
+                <form id="flightForm" class="booking-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Dari</label>
+                            <input type="text" class="form-input" value="Bali / Denpasar (DPS)" id="departure">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ke</label>
+                            <input type="text" class="form-input" value="Jakarta (CGK)" id="arrival">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Pergi</label>
+                            <input type="date" class="form-input" value="2025-05-10" id="departureDate">
+                        </div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Jumlah Kamar</label>
-                        <select class="form-select" id="rooms">
-                            <option value="1" selected>1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                        </select>
+
+                    <div class="form-bottom">
+                        <div class="form-group">
+                            <label class="form-label">Pulang</label>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" id="roundTrip" checked style="margin: 0;">
+                                <input type="date" class="form-input" value="2025-05-11" id="returnDate" style="flex: 1;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Penumpang</label>
+                            <select class="form-select" id="passengers">
+                                <option value="1">1 Dewasa</option>
+                                <option value="2" selected>2 Dewasa</option>
+                                <option value="3">3 Dewasa</option>
+                                <option value="4">4 Dewasa</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Kelas</label>
+                            <select class="form-select" id="flightClass">
+                                <option value="economy" selected>Ekonomi</option>
+                                <option value="business">Bisnis</option>
+                                <option value="first">First Class</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="search-btn" onclick="checkFlightAvailability()">Cek Ketersediaan</button>
                     </div>
-                    
-                    <button class="check-availability-btn" onclick="checkAvailability()">
-                        Cek Ketersediaan
-                    </button>
+                </form>
+
+                <!-- Hotel Form -->
+                <form id="hotelForm" class="booking-form" style="display: none;">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Di mana Anda ingin menginap?</label>
+                            <input type="text" class="form-input" value="Bali / Denpasar" id="destination">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Check-in</label>
+                            <input type="date" class="form-input" value="2025-05-10" id="checkin">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Check-out</label>
+                            <input type="date" class="form-input" value="2025-05-11" id="checkout">
+                        </div>
+                    </div>
+
+                    <div class="form-bottom">
+                        <div class="form-group">
+                            <label class="form-label">Jumlah Tamu</label>
+                            <select class="form-select" id="guests">
+                                <option value="1">1</option>
+                                <option value="2" selected>2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Jumlah Kamar</label>
+                            <select class="form-select" id="rooms">
+                                <option value="1" selected>1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="search-btn" onclick="checkAvailability()">Cek Ketersediaan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Planning Steps Section -->
+    <section class="planning-steps">
+        <div class="container">
+            <h2 class="section-title">Rencanakan liburan dalam 3 langkah praktis!</h2>
+
+            <div class="steps-grid">
+                <div class="step-item">
+                    <div class="step-icon">📍</div>
+                    <h3 class="step-title">Pilih destinasi</h3>
+                    <p class="step-description">
+                        Telusuri lokasi favorit dan temukan tempat yang paling cocok untuk Anda
+                    </p>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-icon">💳</div>
+                    <h3 class="step-title">Pesan Akomodasi & Transportasi</h3>
+                    <p class="step-description">
+                        Booking hotel & tiket pesawat dalam satu platform yang mudah dan praktis
+                    </p>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-icon">🏖️</div>
+                    <h3 class="step-title">Nikmati Perjalanan</h3>
+                    <p class="step-description">
+                        Siap jalan tanpa repot, waktunya menikmati liburan tanpa khawatir
+                    </p>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- Hotel Listings Section -->
     <section class="hotel-listings">
         <!-- Hotel 1: Nandini Jungle -->
         <div class="hotel-card">
-            <img src="../assets/nandini.png" alt="Nandini Jungle by Hanging Gardens" class="hotel-image">
+            <div class="hotel-image">
+                <img src="../assets/nandini.png" alt="Hotel Nandini">
+            </div>
             
             <div class="hotel-content">
                 <div class="hotel-header">
                     <h3 class="hotel-title">Nandini Jungle by Hanging Gardens</h3>
-                    <svg class="heart-icon" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                    </svg>
+                    <div class="heart-icon">♡</div>
                 </div>
                 
                 <div class="hotel-stars">
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
                 </div>
                 
                 <p class="hotel-location">Indonesia</p>
                 
                 <div class="hotel-rating">
-                    <img src="../assets/logo_owo2.png" alt="Owo" class="rating-star">
                     <span class="rating-score">4.6/5</span>
                     <span class="rating-badge">Location 4.5/5</span>
                 </div>
@@ -731,38 +1086,27 @@
 
         <!-- Hotel 2: Ramayana Suites -->
         <div class="hotel-card">
-            <img src="../assets/ramayana.png" alt="Ramayana Suites and Resort" class="hotel-image">
+            <div class="hotel-image">
+                <img src="../assets/ramayana.png" alt="Hotel Ramayana">
+            </div>
             
             <div class="hotel-content">
                 <div class="hotel-header">
                     <h3 class="hotel-title">Ramayana Suites and Resort</h3>
-                    <svg class="heart-icon" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                    </svg>
+                    <div class="heart-icon">♡</div>
                 </div>
                 
                 <div class="hotel-stars">
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
                 </div>
                 
                 <p class="hotel-location">Indonesia</p>
                 
                 <div class="hotel-rating">
-                    <img src="../assets/logo_owo2.png" alt="Owo" class="rating-star">
                     <span class="rating-score">4.4/5</span>
                     <span class="rating-badge">Location 4.7/5</span>
                 </div>
@@ -779,38 +1123,27 @@
 
         <!-- Hotel 3: The Garcia Ubud -->
         <div class="hotel-card">
-            <img src="../assets/garcia.png" alt="The Garcia Ubud Hotel & Resort" class="hotel-image">
+            <div class="hotel-image">
+                <img src="../assets/garcia.png" alt="Hotel Garcia">
+            </div>
             
             <div class="hotel-content">
                 <div class="hotel-header">
                     <h3 class="hotel-title">The Garcia Ubud Hotel & Resort</h3>
-                    <svg class="heart-icon" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                    </svg>
+                    <div class="heart-icon">♡</div>
                 </div>
                 
                 <div class="hotel-stars">
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
                 </div>
                 
                 <p class="hotel-location">Indonesia</p>
                 
                 <div class="hotel-rating">
-                    <img src="../assets/logo_owo2.png" alt="Owo" class="rating-star">
                     <span class="rating-score">4.0/5</span>
                     <span class="rating-badge">Great for couples</span>
                 </div>
@@ -826,6 +1159,163 @@
         </div>
     </section>
 
+    <!-- Flight Listings Section -->
+    <section class="hotel-listings" id="flightListings">
+        <!-- Flight 1: Garuda Indonesia -->
+        <div class="flight-card">
+            <div class="flight-image">
+                <img src="../assets/garuda.jpg" alt="Penerbangan Garuda Indonesia">
+            </div>
+            
+            <div class="flight-content">
+                <div class="flight-header">
+                    <h3 class="flight-title">Garuda Indonesia</h3>
+                    <div class="heart-icon">♡</div>
+                </div>
+                
+                <div class="flight-details">
+                    <div class="flight-time">08:00</div>
+                    <div class="flight-duration">
+                        <div class="flight-path"></div>
+                        <span>2h 30m</span>
+                    </div>
+                    <div class="flight-time">10:30</div>
+                </div>
+                
+                <div class="flight-info">
+                    <div class="flight-info-item">
+                        <span class="flight-info-label">Dari</span>
+                        <span class="flight-info-value">Denpasar (DPS)</span>
+                    </div>
+                    <div class="flight-info-item">
+                        <span class="flight-info-label">Ke</span>
+                        <span class="flight-info-value">Jakarta (CGK)</span>
+                    </div>
+                    <div class="flight-info-item">
+                        <span class="flight-info-label">Tanggal</span>
+                        <span class="flight-info-value">10 Mei 2025</span>
+                    </div>
+                </div>
+                
+                <div class="flight-rating">
+                    <span class="rating-score">4.8/5</span>
+                    <span class="rating-badge">Direct Flight</span>
+                </div>
+                
+                <div class="flight-footer">
+                    <div class="flight-price">
+                        <span class="price-amount">Rp1,850,000</span>
+                        <span class="price-period">per person</span>
+                    </div>
+                    <button class="book-button" onclick="bookFlight('Garuda Indonesia')">Pesan Sekarang</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flight 2: Lion Air -->
+        <div class="flight-card">
+            <div class="flight-image">
+                <img src="../assets/lion-air.jpg" alt="Lion Air">
+            </div>
+            
+            <div class="flight-content">
+                <div class="flight-header">
+                    <h3 class="flight-title">Lion Air</h3>
+                    <div class="heart-icon">♡</div>
+                </div>
+                
+                <div class="flight-details">
+                    <div class="flight-time">10:15</div>
+                    <div class="flight-duration">
+                        <div class="flight-path"></div>
+                        <span>2h 30m</span>
+                    </div>
+                    <div class="flight-time">12:45</div>
+                </div>
+                
+                <div class="flight-info">
+                    <div class="flight-info-item">
+                        <span class="flight-info-label">Dari</span>
+                        <span class="flight-info-value">Denpasar (DPS)</span>
+                    </div>
+                    <div class="flight-info-item">
+                        <span class="flight-info-label">Ke</span>
+                        <span class="flight-info-value">Jakarta (CGK)</span>
+                    </div>
+                    <div class="flight-info-item">
+                        <span class="flight-info-label">Tanggal</span>
+                        <span class="flight-info-value">10 Mei 2025</span>
+                    </div>
+                </div>
+                
+                <div class="flight-rating">
+                    <span class="rating-score">4.2/5</span>
+                    <span class="rating-badge">Direct Flight</span>
+                </div>
+                
+                <div class="flight-footer">
+                    <div class="flight-price">
+                        <span class="price-amount">Rp1,250,000</span>
+                        <span class="price-period">per person</span>
+                    </div>
+                    <button class="book-button" onclick="bookFlight('Lion Air')">Pesan Sekarang</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flight 3: Citilink -->
+        <div class="flight-card">
+            <div class="flight-image">
+                <img src="../assets/citilink.jpg" alt="Penerbangan Citilink">
+            </div>
+            
+            <div class="flight-content">
+                <div class="flight-header">
+                    <h3 class="flight-title">Citilink</h3>
+                    <div class="heart-icon">♡</div>
+                </div>
+                
+                <div class="flight-details">
+                    <div class="flight-time">14:20</div>
+                    <div class="flight-duration">
+                        <div class="flight-path"></div>
+                        <span>2h 35m</span>
+                    </div>
+                    <div class="flight-time">16:55</div>
+                </div>
+                
+                <div class="flight-info">
+                    <div class="flight-info-item">
+                        <span class="flight-info-label">Dari</span>
+                        <span class="flight-info-value">Denpasar (DPS)</span>
+                    </div>
+                    <div class="flight-info-item">
+                        <span class="flight-info-label">Ke</span>
+                        <span class="flight-info-value">Jakarta (CGK)</span>
+                    </div>
+                    <div class="flight-info-item">
+                        <span class="flight-info-label">Tanggal</span>
+                        <span class="flight-info-value">10 Mei 2025</span>
+                    </div>
+                </div>
+                
+                <div class="flight-rating">
+                    <span class="rating-score">4.5/5</span>
+                    <span class="rating-badge">Direct Flight</span>
+                </div>
+                
+                <div class="flight-footer">
+                    <div class="flight-price">
+                        <span class="price-amount">Rp1,350,000</span>
+                        <span class="price-period">per person</span>
+                    </div>
+                    <button class="book-button" onclick="bookFlight('Citilink')">Pesan Sekarang</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <div class="modal-icon" id="modalIcon">
@@ -838,7 +1328,74 @@
         </div>
     </div>
 
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo"></div>
+                <div class="contact-item">
+                    <div class="contact-icon email"></div>
+                    <a href="mailto:support@owo.com" class="contact-text contact-link">support@owo.com</a>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon phone"></div>
+                    <span class="contact-text">+62 1234567890</span>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3 class="footer-title">Tentang Kami</h3>
+                <a href="#" class="footer-link">Profil Perusahaan</a>
+                <a href="#" class="footer-link">Kontak</a>
+            </div>
+
+            <div class="footer-section">
+                <h3 class="footer-title">Layanan</h3>
+                <a href="#" class="footer-link">Pesawat</a>
+                <a href="#" class="footer-link">Hotel</a>
+                <a href="#" class="footer-link">Bantuan dan Keluhan</a>
+            </div>
+
+            <div class="footer-section">
+                <h3 class="footer-title">Informasi</h3>
+                <a href="#" class="footer-link">Syarat & Ketentuan</a>
+                <a href="#" class="footer-link">Kebijakan Privasi</a>
+                <a href="#" class="footer-link">Kebijakan Pembatalan</a>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            © 2025 OwO . All Rights Reserved
+        </div>
+    </footer>
+
     <script>
+        // Tab switching functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const hotelForm = document.getElementById('hotelForm');
+                const flightForm = document.getElementById('flightForm');
+                const hotelListings = document.querySelector('.hotel-listings');
+                const flightListings = document.getElementById('flightListings');
+                
+                if (this.textContent.includes('Pesawat')) {
+                    hotelForm.style.display = 'none';
+                    flightForm.style.display = 'block';
+                    hotelListings.classList.remove('show');
+                    flightListings.classList.remove('show');
+                } else {
+                    hotelForm.style.display = 'block';
+                    flightForm.style.display = 'none';
+                    hotelListings.classList.remove('show');
+                    flightListings.classList.remove('show');
+                }
+            });
+        });
+
+        // Hotel availability check
         function checkAvailability() {
             const modal = document.getElementById('modalOverlay');
             const icon = document.getElementById('modalIcon');
@@ -867,7 +1424,6 @@
                         <button class="modal-button secondary" onclick="closeModalAndReset()">Tutup</button>
                     `;
                 } else {
-                    // Room not available
                     icon.className = 'modal-icon error';
                     icon.textContent = '✗';
                     title.textContent = 'Kamar Tidak Tersedia';
@@ -879,16 +1435,73 @@
                 }
             }, 2000);
         }
-        
+
+        // Flight availability check
+        function checkFlightAvailability() {
+            const modal = document.getElementById('modalOverlay');
+            const icon = document.getElementById('modalIcon');
+            const title = document.getElementById('modalTitle');
+            const message = document.getElementById('modalMessage');
+            const buttons = document.getElementById('modalButtons');
+            
+            modal.classList.add('active');
+            icon.className = 'modal-icon loading';
+            icon.textContent = '⏳';
+            title.textContent = 'Mengecek Ketersediaan';
+            message.textContent = 'Mohon tunggu, kami sedang mengecek ketersediaan penerbangan untuk tanggal yang Anda pilih...';
+            buttons.innerHTML = '';
+
+            setTimeout(() => {
+                const isAvailable = Math.random() > 0.3;
+                
+                if (isAvailable) {
+                    icon.className = 'modal-icon success';
+                    icon.textContent = '✓';
+                    title.textContent = 'Penerbangan Tersedia!';
+                    message.textContent = 'Penerbangan tersedia untuk tanggal yang Anda pilih. Apakah Anda ingin melanjutkan pencarian penerbangan?';
+                    buttons.innerHTML = `
+                        <button class="modal-button primary" onclick="showFlightListings()">Lanjutkan</button>
+                        <button class="modal-button secondary" onclick="closeModalAndResetFlight()">Tutup</button>
+                    `;
+                } else {
+                    icon.className = 'modal-icon error';
+                    icon.textContent = '✗';
+                    title.textContent = 'Penerbangan Tidak Tersedia';
+                    message.textContent = 'Maaf, penerbangan tidak tersedia untuk tanggal yang Anda pilih. Silakan pilih tanggal lain atau coba rute lainnya.';
+                    buttons.innerHTML = `
+                        <button class="modal-button primary" onclick="closeModalAndResetFlight()">Pilih Tanggal Lain</button>
+                        <button class="modal-button secondary" onclick="closeModalAndResetFlight()">Tutup</button>
+                    `;
+                }
+            }, 2000);
+        }
+
         function showHotelListings() {
             const hotelListings = document.querySelector('.hotel-listings');
             hotelListings.classList.add('show');
             closeModal();
+            hotelListings.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        function closeModalAndReset(){
+        function showFlightListings() {
+            const flightListings = document.getElementById('flightListings');
+            const hotelListings = document.querySelector('.hotel-listings');
+            
+            hotelListings.classList.remove('show');
+            flightListings.classList.add('show');
+            closeModal();
+            flightListings.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function closeModalAndReset() {
             const hotelListings = document.querySelector('.hotel-listings');
             hotelListings.classList.remove('show');
+            closeModal();
+        }
+
+        function closeModalAndResetFlight() {
+            const flightListings = document.getElementById('flightListings');
+            flightListings.classList.remove('show');
             closeModal();
         }
         
@@ -897,26 +1510,35 @@
         }
         
         function bookHotel(hotelName) {
-            window.location.href = 'CekKetersediaan.html';
+            window.location.href = 'CekKetersediaanHotel.html';
+        }
+
+        function bookFlight(flightName) {
+            window.location.href = 'CekKetersediaanPesawat.html';
         }
         
+        // Heart icon functionality
         document.querySelectorAll('.heart-icon').forEach(heart => {
             heart.addEventListener('click', function() {
                 this.classList.toggle('liked');
+                this.textContent = this.classList.contains('liked') ? '♥' : '♡';
             });
         });
         
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-        
+        // Modal close on outside click
         document.getElementById('modalOverlay').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeModal();
             }
+        });
+
+        // Prevent form default submission
+        document.getElementById('flightForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+
+        document.getElementById('hotelForm').addEventListener('submit', function(e) {
+            e.preventDefault();
         });
     </script>
 </body>

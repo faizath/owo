@@ -5,3 +5,5 @@ src/.gradle
 # Ignore Gradle build output directory
 src/build
 src/app/build
+
+.vscode/
