@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OWO - Hotel Booking</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>OWO - Travel Booking Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -14,13 +14,13 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: white;
-            min-height: 100vh;
-            padding: 0;
+            line-height: 1.6;
+            color: #333;
+            overflow-x: hidden;
         }
 
-        /* Header - Improved Design */
         /* Header */
+
         .header {
             width: 100%;
             height: 59px;
@@ -118,296 +118,419 @@
             font-weight: 700;
         }
 
-        /* Main Content */
-        .main-content {
-            margin-top: 59px;
-            padding: 70px 0;
-            display: flex;
-            gap: 30px;
-            padding-left: 120px;
-            padding-right: 120px;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 246px;
-            height: 398px;
-            background: rgba(249, 249, 249, 0.51);
-            border-radius: 10px;
-            box-shadow: 0px 2px 14px 3px rgba(0, 0, 0, 0.10);
-            overflow: hidden;
-        }
-
-        .sidebar-header {
-            height: 70px;
-            background: rgba(97, 61, 193, 0.51);
-            display: flex;
-            align-items: center;
-            padding: 0 21px;
-            gap: 15px;
-        }
-
-        .sidebar-avatar {
-            width: 47px;
-            height: 47px;
-            background-image: url('../assets/sidebar_profile.png');
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/src/app/src/main/java/com/owo/assets/e6dc4e217484e4de91c18916ff6bf434b601ee94.png');
             background-size: cover;
             background-position: center;
-            border-radius: 50%;
-        }
-
-        .sidebar-title {
-            color: white;
-            font-size: 28px;
-            font-weight: 700;
-        }
-
-        .sidebar-menu {
-            padding: 14px 31px;
-        }
-
-        .menu-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 15px 0;
-            color: #613DC1;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            position: relative;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            padding: 0 2rem;
         }
 
-        .menu-item.active::before {
-            content: '';
-            position: absolute;
-            left: -31px;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: #613DC1;
-            border-radius: 0 1px 1px 0;
+        .hero-content {
+            max-width: 1200px;
+            width: 100%;
         }
 
-        /* Menu Icons */
-        .menu-icon {
-            width: 22px;
-            height: 22px;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 3rem;
+            line-height: 1.2;
         }
 
-        .menu-item:nth-child(1) .menu-icon {
-            background-image: url('../assets/user.png');
-        }
-
-        .menu-item:nth-child(2) .menu-icon {
-            background-image: url('../assets/pemesanan.png');
-        }
-
-        .menu-item:nth-child(3) .menu-icon {
-            background-image: url('../assets/refund.png');
-        }
-
-        .menu-item:nth-child(5) .menu-icon {
-            background-image: url('../assets/logout.png');
-        }
-
-        .menu-item:nth-child(6) .menu-icon {
-            background-image: url('../assets/setting.png');
-        }
-
-        .menu-divider {
-            height: 1px;
-            background: #E8E7E7;
-            margin: 10px 0;
-        }
-
-
-        .hero-section {
-            background: #4E148C9E;
-            padding: 40px 60px 60px;
-            position: relative;
-        }
-
-        .booking-container {
+        .booking-form-container {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            text-align: left;
+            color: #333;
+            max-width: 900px;
             margin: 0 auto;
-            margin-top: 100px;
-            height: 50vh;
         }
 
         .booking-tabs {
             display: flex;
-            margin-bottom: 0;
+            margin-bottom: 2rem;
         }
 
         .tab {
-            padding: 16px 32px;
-            color: white;
-            font-size: 16px;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-            cursor: pointer;
+            padding: 12px 24px;
             border: none;
-            background: rgba(255, 255, 255, 0.2);
-            transition: background 0.3s ease;
-        }
-
-        .tab:first-child {
-            border-top-left-radius: 16px;
+            background: #f3f4f6;
+            color: #6b7280;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-radius: 8px 8px 0 0;
         }
 
         .tab.active {
-            background: #4E148C
-        }
-
-        .tab:last-child {
-            border-top-right-radius: 16px;
-        }
-
-        .booking-form {
-            background: white;
-            border-radius: 0 16px 16px 16px;
-            padding: 32px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            background: #613DC1;
+            color: white;
         }
 
         .form-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            gap: 24px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
         }
 
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
         }
 
         .form-label {
-            color: #374151;
-            font-family: 'Poppins', sans-serif;
             font-weight: 500;
-            font-size: 16px;
-            color: #111827;
-            margin-bottom: 4px;
+            margin-bottom: 0.5rem;
+            color: #374151;
         }
 
-        .form-input {
-            padding: 14px 16px;
-            border: 2px solid #E5E7EB;
+        .form-input, .form-select {
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
             border-radius: 8px;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-            font-size: 16px;
-            color: #111827;
+            font-size: 14px;
             outline: none;
             transition: border-color 0.3s ease;
         }
 
-        .form-input:focus {
+        .form-input:focus, .form-select:focus {
             border-color: #613DC1;
         }
 
         .form-bottom {
             display: grid;
-            grid-template-columns: 1fr 1fr auto;
-            gap: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
             align-items: end;
         }
 
-        .form-select {
-            padding: 14px 16px;
-            border: 2px solid #E5E7EB;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-            border-radius: 8px;
-            font-size: 16px;
-            color: #111827;
-            background: white;
-            cursor: pointer;
-            outline: none;
-            transition: border-color 0.3s ease;
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23111827' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 16px center;
-            background-size: 16px;
-            padding-right: 40px;
-        }
-
-        .form-select:focus {
-            border-color: #613DC1;
-        }
-
-        .check-availability-btn {
-            padding: 14px 28px;
+        .search-btn {
             background: #613DC1;
             color: white;
             border: none;
+            padding: 12px 24px;
             border-radius: 8px;
-            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: background 0.3s ease;
-            white-space: nowrap;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
+            height: fit-content;
         }
 
-        .check-availability-btn:hover {
+        .search-btn:hover {
             background: #4E148C;
         }
 
+        /* Destinations Section */
+        .destinations {
+            padding: 5rem 2rem;
+            background: #f9fafb;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #613DC1;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .destinations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .destination-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .destination-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+
+        .destination-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #613DC1, #4E148C);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .destination-badge {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: white;
+            color: #333;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .more-destinations-btn {
+            display: block;
+            margin: 0 auto;
+            background: transparent;
+            color: #613DC1;
+            border: 2px solid #613DC1;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .more-destinations-btn:hover {
+            background: #613DC1;
+            color: white;
+        }
+
+        /* Planning Steps */
+        .planning-steps {
+            padding: 5rem 2rem;
+            background: #f9fafb;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .step-item {
+            text-align: center;
+        }
+
+        .step-icon {
+            width: 80px;
+            height: 80px;
+            background: #e0e7ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            color: #613DC1;
+        }
+
+        .step-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #613DC1;
+            margin-bottom: 1rem;
+        }
+
+        .step-description {
+            color: #6b7280;
+        }
+
+        /* Footer */
+        .footer {
+            background: white;
+            border-top: 1px solid black;
+            padding: 55px 0;
+            margin-top: 50px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 60px;
+            padding: 10 146px;
+        }
+
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .footer-logo {
+            width: 171px;
+            height: 59px;
+            background-image: url('../assets/logo_owo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 5px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .contact-icon {
+            width: 51px;
+            height: 51px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        .contact-icon.phone {
+            background-image: url('../assets/Phone.png');
+        }
+
+        .contact-icon.email {
+            background-image: url('../assets/Email.png');
+        }
+
+        .contact-text {
+            color: #2C0735;
+            font-size: 20px;
+            font-weight: 400;
+        }
+
+        .contact-link {
+            color: #2C0735;
+            text-decoration: underline;
+        }
+
+        .footer-section {
+            flex: 1;
+        }
+
+        .footer-title {
+            color: #2C0735;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .footer-link {
+            color: #2C0735;
+            font-size: 18px;
+            font-weight: 500;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid black;
+            color: black;
+            font-size: 20px;
+            font-weight: 400;
+        }
+
+        /* Hotel Listings */
         .hotel-listings {
             padding: 60px;
             background: #F9FAFB;
             display: none;
         }
 
-        .hotel-listings.show{
+        .hotel-listings.show {
             display: block;
         }
 
-        .hotel-card, .flight-card{
+
+        .hotel-card:hover, .flight-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .flight-image {
+            width: 400px;
+            height: 280px;
+            margin: 60px;
+            background: linear-gradient(45deg, #613DC1, #4E148C);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .hotel-card, .flight-card {
             background: white;
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             margin-bottom: 24px;
             display: flex;
+            align-items: stretch;
             overflow: hidden;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            min-height: 280px; 
         }
-
-        .hotel-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-        }
-
+        
         .hotel-image {
-            width: 400px;
-            height: 280px;
-            object-fit: cover;
+            flex: 0 0 300px;
+            height: auto;
+            background: linear-gradient(45deg, #613DC1, #4E148C);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.2rem;
         }
 
         .hotel-content, .flight-content {
             flex: 1;
+            flex-grow: 1;
             padding: 24px 32px;
             position: relative;
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
+            min-width: 0;
         }
 
-        .hotel-headerm .flight-header {
+        .hotel-header, .flight-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 12px;
         }
 
-        .hotel-title, .flight-title{
+        .hotel-title, .flight-title {
             color: #613DC1;
             font-size: 24px;
             font-weight: 700;
@@ -477,24 +600,41 @@
             margin-top: 24px;
         }
 
-        .hotel-price {
+        .hotel-price, .flight-price {
             display: flex;
             align-items: baseline;
             gap: 8px;
         }
 
-        .flight-image{
-            width: 400px;
-            height: 340px;
-            object-fit: cover;
-            object-position: center;
-        }
-        .flight-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        .price-amount {
+            color: #111827;
+            font-size: 28px;
+            font-weight: 700;
         }
 
+        .price-period {
+            color: #6B7280;
+            font-size: 14px;
+        }
 
+        .book-button {
+            padding: 12px 24px;
+            background: #613DC1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .book-button:hover {
+            background: #4E148C;
+        }
+
+        /* Flight specific styles */
         .flight-details {
             display: flex;
             align-items: center;
@@ -562,35 +702,6 @@
             font-size: 14px;
             font-weight: 600;
             color: #111827;
-        }
-
-        .price-amount {
-            color: #111827;
-            font-size: 28px;
-            font-weight: 700;
-        }
-
-        .price-period {
-            color: #6B7280;
-            font-size: 14px;
-        }
-
-        .book-button {
-            padding: 12px 24px;
-            background: #613DC1;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s ease;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-        }
-
-        .book-button:hover {
-            background: #4E148C;
         }
 
         /* Modal Styles */
@@ -691,7 +802,6 @@
             cursor: pointer;
             transition: background 0.3s ease;
             font-family: 'Poppins', sans-serif;
-            font-weight: 500;
         }
 
         .modal-button.primary {
@@ -711,123 +821,70 @@
         .modal-button.secondary:hover {
             background: #E5E7EB;
         }
-        .rating-star {
-            width: 40px;
-            height: 40px;
-            margin-right: 0px;
-            vertical-align: middle;
-        }
-
-        .footer {
-            background: white;
-            border-top: 1px solid black;
-            padding: 55px 0;
-            margin-top: 50px;
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            gap: 60px;
-            padding: 10 146px;
-        }
-
-        .footer-brand {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .footer-logo {
-            width: 171px;
-            height: 59px;
-            background-image: url('../assets/logo_owo.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            border-radius: 5px;
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        /* Contact Icons */
-        .contact-icon {
-            width: 51px;
-            height: 51px;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            border-radius: 50%;
-        }
-
-        .contact-icon.phone {
-            background-image: url('../assets/Phone.png');
-        }
-
-        .contact-icon.email {
-            background-image: url('../assets/Email.png');
-        }
-
-        .contact-text {
-            color: #2C0735;
-            font-size: 20px;
-            font-weight: 400;
-        }
-
-        .contact-link {
-            color: #2C0735;
-            text-decoration: underline;
-        }
-
-        .footer-section {
-            flex: 1;
-        }
-
-        .footer-title {
-            color: #2C0735;
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-
-        .footer-link {
-            color: #2C0735;
-            font-size: 18px;
-            font-weight: 500;
-            text-decoration: none;
-            display: block;
-            margin-bottom: 10px;
-        }
-
-        .footer-bottom {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid black;
-            color: black;
-            font-size: 20px;
-            font-weight: 400;
-        }
 
         /* Responsive Design */
-        @media (max-width: 1440px) {
-            .container {
-                min-width: 100%;
-            }
-            
+        @media (max-width: 768px) {
             .header {
-                padding: 0 20px;
+                padding: 0 1rem;
             }
-            
-            .main-content {
-                padding-left: 20px;
-                padding-right: 20px;
+
+            .search-container {
+                display: none;
             }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .booking-form-container {
+                padding: 1.5rem;
+            }
+
+            .form-grid, .form-bottom {
+                grid-template-columns: 1fr;
+            }
+
+            .why-choose-grid, .support-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .steps-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .hotel-card, .flight-card {
+                flex-direction: column;
+            }
+
+            .flight-image {
+                width: 100%;
+                height: 200px;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
         }
     </style>
 </head>
@@ -853,147 +910,166 @@
             <span class="user-greeting">Hi, Owo!</span>
         </div>
     </header>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title fade-in-up">
+                Mulai Perjalanan Impianmu<br>
+                di Sini.
+            </h1>
 
-    <section class="hero-section">
-        <div class="booking-container">
-            <div class="booking-tabs">
-                <button class="tab active">Pesawat</button>
-                <button class="tab">Hotel</button>
-            </div>
-            
-            <div class="booking-form" id="flightForm">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Dari</label>
-                        <input type="text" class="form-input" value="Bali / Denpasar (DPS)" id="departure">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Ke</label>
-                        <input type="text" class="form-input" value="Jakarta (CGK)" id="arrival">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Pergi</label>
-                        <input type="date" class="form-input" value="2025-05-10" id="departureDate">
-                    </div>
+            <div class="booking-form-container fade-in-up">
+                <div class="booking-tabs">
+                    <button class="tab active" data-tab="flight">✈️ Pesawat</button>
+                    <button class="tab" data-tab="hotel">🏨 Hotel</button>
                 </div>
-                
-                <div class="form-bottom">
-                    <div class="form-group">
-                        <label class="form-label">Pulang</label>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <input type="checkbox" id="roundTrip" checked style="margin: 0;">
-                            <input type="date" class="form-input" value="2025-05-11" id="returnDate" style="flex: 1;">
+
+                <!-- Flight Form -->
+                <form id="flightForm" class="booking-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Dari</label>
+                            <input type="text" class="form-input" value="Bali / Denpasar (DPS)" id="departure">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ke</label>
+                            <input type="text" class="form-input" value="Jakarta (CGK)" id="arrival">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Pergi</label>
+                            <input type="date" class="form-input" value="2025-05-10" id="departureDate">
                         </div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Penumpang</label>
-                        <select class="form-select" id="passengers">
-                            <option value="1">1 Dewasa</option>
-                            <option value="2" selected>2 Dewasa</option>
-                            <option value="3">3 Dewasa</option>
-                            <option value="4">4 Dewasa</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Kelas</label>
-                        <select class="form-select" id="flightClass">
-                            <option value="economy" selected>Ekonomi</option>
-                            <option value="business">Bisnis</option>
-                            <option value="first">First Class</option>
-                        </select>
-                    </div>
-                    
-                    <button class="check-availability-btn" onclick="checkFlightAvailability()">
-                        Cek Ketersediaan
-                    </button>
-                </div>
-            </div>
 
-            <div class="booking-form" id="hotelForm" style="display: none">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Di mana Anda ingin menginap?</label>
-                        <input type="text" class="form-input" value="Bali / Denpasar" id="destination">
+                    <div class="form-bottom">
+                        <div class="form-group">
+                            <label class="form-label">Pulang</label>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" id="roundTrip" checked style="margin: 0;">
+                                <input type="date" class="form-input" value="2025-05-11" id="returnDate" style="flex: 1;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Penumpang</label>
+                            <select class="form-select" id="passengers">
+                                <option value="1">1 Dewasa</option>
+                                <option value="2" selected>2 Dewasa</option>
+                                <option value="3">3 Dewasa</option>
+                                <option value="4">4 Dewasa</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Kelas</label>
+                            <select class="form-select" id="flightClass">
+                                <option value="economy" selected>Ekonomi</option>
+                                <option value="business">Bisnis</option>
+                                <option value="first">First Class</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="search-btn" onclick="checkFlightAvailability()">Cek Ketersediaan</button>
                     </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Check-in</label>
-                        <input type="date" class="form-input" value="2025-05-10" id="checkin">
+                </form>
+
+                <!-- Hotel Form -->
+                <form id="hotelForm" class="booking-form" style="display: none;">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Di mana Anda ingin menginap?</label>
+                            <input type="text" class="form-input" value="Bali / Denpasar" id="destination">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Check-in</label>
+                            <input type="date" class="form-input" value="2025-05-10" id="checkin">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Check-out</label>
+                            <input type="date" class="form-input" value="2025-05-11" id="checkout">
+                        </div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Checkout</label>
-                        <input type="date" class="form-input" value="2025-05-11" id="checkout">
+
+                    <div class="form-bottom">
+                        <div class="form-group">
+                            <label class="form-label">Jumlah Tamu</label>
+                            <select class="form-select" id="guests">
+                                <option value="1">1</option>
+                                <option value="2" selected>2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Jumlah Kamar</label>
+                            <select class="form-select" id="rooms">
+                                <option value="1" selected>1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="search-btn" onclick="checkAvailability()">Cek Ketersediaan</button>
                     </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Planning Steps Section -->
+    <section class="planning-steps">
+        <div class="container">
+            <h2 class="section-title">Rencanakan liburan dalam 3 langkah praktis!</h2>
+
+            <div class="steps-grid">
+                <div class="step-item">
+                    <div class="step-icon">📍</div>
+                    <h3 class="step-title">Pilih destinasi</h3>
+                    <p class="step-description">
+                        Telusuri lokasi favorit dan temukan tempat yang paling cocok untuk Anda
+                    </p>
                 </div>
-                
-                <div class="form-bottom">
-                    <div class="form-group">
-                        <label class="form-label">Jumlah Tamu</label>
-                        <select class="form-select" id="guests">
-                            <option value="1">1</option>
-                            <option value="2" selected>2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Jumlah Kamar</label>
-                        <select class="form-select" id="rooms">
-                            <option value="1" selected>1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                        </select>
-                    </div>
-                    
-                    <button class="check-availability-btn" onclick="checkAvailability()">
-                        Cek Ketersediaan
-                    </button>
+
+                <div class="step-item">
+                    <div class="step-icon">💳</div>
+                    <h3 class="step-title">Pesan Akomodasi & Transportasi</h3>
+                    <p class="step-description">
+                        Booking hotel & tiket pesawat dalam satu platform yang mudah dan praktis
+                    </p>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-icon">🏖️</div>
+                    <h3 class="step-title">Nikmati Perjalanan</h3>
+                    <p class="step-description">
+                        Siap jalan tanpa repot, waktunya menikmati liburan tanpa khawatir
+                    </p>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- Hotel Listings Section -->
     <section class="hotel-listings">
         <!-- Hotel 1: Nandini Jungle -->
         <div class="hotel-card">
-            <img src="../assets/nandini.png" alt="Nandini Jungle by Hanging Gardens" class="hotel-image">
+            <div class="hotel-image">
+                <img src="../assets/nandini.png" alt="Hotel Nandini">
+            </div>
             
             <div class="hotel-content">
                 <div class="hotel-header">
                     <h3 class="hotel-title">Nandini Jungle by Hanging Gardens</h3>
-                    <svg class="heart-icon" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                    </svg>
+                    <div class="heart-icon">♡</div>
                 </div>
                 
                 <div class="hotel-stars">
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
                 </div>
                 
                 <p class="hotel-location">Indonesia</p>
                 
                 <div class="hotel-rating">
-                    <img src="../assets/logo_owo2.png" alt="Owo" class="rating-star">
                     <span class="rating-score">4.6/5</span>
                     <span class="rating-badge">Location 4.5/5</span>
                 </div>
@@ -1010,38 +1086,27 @@
 
         <!-- Hotel 2: Ramayana Suites -->
         <div class="hotel-card">
-            <img src="../assets/ramayana.png" alt="Ramayana Suites and Resort" class="hotel-image">
+            <div class="hotel-image">
+                <img src="../assets/ramayana.png" alt="Hotel Ramayana">
+            </div>
             
             <div class="hotel-content">
                 <div class="hotel-header">
                     <h3 class="hotel-title">Ramayana Suites and Resort</h3>
-                    <svg class="heart-icon" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                    </svg>
+                    <div class="heart-icon">♡</div>
                 </div>
                 
                 <div class="hotel-stars">
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
                 </div>
                 
                 <p class="hotel-location">Indonesia</p>
                 
                 <div class="hotel-rating">
-                    <img src="../assets/logo_owo2.png" alt="Owo" class="rating-star">
                     <span class="rating-score">4.4/5</span>
                     <span class="rating-badge">Location 4.7/5</span>
                 </div>
@@ -1058,38 +1123,27 @@
 
         <!-- Hotel 3: The Garcia Ubud -->
         <div class="hotel-card">
-            <img src="../assets/garcia.png" alt="The Garcia Ubud Hotel & Resort" class="hotel-image">
+            <div class="hotel-image">
+                <img src="../assets/garcia.png" alt="Hotel Garcia">
+            </div>
             
             <div class="hotel-content">
                 <div class="hotel-header">
                     <h3 class="hotel-title">The Garcia Ubud Hotel & Resort</h3>
-                    <svg class="heart-icon" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                    </svg>
+                    <div class="heart-icon">♡</div>
                 </div>
                 
                 <div class="hotel-stars">
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
                 </div>
                 
                 <p class="hotel-location">Indonesia</p>
                 
                 <div class="hotel-rating">
-                    <img src="../assets/logo_owo2.png" alt="Owo" class="rating-star">
                     <span class="rating-score">4.0/5</span>
                     <span class="rating-badge">Great for couples</span>
                 </div>
@@ -1105,17 +1159,18 @@
         </div>
     </section>
 
+    <!-- Flight Listings Section -->
     <section class="hotel-listings" id="flightListings">
         <!-- Flight 1: Garuda Indonesia -->
         <div class="flight-card">
-            <img src="../assets/garuda.jpg" alt="Garuda Indonesia" class="flight-image">
+            <div class="flight-image">
+                <img src="../assets/garuda.jpg" alt="Penerbangan Garuda Indonesia">
+            </div>
             
             <div class="flight-content">
                 <div class="flight-header">
                     <h3 class="flight-title">Garuda Indonesia</h3>
-                    <svg class="heart-icon" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                    </svg>
+                    <div class="heart-icon">♡</div>
                 </div>
                 
                 <div class="flight-details">
@@ -1143,7 +1198,6 @@
                 </div>
                 
                 <div class="flight-rating">
-                    <img src="../assets/logo_owo2.png" alt="Owo" class="rating-star">
                     <span class="rating-score">4.8/5</span>
                     <span class="rating-badge">Direct Flight</span>
                 </div>
@@ -1160,14 +1214,14 @@
 
         <!-- Flight 2: Lion Air -->
         <div class="flight-card">
-            <img src="../assets/lion-air.jpg" alt="Lion Air" class="flight-image">
+            <div class="flight-image">
+                <img src="../assets/lion-air.jpg" alt="Lion Air">
+            </div>
             
             <div class="flight-content">
                 <div class="flight-header">
                     <h3 class="flight-title">Lion Air</h3>
-                    <svg class="heart-icon" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                    </svg>
+                    <div class="heart-icon">♡</div>
                 </div>
                 
                 <div class="flight-details">
@@ -1195,7 +1249,6 @@
                 </div>
                 
                 <div class="flight-rating">
-                    <img src="../assets/logo_owo2.png" alt="Owo" class="rating-star">
                     <span class="rating-score">4.2/5</span>
                     <span class="rating-badge">Direct Flight</span>
                 </div>
@@ -1212,14 +1265,14 @@
 
         <!-- Flight 3: Citilink -->
         <div class="flight-card">
-            <img src="../assets/citilink.jpg" alt="Citilink" class="flight-image">
+            <div class="flight-image">
+                <img src="../assets/citilink.jpg" alt="Penerbangan Citilink">
+            </div>
             
             <div class="flight-content">
                 <div class="flight-header">
                     <h3 class="flight-title">Citilink</h3>
-                    <svg class="heart-icon" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                    </svg>
+                    <div class="heart-icon">♡</div>
                 </div>
                 
                 <div class="flight-details">
@@ -1247,7 +1300,6 @@
                 </div>
                 
                 <div class="flight-rating">
-                    <img src="../assets/logo_owo2.png" alt="Owo" class="rating-star">
                     <span class="rating-score">4.5/5</span>
                     <span class="rating-badge">Direct Flight</span>
                 </div>
@@ -1263,6 +1315,7 @@
         </div>
     </section>
 
+    <!-- Modal -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <div class="modal-icon" id="modalIcon">
@@ -1275,6 +1328,7 @@
         </div>
     </div>
 
+    <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-brand">
@@ -1316,6 +1370,32 @@
     </footer>
 
     <script>
+        // Tab switching functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const hotelForm = document.getElementById('hotelForm');
+                const flightForm = document.getElementById('flightForm');
+                const hotelListings = document.querySelector('.hotel-listings');
+                const flightListings = document.getElementById('flightListings');
+                
+                if (this.textContent.includes('Pesawat')) {
+                    hotelForm.style.display = 'none';
+                    flightForm.style.display = 'block';
+                    hotelListings.classList.remove('show');
+                    flightListings.classList.remove('show');
+                } else {
+                    hotelForm.style.display = 'block';
+                    flightForm.style.display = 'none';
+                    hotelListings.classList.remove('show');
+                    flightListings.classList.remove('show');
+                }
+            });
+        });
+
+        // Hotel availability check
         function checkAvailability() {
             const modal = document.getElementById('modalOverlay');
             const icon = document.getElementById('modalIcon');
@@ -1344,7 +1424,6 @@
                         <button class="modal-button secondary" onclick="closeModalAndReset()">Tutup</button>
                     `;
                 } else {
-                    // Room not available
                     icon.className = 'modal-icon error';
                     icon.textContent = '✗';
                     title.textContent = 'Kamar Tidak Tersedia';
@@ -1356,27 +1435,8 @@
                 }
             }, 2000);
         }
-        
-        function showHotelListings() {
-            const hotelListings = document.querySelector('.hotel-listings');
-            hotelListings.classList.add('show');
-            closeModal();
-        }
 
-        function closeModalAndReset(){
-            const hotelListings = document.querySelector('.hotel-listings');
-            hotelListings.classList.remove('show');
-            closeModal();
-        }
-        
-        function closeModal() {
-            document.getElementById('modalOverlay').classList.remove('active');
-        }
-        
-        function bookHotel(hotelName) {
-            window.location.href = 'CekKetersediaanHotel.html';
-        }
-
+        // Flight availability check
         function checkFlightAvailability() {
             const modal = document.getElementById('modalOverlay');
             const icon = document.getElementById('modalIcon');
@@ -1416,12 +1476,26 @@
             }, 2000);
         }
 
+        function showHotelListings() {
+            const hotelListings = document.querySelector('.hotel-listings');
+            hotelListings.classList.add('show');
+            closeModal();
+            hotelListings.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
         function showFlightListings() {
             const flightListings = document.getElementById('flightListings');
             const hotelListings = document.querySelector('.hotel-listings');
             
             hotelListings.classList.remove('show');
             flightListings.classList.add('show');
+            closeModal();
+            flightListings.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function closeModalAndReset() {
+            const hotelListings = document.querySelector('.hotel-listings');
+            hotelListings.classList.remove('show');
             closeModal();
         }
 
@@ -1430,46 +1504,41 @@
             flightListings.classList.remove('show');
             closeModal();
         }
+        
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+        
+        function bookHotel(hotelName) {
+            window.location.href = 'CekKetersediaanHotel.html';
+        }
 
         function bookFlight(flightName) {
             window.location.href = 'CekKetersediaanPesawat.html';
         }
         
+        // Heart icon functionality
         document.querySelectorAll('.heart-icon').forEach(heart => {
             heart.addEventListener('click', function() {
                 this.classList.toggle('liked');
+                this.textContent = this.classList.contains('liked') ? '♥' : '♡';
             });
         });
         
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                
-                const hotelForm = document.getElementById('hotelForm');
-                const flightForm = document.getElementById('flightForm');
-                const hotelListings = document.querySelector('.hotel-listings');
-                const flightListings = document.getElementById('flightListings');
-                
-                if (this.textContent === 'Pesawat') {
-                    hotelForm.style.display = 'none';
-                    flightForm.style.display = 'block';
-                    hotelListings.classList.remove('show');
-                    flightListings.classList.remove('show');
-
-                } else {
-                    hotelForm.style.display = 'block';
-                    flightForm.style.display = 'none';
-                    hotelListings.classList.remove('show');
-                    flightListings.classList.remove('show');
-                }
-            });
-        });
-        
+        // Modal close on outside click
         document.getElementById('modalOverlay').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeModal();
             }
+        });
+
+        // Prevent form default submission
+        document.getElementById('flightForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+
+        document.getElementById('hotelForm').addEventListener('submit', function(e) {
+            e.preventDefault();
         });
     </script>
 </body>
