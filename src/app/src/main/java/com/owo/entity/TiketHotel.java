@@ -9,7 +9,8 @@ public class TiketHotel extends Tiket {
     private String roomNumber;
     private String address;
 
-    public TiketHotel(int id, float harga, boolean tersedia, LocalDate checkIn, LocalDate checkOut, String hotelName, String roomNumber, String address) {
+    public TiketHotel(int id, float harga, boolean tersedia, LocalDate checkIn, LocalDate checkOut, String hotelName,
+            String roomNumber, String address) {
         super(id, harga, tersedia);
         this.checkIn = checkIn;
         this.checkOut = checkOut;
@@ -24,6 +25,18 @@ public class TiketHotel extends Tiket {
 
     public LocalDate getCheckOut() {
         return checkOut;
+    }
+
+    public String getHotelName() {
+        return hotelName;
+    }
+
+    public String getRoomNumber() {
+        return roomNumber;
+    }
+
+    public String getAddress() {
+        return address;
     }
 
     public void setCheckIn(LocalDate checkIn) {
