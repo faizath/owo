@@ -369,7 +369,7 @@
         }
 
         .btn-checkin:hover {
-            background: #e0e0e0;
+            background: #4E2A9A;
         }
 
         .btn-checkin:disabled {
@@ -614,6 +614,7 @@
             background: #e0e0e0;
         }
 
+        /* Success and Error Messages */
         .modal-success-message {
             text-align: center;
             color: #4CAF50;
@@ -627,6 +628,44 @@
             font-size: 48px;
             color: #4CAF50;
             margin-bottom: 15px;
+        }
+
+        .modal-error-message {
+            text-align: center;
+            color: #F44336;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .modal-error-icon {
+            font-size: 48px;
+            color: #F44336;
+            margin-bottom: 15px;
+        }
+
+        .modal-loading {
+            text-align: center;
+            color: #666;
+            font-size: 16px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #613DC1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* Footer */
@@ -1019,10 +1058,24 @@
                         </div>
                     </div>
                     
+                    <!-- Loading State -->
+                    <div class="modal-loading" id="modal-loading">
+                        <div class="loading-spinner"></div>
+                        Sedang memproses check-in...
+                    </div>
+                    
+                    <!-- Success Message -->
                     <div class="modal-success-message" id="modal-success-message">
                         <div class="modal-success-icon">✓</div>
                         Check In berhasil!<br>
                         <small>Silakan datang ke bandara 2 jam sebelum keberangkatan</small>
+                    </div>
+                    
+                    <!-- Error Message -->
+                    <div class="modal-error-message" id="modal-error-message">
+                        <div class="modal-error-icon">✗</div>
+                        Check In gagal!<br>
+                        <small id="error-detail">Terjadi kesalahan sistem. Silakan coba lagi.</small>
                     </div>
                     
                     <div class="modal-action-buttons" id="modal-action-buttons">
@@ -1067,8 +1120,7 @@
             document.getElementById('modal-booking-airline').textContent = airline;
             
             // Reset modal state
-            document.getElementById('modal-success-message').style.display = 'none';
-            document.getElementById('modal-action-buttons').style.display = 'flex';
+            resetModalState();
             
             // Show modal
             document.getElementById('checkinModal').style.display = 'flex';
@@ -1079,32 +1131,69 @@
             document.getElementById('checkinModal').style.display = 'none';
         }
 
-        // Function to process check-in
-        function processCheckIn() {
-            // Mark this booking as checked in
-            if (currentBookingCode) {
-                localStorage.setItem(`checkedIn_${currentBookingCode}`, 'true');
-            }
-            
-            // Show success message
-            document.getElementById('modal-success-message').style.display = 'block';
-            
-            // Hide action buttons
-            document.getElementById('modal-action-buttons').style.display = 'none';
-            
-            // Auto close after 3 seconds and update button
-            setTimeout(() => {
-                closeCheckInModal();
-                updateCheckinButton(currentBookingCode);
-            }, 3000);
+        // Function to reset modal state
+        function resetModalState() {
+            document.getElementById('modal-loading').style.display = 'none';
+            document.getElementById('modal-success-message').style.display = 'none';
+            document.getElementById('modal-error-message').style.display = 'none';
+            document.getElementById('modal-action-buttons').style.display = 'flex';
         }
 
-        // Function to update specific check-in button
+        // Function to simulate check-in process with random success/failure
+        function processCheckIn() {
+            // Show loading state
+            document.getElementById('modal-loading').style.display = 'block';
+            document.getElementById('modal-action-buttons').style.display = 'none';
+            
+            // Simulate API call with random success/failure (70% success rate)
+            setTimeout(() => {
+                const isSuccess = Math.random() > 0.3; // 70% success rate
+                
+                document.getElementById('modal-loading').style.display = 'none';
+                
+                if (isSuccess) {
+                    // Success case
+                    localStorage.setItem(`checkedIn_${currentBookingCode}`, 'true');
+                    document.getElementById('modal-success-message').style.display = 'block';
+                    
+                    // Auto close after 3 seconds and update button
+                    setTimeout(() => {
+                        closeCheckInModal();
+                        updateCheckinButton(currentBookingCode);
+                    }, 3000);
+                } else {
+                    // Error case
+                    const errorMessages = [
+                        'Waktu check-in belum tersedia. Check-in dapat dilakukan 24 jam sebelum keberangkatan.',
+                        'Terjadi kesalahan sistem. Silakan coba lagi dalam beberapa saat.',
+                        'Koneksi internet tidak stabil. Periksa koneksi Anda dan coba lagi.',
+                        'Data penumpang tidak valid. Hubungi customer service untuk bantuan.',
+                        'Server sedang maintenance. Silakan coba lagi nanti.'
+                    ];
+                    
+                    const randomError = errorMessages[Math.floor(Math.random() * errorMessages.length)];
+                    document.getElementById('error-detail').textContent = randomError;
+                    document.getElementById('modal-error-message').style.display = 'block';
+                    
+                    // Show retry button
+                    document.getElementById('modal-action-buttons').style.display = 'flex';
+                    
+                    // Auto hide error message after 5 seconds
+                    setTimeout(() => {
+                        if (document.getElementById('modal-error-message').style.display === 'block') {
+                            resetModalState();
+                        }
+                    }, 5000);
+                }
+            }, 2000); // 2 second loading simulation
+        }
+
+        // Function to update specific check-in button (keep text as "Check In")
         function updateCheckinButton(bookingCode) {
             const button = document.getElementById(`checkin-${bookingCode}`);
             if (button) {
                 button.disabled = true;
-                button.textContent = 'Sudah Check In';
+                // Keep text as "Check In" but disable the button
                 button.style.background = '#ccc';
                 button.style.color = '#999';
                 button.style.cursor = 'not-allowed';
