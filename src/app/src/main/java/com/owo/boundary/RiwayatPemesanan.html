@@ -364,12 +364,18 @@
         }
 
         .btn-checkin {
-            background: #f0f0f0;
-            color: #333;
+            background: #613DC1;
+            color: white;
         }
 
         .btn-checkin:hover {
-            background: #e0e0e0;
+            background: #4E2A9A;
+        }
+
+        .btn-checkin:disabled {
+            background: #ccc;
+            color: #999;
+            cursor: not-allowed;
         }
 
         /* History Section */
@@ -442,6 +448,224 @@
             color: #999;
             font-size: 12px;
             font-weight: 500;
+        }
+
+        /* Check-in Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-container {
+            width: 450px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: #613DC1;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .close-button {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            padding: 30px;
+        }
+
+        .modal-booking-info {
+            margin-bottom: 25px;
+        }
+
+        .modal-info-row {
+            display: flex;
+            margin-bottom: 12px;
+        }
+
+        .modal-info-label {
+            width: 120px;
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .modal-info-value {
+            flex: 1;
+            color: #2C0735;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .modal-divider {
+            height: 1px;
+            background: #E8E7E7;
+            margin: 20px 0;
+        }
+
+        .modal-passenger-section {
+            margin-bottom: 25px;
+        }
+
+        .modal-section-title {
+            color: #613DC1;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .modal-passenger-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .modal-passenger-name {
+            color: #2C0735;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .modal-seat-number {
+            color: #613DC1;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .modal-action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .modal-action-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modal-btn-primary {
+            background: #613DC1;
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            background: #4E2A9A;
+        }
+
+        .modal-btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .modal-btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        /* Success and Error Messages */
+        .modal-success-message {
+            text-align: center;
+            color: #4CAF50;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .modal-success-icon {
+            font-size: 48px;
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+
+        .modal-error-message {
+            text-align: center;
+            color: #F44336;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .modal-error-icon {
+            font-size: 48px;
+            color: #F44336;
+            margin-bottom: 15px;
+        }
+
+        .modal-loading {
+            text-align: center;
+            color: #666;
+            font-size: 16px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #613DC1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* Footer */
@@ -644,7 +868,7 @@
                         
                         <div class="booking-actions">
                             <button class="action-button btn-refund" onclick="goToRefund('IP1JD')">Ajukan Refund</button>
-                            <button class="action-button btn-checkin">Check In</button>
+                            <button class="action-button btn-checkin" id="checkin-IP1JD" onclick="openCheckInModal('IP1JD', 'Jakarta - Surabaya', 'Min, 26 Mei 2024 • 07:30', 'Batik Air Asia • Soekarno Hatta Terminal 3')">Check In</button>
                         </div>
                     </div>
 
@@ -669,7 +893,7 @@
                         </div>
                         
                         <div class="booking-actions">
-                            <button class="action-button btn-checkin">Check In</button>
+                            <button class="action-button btn-checkin" id="checkin-NFT4T5" onclick="openCheckInModal('NFT4T5', 'Surabaya - Bali', 'Kam, 23 Mei 2024 • 19:07', 'Citilink • Juanda Terminal 1A')">Check In</button>
                         </div>
                     </div>
 
@@ -694,7 +918,7 @@
                         </div>
                         
                         <div class="booking-actions">
-                            <button class="action-button btn-checkin">Check In</button>
+                            <button class="action-button btn-checkin" id="checkin-IDS93" onclick="openCheckInModal('IDS93', 'Ramayana Suites and Resort', 'Kam, 23 Mei 2024 • 19:07', 'Deluxe Room (2 People) • Include Breakfast')">Check In</button>
                         </div>
                     </div>
                 </div>
@@ -795,9 +1019,77 @@
                 © 2025 OwO . All Rights Reserved
             </div>
         </footer>
+
+        <!-- Check-in Modal -->
+        <div class="modal-overlay" id="checkinModal">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h2 class="modal-title">Check In</h2>
+                    <button class="close-button" onclick="closeCheckInModal()">&times;</button>
+                </div>
+                
+                <div class="modal-content">
+                    <div class="modal-booking-info">
+                        <div class="modal-info-row">
+                            <div class="modal-info-label">Kode Booking:</div>
+                            <div class="modal-info-value" id="modal-booking-code">NFT4T5</div>
+                        </div>
+                        <div class="modal-info-row">
+                            <div class="modal-info-label">Rute:</div>
+                            <div class="modal-info-value" id="modal-booking-route">Surabaya - Bali</div>
+                        </div>
+                        <div class="modal-info-row">
+                            <div class="modal-info-label">Tanggal:</div>
+                            <div class="modal-info-value" id="modal-booking-date">Kam, 23 Mei 2024 • 19:07</div>
+                        </div>
+                        <div class="modal-info-row">
+                            <div class="modal-info-label">Maskapai:</div>
+                            <div class="modal-info-value" id="modal-booking-airline">Citilink • Juanda Terminal 1A</div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-divider"></div>
+                    
+                    <div class="modal-passenger-section">
+                        <h3 class="modal-section-title">Penumpang</h3>
+                        <div class="modal-passenger-item">
+                            <div class="modal-passenger-name">Owo</div>
+                            <div class="modal-seat-number">12A</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Loading State -->
+                    <div class="modal-loading" id="modal-loading">
+                        <div class="loading-spinner"></div>
+                        Sedang memproses check-in...
+                    </div>
+                    
+                    <!-- Success Message -->
+                    <div class="modal-success-message" id="modal-success-message">
+                        <div class="modal-success-icon">✓</div>
+                        Check In berhasil!<br>
+                        <small>Silakan datang ke bandara 2 jam sebelum keberangkatan</small>
+                    </div>
+                    
+                    <!-- Error Message -->
+                    <div class="modal-error-message" id="modal-error-message">
+                        <div class="modal-error-icon">✗</div>
+                        Check In gagal!<br>
+                        <small id="error-detail">Terjadi kesalahan sistem. Silakan coba lagi.</small>
+                    </div>
+                    
+                    <div class="modal-action-buttons" id="modal-action-buttons">
+                        <button class="modal-action-button modal-btn-secondary" onclick="closeCheckInModal()">Batal</button>
+                        <button class="modal-action-button modal-btn-primary" onclick="processCheckIn()">Check In</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
+        let currentBookingCode = '';
+
         function goToRefund(bookingCode) {
             // Store booking information for the refund page
             if (bookingCode) {
@@ -817,6 +1109,116 @@
             window.location.href = 'RefundForm.html';
         }
 
+        // Function to open check-in modal
+        function openCheckInModal(bookingCode, route, date, airline) {
+            currentBookingCode = bookingCode;
+            
+            // Update modal content
+            document.getElementById('modal-booking-code').textContent = bookingCode;
+            document.getElementById('modal-booking-route').textContent = route;
+            document.getElementById('modal-booking-date').textContent = date;
+            document.getElementById('modal-booking-airline').textContent = airline;
+            
+            // Reset modal state
+            resetModalState();
+            
+            // Show modal
+            document.getElementById('checkinModal').style.display = 'flex';
+        }
+
+        // Function to close check-in modal
+        function closeCheckInModal() {
+            document.getElementById('checkinModal').style.display = 'none';
+        }
+
+        // Function to reset modal state
+        function resetModalState() {
+            document.getElementById('modal-loading').style.display = 'none';
+            document.getElementById('modal-success-message').style.display = 'none';
+            document.getElementById('modal-error-message').style.display = 'none';
+            document.getElementById('modal-action-buttons').style.display = 'flex';
+        }
+
+        // Function to simulate check-in process with random success/failure
+        function processCheckIn() {
+            // Show loading state
+            document.getElementById('modal-loading').style.display = 'block';
+            document.getElementById('modal-action-buttons').style.display = 'none';
+            
+            // Simulate API call with random success/failure (70% success rate)
+            setTimeout(() => {
+                const isSuccess = Math.random() > 0.3; // 70% success rate
+                
+                document.getElementById('modal-loading').style.display = 'none';
+                
+                if (isSuccess) {
+                    // Success case
+                    localStorage.setItem(`checkedIn_${currentBookingCode}`, 'true');
+                    document.getElementById('modal-success-message').style.display = 'block';
+                    
+                    // Auto close after 3 seconds and update button
+                    setTimeout(() => {
+                        closeCheckInModal();
+                        updateCheckinButton(currentBookingCode);
+                    }, 3000);
+                } else {
+                    // Error case
+                    const errorMessages = [
+                        'Waktu check-in belum tersedia. Check-in dapat dilakukan 24 jam sebelum keberangkatan.',
+                        'Terjadi kesalahan sistem. Silakan coba lagi dalam beberapa saat.',
+                        'Koneksi internet tidak stabil. Periksa koneksi Anda dan coba lagi.',
+                        'Data penumpang tidak valid. Hubungi customer service untuk bantuan.',
+                        'Server sedang maintenance. Silakan coba lagi nanti.'
+                    ];
+                    
+                    const randomError = errorMessages[Math.floor(Math.random() * errorMessages.length)];
+                    document.getElementById('error-detail').textContent = randomError;
+                    document.getElementById('modal-error-message').style.display = 'block';
+                    
+                    // Show retry button
+                    document.getElementById('modal-action-buttons').style.display = 'flex';
+                    
+                    // Auto hide error message after 5 seconds
+                    setTimeout(() => {
+                        if (document.getElementById('modal-error-message').style.display === 'block') {
+                            resetModalState();
+                        }
+                    }, 5000);
+                }
+            }, 2000); // 2 second loading simulation
+        }
+
+        // Function to update specific check-in button (keep text as "Check In")
+        function updateCheckinButton(bookingCode) {
+            const button = document.getElementById(`checkin-${bookingCode}`);
+            if (button) {
+                button.disabled = true;
+                // Keep text as "Check In" but disable the button
+                button.style.background = '#ccc';
+                button.style.color = '#999';
+                button.style.cursor = 'not-allowed';
+            }
+        }
+
+        // Check which bookings are already checked in and disable their buttons
+        function updateCheckinButtons() {
+            const bookingCodes = ['IP1JD', 'NFT4T5', 'IDS93'];
+            
+            bookingCodes.forEach(code => {
+                const isCheckedIn = localStorage.getItem(`checkedIn_${code}`);
+                if (isCheckedIn === 'true') {
+                    updateCheckinButton(code);
+                }
+            });
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('checkinModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeCheckInModal();
+            }
+        });
+
         // Sidebar navigation
         document.querySelectorAll('.menu-item').forEach(item => {
             item.addEventListener('click', function() {
@@ -825,6 +1227,11 @@
                 }
             });
         });
+
+        // Initialize on page load
+        window.onload = function() {
+            updateCheckinButtons();
+        };
     </script>
 </body>
 </html>
