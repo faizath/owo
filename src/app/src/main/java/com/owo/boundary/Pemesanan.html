@@ -20,115 +20,210 @@
         }
 
         /* Header - Improved Design */
+        /* Header */
         .header {
             width: 100%;
-            height: 70px;                    
+            height: 59px;
             background: white;
+            padding: 0 100px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 0 60px;
-            position: sticky;                
-            top: 0;                         
-            z-index: 1000;                  
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            gap: 23px;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .logo {
-        display: flex;
-        align-items: center;
-        text-decoration: none;
-        }
-
-        .logo-image {
-            height: 148px; 
-            width: 48px;
-            width: auto;
-            object-fit: contain;
-        }
-
-        .header-center {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            max-width: 500px;
-            margin: 0 40px;
+            width: 148px;
+            height: 48px;
+            background-image: url('../assets/logo_owo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 8px;
         }
 
         .search-container {
-            width: 100%;
+            width: 426px;
             position: relative;
         }
 
         .search-input {
             width: 100%;
-            padding: 12px 20px;
-            border: 2px solid #E5E7EB;
-            border-radius: 12px;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-            font-size: 14px;
-            color: #6B7280;
+            padding: 12px 16px;
+            border: 1px solid #D9D9D9;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #000000;
             outline: none;
-            transition: border-color 0.3s ease;
         }
 
-        .search-input:focus {
-            border-color: #613DC1;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 40px;
+        .search-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background-image: url('../assets/Search.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
         }
 
         .nav-menu {
             display: flex;
-            gap: 32px;
-            align-items: center;
+            gap: 40px;
+            margin-left: auto;
         }
 
         .nav-item {
             color: #613DC1;
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 20px;
+            font-weight: 700;
             text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .nav-item:hover {
-            color: #4E148C;
-        }
-
-        .user-section {                     
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .notification-icon {                
-            width: 30px;
-            height: 30px;
             cursor: pointer;
         }
 
-        .user-profile {                     
+        .user-section {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
         }
 
-        .user-avatar {                      
-            width: 35px;
-            height: 35px;
+        .notification-icon {
+            width: 45px;
+            height: 45px;
+            background-image: url('../assets/notification.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            background-image: url('../assets/profile_1.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
         }
 
         .user-greeting {
             color: #613DC1;
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 20px;
+            font-weight: 700;
         }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 59px;
+            padding: 70px 0;
+            display: flex;
+            gap: 30px;
+            padding-left: 120px;
+            padding-right: 120px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 246px;
+            height: 398px;
+            background: rgba(249, 249, 249, 0.51);
+            border-radius: 10px;
+            box-shadow: 0px 2px 14px 3px rgba(0, 0, 0, 0.10);
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            height: 70px;
+            background: rgba(97, 61, 193, 0.51);
+            display: flex;
+            align-items: center;
+            padding: 0 21px;
+            gap: 15px;
+        }
+
+        .sidebar-avatar {
+            width: 47px;
+            height: 47px;
+            background-image: url('../assets/sidebar_profile.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        .sidebar-title {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .sidebar-menu {
+            padding: 14px 31px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 15px 0;
+            color: #613DC1;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .menu-item.active::before {
+            content: '';
+            position: absolute;
+            left: -31px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #613DC1;
+            border-radius: 0 1px 1px 0;
+        }
+
+        /* Menu Icons */
+        .menu-icon {
+            width: 22px;
+            height: 22px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .menu-item:nth-child(1) .menu-icon {
+            background-image: url('../assets/user.png');
+        }
+
+        .menu-item:nth-child(2) .menu-icon {
+            background-image: url('../assets/pemesanan.png');
+        }
+
+        .menu-item:nth-child(3) .menu-icon {
+            background-image: url('../assets/refund.png');
+        }
+
+        .menu-item:nth-child(5) .menu-icon {
+            background-image: url('../assets/logout.png');
+        }
+
+        .menu-item:nth-child(6) .menu-icon {
+            background-image: url('../assets/setting.png');
+        }
+
+        .menu-divider {
+            height: 1px;
+            background: #E8E7E7;
+            margin: 10px 0;
+        }
+
 
         .hero-section {
             background: #4E148C9E;
@@ -137,8 +232,9 @@
         }
 
         .booking-container {
-            max-width: 1200px;
             margin: 0 auto;
+            margin-top: 100px;
+            height: 50vh;
         }
 
         .booking-tabs {
@@ -194,6 +290,8 @@
             color: #374151;
             font-family: 'Poppins', sans-serif;
             font-weight: 500;
+            font-size: 16px;
+            color: #111827;
             margin-bottom: 4px;
         }
 
@@ -223,6 +321,8 @@
         .form-select {
             padding: 14px 16px;
             border: 2px solid #E5E7EB;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
             border-radius: 8px;
             font-size: 16px;
             color: #111827;
@@ -230,6 +330,12 @@
             cursor: pointer;
             outline: none;
             transition: border-color 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23111827' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px;
+            padding-right: 40px;
         }
 
         .form-select:focus {
@@ -255,7 +361,6 @@
             background: #4E148C;
         }
 
-        /* Hotel Listings - Improved */
         .hotel-listings {
             padding: 60px;
             background: #F9FAFB;
@@ -266,7 +371,7 @@
             display: block;
         }
 
-        .hotel-card {
+        .hotel-card, .flight-card{
             background: white;
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -287,7 +392,7 @@
             object-fit: cover;
         }
 
-        .hotel-content {
+        .hotel-content, .flight-content {
             flex: 1;
             padding: 24px 32px;
             position: relative;
@@ -295,14 +400,14 @@
             flex-direction: column;
         }
 
-        .hotel-header {
+        .hotel-headerm .flight-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 12px;
         }
 
-        .hotel-title {
+        .hotel-title, .flight-title{
             color: #613DC1;
             font-size: 24px;
             font-weight: 700;
@@ -341,7 +446,7 @@
             margin-bottom: 16px;
         }
 
-        .hotel-rating {
+        .hotel-rating, .flight-rating {
             display: flex;
             align-items: center;
             gap: 8px;
@@ -365,7 +470,7 @@
             color: #374151;
         }
 
-        .hotel-footer {
+        .hotel-footer, .flight-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -376,6 +481,87 @@
             display: flex;
             align-items: baseline;
             gap: 8px;
+        }
+
+        .flight-image{
+            width: 400px;
+            height: 340px;
+            object-fit: cover;
+            object-position: center;
+        }
+        .flight-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+
+        .flight-details {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 16px;
+        }
+
+        .flight-time {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .flight-duration {
+            color: #6b7280;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .flight-path {
+            height: 2px;
+            width: 100px;
+            background: #e5e7eb;
+            position: relative;
+        }
+
+        .flight-path::before,
+        .flight-path::after {
+            content: "";
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #613dc1;
+            top: -2px;
+        }
+
+        .flight-path::before {
+            left: 0;
+        }
+
+        .flight-path::after {
+            right: 0;
+        }
+
+        .flight-info {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .flight-info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .flight-info-label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .flight-info-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
         }
 
         .price-amount {
@@ -532,59 +718,115 @@
             vertical-align: middle;
         }
 
-        /* Responsive Design */
-        @media (max-width: 1024px) {
-            .header {
-                padding: 0 20px;
-            }
-            
-            .hero-section {
-                padding: 40px;
-            }
-            
-            .hotel-listings {
-                padding: 40px;
-            }
-            
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .form-bottom {
-                grid-template-columns: 1fr;
-            }
-            
-            .hotel-card {
-                flex-direction: column;
-            }
-            
-            .hotel-image {
-                width: 100%;
-                height: 200px;
-            }
+        .footer {
+            background: white;
+            border-top: 1px solid black;
+            padding: 55px 0;
+            margin-top: 50px;
         }
 
-        @media (max-width: 768px) {
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 60px;
+            padding: 10 146px;
+        }
+
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .footer-logo {
+            width: 171px;
+            height: 59px;
+            background-image: url('../assets/logo_owo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 5px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Contact Icons */
+        .contact-icon {
+            width: 51px;
+            height: 51px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        .contact-icon.phone {
+            background-image: url('../assets/Phone.png');
+        }
+
+        .contact-icon.email {
+            background-image: url('../assets/Email.png');
+        }
+
+        .contact-text {
+            color: #2C0735;
+            font-size: 20px;
+            font-weight: 400;
+        }
+
+        .contact-link {
+            color: #2C0735;
+            text-decoration: underline;
+        }
+
+        .footer-section {
+            flex: 1;
+        }
+
+        .footer-title {
+            color: #2C0735;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .footer-link {
+            color: #2C0735;
+            font-size: 18px;
+            font-weight: 500;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid black;
+            color: black;
+            font-size: 20px;
+            font-weight: 400;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1440px) {
+            .container {
+                min-width: 100%;
+            }
+            
             .header {
                 padding: 0 20px;
-                flex-wrap: wrap;
-                height: auto;
-                padding-top: 16px;
-                padding-bottom: 16px;
             }
             
-            .header-center {
-                order: 3;
-                width: 100%;
-                margin: 16px 0 0 0;
-            }
-            
-            .nav-menu {
-                gap: 20px;
-            }
-            
-            .nav-item {
-                font-size: 16px;
+            .main-content {
+                padding-left: 20px;
+                padding-right: 20px;
             }
         }
     </style>
@@ -592,49 +834,86 @@
 <body>
     <!-- Header -->
     <header class="header">
-        <a href="#" class="logo">
-            <img src = "../assets/logo_owo.png" alt="OWO Logo" class="logo-image">
-        </a>
+        <div class="logo"></div>
         
-        <div class="header-center">
-            <div class="search-container">
-                <input type="text" class="search-input" placeholder="Search ticket">
-            </div>
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search ticket">
+            <div class="search-icon"></div>
         </div>
         
-        <div class="header-right">
-            <nav class="nav-menu">
-                <a href="#" class="nav-item">Pesawat</a>
-                <a href="#" class="nav-item">Hotel</a>
-                <a href="#" class="nav-item">Tentang Kami</a>
-            </nav>
-            <div class="user-section">                      
-                <svg class="notification-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12.0201 2.91C8.71009 2.91 6.02009 5.6 6.02009 8.91V11.8C6.02009 12.41 5.76009 13.34 5.45009 13.86L4.30009 15.77C3.59009 16.95 4.08009 18.26 5.38009 18.7C9.69009 20.14 14.3401 20.14 18.6501 18.7C19.8601 18.3 20.3901 16.87 19.7301 15.77L18.5801 13.86C18.2801 13.34 18.0201 12.41 18.0201 11.8V8.91C18.0201 5.61 15.3201 2.91 12.0201 2.91Z" stroke="#613DC1" stroke-width="2" stroke-miterlimit="10" stroke-linecap="round"/>
-                    <path d="M13.8699 3.2C13.5599 3.11 13.2399 3.04 12.9099 3C11.9499 2.88 11.0299 2.95 10.1699 3.2C10.4599 2.46 11.1799 1.94 12.0199 1.94C12.8599 1.94 13.5799 2.46 13.8699 3.2Z" stroke="#613DC1" stroke-width="2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M15.02 19.06C15.02 20.71 13.67 22.06 12.02 22.06C11.2 22.06 10.44 21.72 9.90002 21.18C9.36002 20.64 9.02002 19.88 9.02002 19.06" stroke="#613DC1" stroke-width="2" stroke-miterlimit="10"/>
-                </svg>
-                
-                <div class="user-profile">                 
-                    <svg class="user-avatar" width="35" height="35" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M22.7251 23.9625C22.5938 23.9438 22.4251 23.9438 22.2751 23.9625C18.9751 23.85 16.3501 21.15 16.3501 17.8313C16.3501 14.4375 19.0876 11.6813 22.5001 11.6813C25.8938 11.6813 28.6501 14.4375 28.6501 17.8313C28.6313 21.15 26.0251 23.85 22.7251 23.9625Z" stroke="#613DC1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M35.1373 36.3375C31.7998 39.3938 27.3748 41.25 22.4998 41.25C17.6248 41.25 13.1998 39.3938 9.8623 36.3375C10.0498 34.575 11.1748 32.85 13.1811 31.5C18.3186 28.0875 26.7186 28.0875 31.8186 31.5C33.8248 32.85 34.9498 34.575 35.1373 36.3375Z" stroke="#613DC1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M22.5 41.25C32.8553 41.25 41.25 32.8553 41.25 22.5C41.25 12.1447 32.8553 3.75 22.5 3.75C12.1447 3.75 3.75 12.1447 3.75 22.5C3.75 32.8553 12.1447 41.25 22.5 41.25Z" stroke="#613DC1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <span class="user-greeting">Hi, Owo!</span>
-                </div>
-            </div>
+        <nav class="nav-menu">
+            <a href="#" class="nav-item">Pesawat</a>
+            <a href="#" class="nav-item">Hotel</a>
+            <a href="#" class="nav-item">Tentang Kami</a>
+        </nav>
+        
+        <div class="user-section">
+            <div class="notification-icon"></div>
+            <div class="user-avatar"></div>
+            <span class="user-greeting">Hi, Owo!</span>
         </div>
     </header>
 
     <section class="hero-section">
         <div class="booking-container">
             <div class="booking-tabs">
-                <button class="tab">Pesawat</button>
-                <button class="tab active">Hotel</button>
+                <button class="tab active">Pesawat</button>
+                <button class="tab">Hotel</button>
             </div>
             
-            <div class="booking-form">
+            <div class="booking-form" id="flightForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Dari</label>
+                        <input type="text" class="form-input" value="Bali / Denpasar (DPS)" id="departure">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Ke</label>
+                        <input type="text" class="form-input" value="Jakarta (CGK)" id="arrival">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Pergi</label>
+                        <input type="date" class="form-input" value="2025-05-10" id="departureDate">
+                    </div>
+                </div>
+                
+                <div class="form-bottom">
+                    <div class="form-group">
+                        <label class="form-label">Pulang</label>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="roundTrip" checked style="margin: 0;">
+                            <input type="date" class="form-input" value="2025-05-11" id="returnDate" style="flex: 1;">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Penumpang</label>
+                        <select class="form-select" id="passengers">
+                            <option value="1">1 Dewasa</option>
+                            <option value="2" selected>2 Dewasa</option>
+                            <option value="3">3 Dewasa</option>
+                            <option value="4">4 Dewasa</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Kelas</label>
+                        <select class="form-select" id="flightClass">
+                            <option value="economy" selected>Ekonomi</option>
+                            <option value="business">Bisnis</option>
+                            <option value="first">First Class</option>
+                        </select>
+                    </div>
+                    
+                    <button class="check-availability-btn" onclick="checkFlightAvailability()">
+                        Cek Ketersediaan
+                    </button>
+                </div>
+            </div>
+
+            <div class="booking-form" id="hotelForm" style="display: none">
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Di mana Anda ingin menginap?</label>
@@ -826,6 +1105,164 @@
         </div>
     </section>
 
+    <section class="hotel-listings" id="flightListings">
+        <!-- Flight 1: Garuda Indonesia -->
+        <div class="flight-card">
+            <img src="../assets/garuda.jpg" alt="Garuda Indonesia" class="flight-image">
+            
+            <div class="flight-content">
+                <div class="flight-header">
+                    <h3 class="flight-title">Garuda Indonesia</h3>
+                    <svg class="heart-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </div>
+                
+                <div class="flight-details">
+                    <div class="flight-time">08:00</div>
+                    <div class="flight-duration">
+                        <div class="flight-path"></div>
+                        <span>2h 30m</span>
+                    </div>
+                    <div class="flight-time">10:30</div>
+                </div>
+                
+                <div class="flight-info">
+                    <div class="flight-info-item">
+                        <span class="flight-info-label">Dari</span>
+                        <span class="flight-info-value">Denpasar (DPS)</span>
+                    </div>
+                    <div class="flight-info-item">
+                        <span class="flight-info-label">Ke</span>
+                        <span class="flight-info-value">Jakarta (CGK)</span>
+                    </div>
+                    <div class="flight-info-item">
+                        <span class="flight-info-label">Tanggal</span>
+                        <span class="flight-info-value">10 Mei 2025</span>
+                    </div>
+                </div>
+                
+                <div class="flight-rating">
+                    <img src="../assets/logo_owo2.png" alt="Owo" class="rating-star">
+                    <span class="rating-score">4.8/5</span>
+                    <span class="rating-badge">Direct Flight</span>
+                </div>
+                
+                <div class="flight-footer">
+                    <div class="flight-price">
+                        <span class="price-amount">Rp1,850,000</span>
+                        <span class="price-period">per person</span>
+                    </div>
+                    <button class="book-button" onclick="bookFlight('Garuda Indonesia')">Pesan Sekarang</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flight 2: Lion Air -->
+        <div class="flight-card">
+            <img src="../assets/lion-air.jpg" alt="Lion Air" class="flight-image">
+            
+            <div class="flight-content">
+                <div class="flight-header">
+                    <h3 class="flight-title">Lion Air</h3>
+                    <svg class="heart-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </div>
+                
+                <div class="flight-details">
+                    <div class="flight-time">10:15</div>
+                    <div class="flight-duration">
+                        <div class="flight-path"></div>
+                        <span>2h 30m</span>
+                    </div>
+                    <div class="flight-time">12:45</div>
+                </div>
+                
+                <div class="flight-info">
+                    <div class="flight-info-item">
+                        <span class="flight-info-label">Dari</span>
+                        <span class="flight-info-value">Denpasar (DPS)</span>
+                    </div>
+                    <div class="flight-info-item">
+                        <span class="flight-info-label">Ke</span>
+                        <span class="flight-info-value">Jakarta (CGK)</span>
+                    </div>
+                    <div class="flight-info-item">
+                        <span class="flight-info-label">Tanggal</span>
+                        <span class="flight-info-value">10 Mei 2025</span>
+                    </div>
+                </div>
+                
+                <div class="flight-rating">
+                    <img src="../assets/logo_owo2.png" alt="Owo" class="rating-star">
+                    <span class="rating-score">4.2/5</span>
+                    <span class="rating-badge">Direct Flight</span>
+                </div>
+                
+                <div class="flight-footer">
+                    <div class="flight-price">
+                        <span class="price-amount">Rp1,250,000</span>
+                        <span class="price-period">per person</span>
+                    </div>
+                    <button class="book-button" onclick="bookFlight('Lion Air')">Pesan Sekarang</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flight 3: Citilink -->
+        <div class="flight-card">
+            <img src="../assets/citilink.jpg" alt="Citilink" class="flight-image">
+            
+            <div class="flight-content">
+                <div class="flight-header">
+                    <h3 class="flight-title">Citilink</h3>
+                    <svg class="heart-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </div>
+                
+                <div class="flight-details">
+                    <div class="flight-time">14:20</div>
+                    <div class="flight-duration">
+                        <div class="flight-path"></div>
+                        <span>2h 35m</span>
+                    </div>
+                    <div class="flight-time">16:55</div>
+                </div>
+                
+                <div class="flight-info">
+                    <div class="flight-info-item">
+                        <span class="flight-info-label">Dari</span>
+                        <span class="flight-info-value">Denpasar (DPS)</span>
+                    </div>
+                    <div class="flight-info-item">
+                        <span class="flight-info-label">Ke</span>
+                        <span class="flight-info-value">Jakarta (CGK)</span>
+                    </div>
+                    <div class="flight-info-item">
+                        <span class="flight-info-label">Tanggal</span>
+                        <span class="flight-info-value">10 Mei 2025</span>
+                    </div>
+                </div>
+                
+                <div class="flight-rating">
+                    <img src="../assets/logo_owo2.png" alt="Owo" class="rating-star">
+                    <span class="rating-score">4.5/5</span>
+                    <span class="rating-badge">Direct Flight</span>
+                </div>
+                
+                <div class="flight-footer">
+                    <div class="flight-price">
+                        <span class="price-amount">Rp1,350,000</span>
+                        <span class="price-period">per person</span>
+                    </div>
+                    <button class="book-button" onclick="bookFlight('Citilink')">Pesan Sekarang</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <div class="modal-icon" id="modalIcon">
@@ -837,6 +1274,46 @@
             </div>
         </div>
     </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo"></div>
+                <div class="contact-item">
+                    <div class="contact-icon email"></div>
+                    <a href="mailto:support@owo.com" class="contact-text contact-link">support@owo.com</a>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon phone"></div>
+                    <span class="contact-text">+62 1234567890</span>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3 class="footer-title">Tentang Kami</h3>
+                <a href="#" class="footer-link">Profil Perusahaan</a>
+                <a href="#" class="footer-link">Kontak</a>
+            </div>
+
+            <div class="footer-section">
+                <h3 class="footer-title">Layanan</h3>
+                <a href="#" class="footer-link">Pesawat</a>
+                <a href="#" class="footer-link">Hotel</a>
+                <a href="#" class="footer-link">Bantuan dan Keluhan</a>
+            </div>
+
+            <div class="footer-section">
+                <h3 class="footer-title">Informasi</h3>
+                <a href="#" class="footer-link">Syarat & Ketentuan</a>
+                <a href="#" class="footer-link">Kebijakan Privasi</a>
+                <a href="#" class="footer-link">Kebijakan Pembatalan</a>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            © 2025 OwO . All Rights Reserved
+        </div>
+    </footer>
 
     <script>
         function checkAvailability() {
@@ -897,7 +1374,65 @@
         }
         
         function bookHotel(hotelName) {
-            window.location.href = 'CekKetersediaan.html';
+            window.location.href = 'CekKetersediaanHotel.html';
+        }
+
+        function checkFlightAvailability() {
+            const modal = document.getElementById('modalOverlay');
+            const icon = document.getElementById('modalIcon');
+            const title = document.getElementById('modalTitle');
+            const message = document.getElementById('modalMessage');
+            const buttons = document.getElementById('modalButtons');
+            
+            modal.classList.add('active');
+            icon.className = 'modal-icon loading';
+            icon.textContent = '⏳';
+            title.textContent = 'Mengecek Ketersediaan';
+            message.textContent = 'Mohon tunggu, kami sedang mengecek ketersediaan penerbangan untuk tanggal yang Anda pilih...';
+            buttons.innerHTML = '';
+
+            setTimeout(() => {
+                const isAvailable = Math.random() > 0.3;
+                
+                if (isAvailable) {
+                    icon.className = 'modal-icon success';
+                    icon.textContent = '✓';
+                    title.textContent = 'Penerbangan Tersedia!';
+                    message.textContent = 'Penerbangan tersedia untuk tanggal yang Anda pilih. Apakah Anda ingin melanjutkan pencarian penerbangan?';
+                    buttons.innerHTML = `
+                        <button class="modal-button primary" onclick="showFlightListings()">Lanjutkan</button>
+                        <button class="modal-button secondary" onclick="closeModalAndResetFlight()">Tutup</button>
+                    `;
+                } else {
+                    icon.className = 'modal-icon error';
+                    icon.textContent = '✗';
+                    title.textContent = 'Penerbangan Tidak Tersedia';
+                    message.textContent = 'Maaf, penerbangan tidak tersedia untuk tanggal yang Anda pilih. Silakan pilih tanggal lain atau coba rute lainnya.';
+                    buttons.innerHTML = `
+                        <button class="modal-button primary" onclick="closeModalAndResetFlight()">Pilih Tanggal Lain</button>
+                        <button class="modal-button secondary" onclick="closeModalAndResetFlight()">Tutup</button>
+                    `;
+                }
+            }, 2000);
+        }
+
+        function showFlightListings() {
+            const flightListings = document.getElementById('flightListings');
+            const hotelListings = document.querySelector('.hotel-listings');
+            
+            hotelListings.classList.remove('show');
+            flightListings.classList.add('show');
+            closeModal();
+        }
+
+        function closeModalAndResetFlight() {
+            const flightListings = document.getElementById('flightListings');
+            flightListings.classList.remove('show');
+            closeModal();
+        }
+
+        function bookFlight(flightName) {
+            window.location.href = 'CekKetersediaanPesawat.html';
         }
         
         document.querySelectorAll('.heart-icon').forEach(heart => {
@@ -910,6 +1445,24 @@
             tab.addEventListener('click', function() {
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
+                
+                const hotelForm = document.getElementById('hotelForm');
+                const flightForm = document.getElementById('flightForm');
+                const hotelListings = document.querySelector('.hotel-listings');
+                const flightListings = document.getElementById('flightListings');
+                
+                if (this.textContent === 'Pesawat') {
+                    hotelForm.style.display = 'none';
+                    flightForm.style.display = 'block';
+                    hotelListings.classList.remove('show');
+                    flightListings.classList.remove('show');
+
+                } else {
+                    hotelForm.style.display = 'block';
+                    flightForm.style.display = 'none';
+                    hotelListings.classList.remove('show');
+                    flightListings.classList.remove('show');
+                }
             });
         });
         
