@@ -531,6 +531,16 @@
             font-weight: 400;
         }
 
+        .hotel-section.selected {
+            border: 3px solid #613DC1 !important;
+            box-shadow: 0 8px 32px rgba(97, 61, 193, 0.2) !important;
+        }
+        
+        .search-input.with-search-data {
+            background-color: #F0F9FF;
+            border-color: #0EA5E9;
+        }
+
         @media (max-width: 768px) {
             .pesawat-header {
                 flex-direction: column;
@@ -560,7 +570,7 @@
         <div class="logo"></div>
         
         <div class="search-container">
-            <input type="text" class="search-input" placeholder="Search ticket">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search ticket">
             <div class="search-icon"></div>
         </div>
         
@@ -573,7 +583,7 @@
         <div class="user-section">
             <div class="notification-icon"></div>
             <div class="user-avatar"></div>
-            <span class="user-greeting">Hi, Owo!</span>
+            <span class="user-greeting" id="userGreeting">Hi, Owo!</span>
         </div>
     </header>
     <div class="container">
@@ -780,6 +790,210 @@
     </div>
 
     <script>
+        // Script untuk CekKetersediaanHotel.html - Integrasi dengan data parent
+
+        // Fungsi helper untuk mendapatkan data dari parent
+        function getDataFromParent(type, callback) {
+            if (window.parent && window.parent !== window) {
+                const responseListener = function(event) {
+                    if (event.data.action === 'data_response' && event.data.type === type) {
+                        callback(event.data.data);
+                        window.removeEventListener('message', responseListener);
+                    }
+                };
+                
+                window.addEventListener('message', responseListener);
+                
+                window.parent.postMessage({
+                    action: 'get_data',
+                    type: type
+                }, '*');
+            }
+        }
+
+        // Fungsi untuk mengirim data ke parent
+        function sendDataToParent(action, type, data) {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    action: action,
+                    type: type,
+                    data: data
+                }, '*');
+            }
+        }
+
+        // Load data pencarian hotel saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load data pencarian hotel dari parent
+            getDataFromParent('hotel_search', function(searchData) {
+                if (searchData) {
+                    console.log('Data pencarian hotel:', searchData);
+                    updateSearchSummary(searchData);
+                }
+            });
+            
+            // Load data booking hotel jika ada
+            getDataFromParent('hotel_booking', function(bookingData) {
+                if (bookingData) {
+                    console.log('Data booking hotel:', bookingData);
+                    highlightSelectedHotel(bookingData.hotelName);
+                }
+            });
+        });
+
+        // Update ringkasan pencarian berdasarkan data dari parent
+        function updateSearchSummary(searchData) {
+            // Update tanggal check-in dan check-out di modal details
+            const checkinDate = searchData.checkin || '10 Mei 2025';
+            const checkoutDate = searchData.checkout || '11 Mei 2025';
+            const guests = searchData.guests || '2';
+            const destination = searchData.destination || 'Ubud, Bali';
+            
+            // Update header search input jika ada
+            const searchInput = document.querySelector('.search-input');
+            if (searchInput && destination) {
+                searchInput.placeholder = `Pencarian: ${destination}`;
+            }
+            
+            // Update fungsi checkRoomAvailability untuk menggunakan data dinamis
+            window.currentSearchData = {
+                checkin: checkinDate,
+                checkout: checkoutDate,
+                guests: guests,
+                destination: destination
+            };
+        }
+
+        // Highlight hotel yang dipilih dari halaman sebelumnya
+        function highlightSelectedHotel(hotelName) {
+            const hotelSections = document.querySelectorAll('.hotel-section');
+            hotelSections.forEach(section => {
+                const titleElement = section.querySelector('.hotel-title');
+                if (titleElement && titleElement.textContent.includes(hotelName)) {
+                    section.style.border = '3px solid #613DC1';
+                    section.style.boxShadow = '0 8px 32px rgba(97, 61, 193, 0.2)';
+                    
+                    // Scroll ke hotel yang dipilih
+                    setTimeout(() => {
+                        section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 500);
+                }
+            });
+        }
+
+        // Modifikasi fungsi checkRoomAvailability yang sudah ada
+        function checkRoomAvailabilityWithData(hotelName, roomType, price, availableRooms) {
+            const modal = document.getElementById('modalOverlay');
+            const icon = document.getElementById('modalIcon');
+            const title = document.getElementById('modalTitle');
+            const message = document.getElementById('modalMessage');
+            const buttons = document.getElementById('modalButtons');
+            const availabilityInfo = document.getElementById('availabilityInfo');
+            const availabilityDetails = document.getElementById('availabilityDetails');
+            
+            // Gunakan data pencarian yang tersimpan
+            const searchData = window.currentSearchData || {
+                checkin: '10 Mei 2025',
+                checkout: '11 Mei 2025',
+                guests: '2',
+                destination: 'Ubud, Bali'
+            };
+            
+            modal.classList.add('active');
+            icon.className = 'modal-icon loading';
+            icon.textContent = '⏳';
+            title.textContent = 'Mengecek Ketersediaan';
+            message.textContent = 'Mohon tunggu, kami sedang mengecek ketersediaan kamar...';
+            buttons.innerHTML = '';
+            availabilityInfo.style.display = 'none';
+            
+            setTimeout(() => {
+                if (availableRooms > 0) {
+                    icon.className = 'modal-icon success';
+                    icon.textContent = '✓';
+                    title.textContent = 'Kamar Tersedia!';
+                    message.textContent = `Kamar ${roomType} di ${hotelName} tersedia untuk tanggal yang Anda pilih.`;
+                    
+                    availabilityInfo.style.display = 'block';
+                    availabilityDetails.innerHTML = `
+                        <div><strong>Hotel:</strong></div>
+                        <div>${hotelName}</div>
+                        <div><strong>Tipe Kamar:</strong></div>
+                        <div>${roomType}</div>
+                        <div><strong>Harga per malam:</strong></div>
+                        <div>${price}</div>
+                        <div><strong>Sisa kamar:</strong></div>
+                        <div style="color: #059669; font-weight: 600;">${availableRooms} kamar tersisa</div>
+                        <div><strong>Check-in:</strong></div>
+                        <div>${searchData.checkin}</div>
+                        <div><strong>Check-out:</strong></div>
+                        <div>${searchData.checkout}</div>
+                        <div><strong>Tamu:</strong></div>
+                        <div>${searchData.guests} orang</div>
+                    `;
+                    
+                    buttons.innerHTML = `
+                        <button class="modal-button primary" onclick="proceedToBookingWithData('${hotelName}', '${roomType}', '${price}')">Lanjutkan Pemesanan</button>
+                        <button class="modal-button secondary" onclick="closeModal()">Tutup</button>
+                    `;
+                } else {
+                    icon.className = 'modal-icon error';
+                    icon.textContent = '✗';
+                    title.textContent = 'Kamar Tidak Tersedia';
+                    message.textContent = `Maaf, kamar ${roomType} di ${hotelName} tidak tersedia untuk tanggal yang Anda pilih.`;
+                    
+                    availabilityInfo.style.display = 'none';
+                    
+                    buttons.innerHTML = `
+                        <button class="modal-button primary" onclick="chooseDate()">Pilih Tanggal Lain</button>
+                        <button class="modal-button secondary" onclick="closeModal()">Tutup</button>
+                    `;
+                }
+            }, 2000);
+        }
+
+        // Fungsi untuk melanjutkan booking dengan data lengkap
+        function proceedToBookingWithData(hotelName, roomType, price) {
+            const searchData = window.currentSearchData || {};
+            
+            // Simpan data booking lengkap ke parent
+            const completeBookingData = {
+                hotelName: hotelName,
+                roomType: roomType,
+                price: price,
+                bookingType: 'hotel',
+                checkin: searchData.checkin,
+                checkout: searchData.checkout,
+                guests: searchData.guests,
+                destination: searchData.destination,
+                bookingTimestamp: new Date().toISOString()
+            };
+            
+            sendDataToParent('save_data', 'hotel_booking_complete', completeBookingData);
+            
+            closeModal();
+            window.location.href = 'Pembayaran.html';
+        }
+
+        // Update semua onclick handler di HTML
+        function updateButtonHandlers() {
+            // Update semua tombol "Cek Ketersediaan" 
+            const checkButtons = document.querySelectorAll('.check-availability-btn');
+            checkButtons.forEach(button => {
+                const originalOnclick = button.getAttribute('onclick');
+                if (originalOnclick) {
+                    // Replace function name
+                    const newOnclick = originalOnclick.replace('checkRoomAvailability', 'checkRoomAvailabilityWithData');
+                    button.setAttribute('onclick', newOnclick);
+                }
+            });
+        }
+
+        // Jalankan update handler setelah DOM loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            updateButtonHandlers();
+        });
+
         function goBack() {
             window.history.back();
         }

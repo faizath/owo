@@ -1,5 +1,8 @@
 package com.owo;
 
+// import java.io.File;
+import java.net.URL;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
@@ -7,9 +10,6 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import netscape.javascript.JSObject;
-
-// import java.io.File;
-import java.net.URL;
 
 public class App extends Application {
 
@@ -35,7 +35,7 @@ public class App extends Application {
         // });
 
         // Load HTML as File
-        URL TestViewer = getClass().getResource("/com/owo/boundary/TestViewer.html");
+        URL TestViewer = getClass().getResource("/com/owo/boundary/App.html");
         if (TestViewer != null) {
             webEngine.load(TestViewer.toExternalForm());
         } else {

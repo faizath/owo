@@ -966,7 +966,7 @@
                                 <option value="first">First Class</option>
                             </select>
                         </div>
-                        <button type="submit" class="search-btn" onclick="checkFlightAvailability()">Cek Ketersediaan</button>
+                        <button type="submit" class="search-btn" id="search-flight-button">Cek Ketersediaan</button>
                     </div>
                 </form>
 
@@ -975,22 +975,22 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label class="form-label">Di mana Anda ingin menginap?</label>
-                            <input type="text" class="form-input" value="Bali / Denpasar" id="destination">
+                            <input type="text" class="form-input" value="Bali / Denpasar" id="destination-input">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Check-in</label>
-                            <input type="date" class="form-input" value="2025-05-10" id="checkin">
+                            <input type="date" class="form-input" value="2025-05-10" id="checkin-input">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Check-out</label>
-                            <input type="date" class="form-input" value="2025-05-11" id="checkout">
+                            <input type="date" class="form-input" value="2025-05-11" id="checkout-input">
                         </div>
                     </div>
 
                     <div class="form-bottom">
                         <div class="form-group">
                             <label class="form-label">Jumlah Tamu</label>
-                            <select class="form-select" id="guests">
+                            <select class="form-select" id="guests-input">
                                 <option value="1">1</option>
                                 <option value="2" selected>2</option>
                                 <option value="3">3</option>
@@ -1005,7 +1005,7 @@
                                 <option value="3">3</option>
                             </select>
                         </div>
-                        <button type="submit" class="search-btn" onclick="checkAvailability()">Cek Ketersediaan</button>
+                        <button type="submit" class="search-btn" id="search-hotel-button">Cek Ketersediaan</button>
                     </div>
                 </form>
             </div>
@@ -1370,176 +1370,168 @@
     </footer>
 
     <script>
-        // Tab switching functionality
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                
-                const hotelForm = document.getElementById('hotelForm');
-                const flightForm = document.getElementById('flightForm');
-                const hotelListings = document.querySelector('.hotel-listings');
-                const flightListings = document.getElementById('flightListings');
-                
-                if (this.textContent.includes('Pesawat')) {
-                    hotelForm.style.display = 'none';
-                    flightForm.style.display = 'block';
-                    hotelListings.classList.remove('show');
-                    flightListings.classList.remove('show');
-                } else {
-                    hotelForm.style.display = 'block';
-                    flightForm.style.display = 'none';
-                    hotelListings.classList.remove('show');
-                    flightListings.classList.remove('show');
-                }
-            });
+        // =======================================================
+        // BAGIAN 1: FUNGSI HELPER & INISIALISASI
+        // =======================================================
+    
+        // Fungsi helper untuk mengirim data ke parent window
+        function sendDataToParent(action, type, data) {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ action: action, type: type, data: data }, '*');
+            } else {
+                console.error("Tidak bisa mengirim data: Halaman tidak berada di dalam iframe parent yang benar.");
+            }
+        }
+    
+        // Tunggu sampai semua elemen halaman siap
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
         });
-
-        // Hotel availability check
-        function checkAvailability() {
+    
+        // Fungsi untuk memasang semua event listener
+        function setupEventListeners() {
+            // Tab switching
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', handleTabSwitch);
+            });
+    
+            // Tombol pencarian hotel
+            const hotelSearchButton = document.getElementById('search-hotel-button');
+            if (hotelSearchButton) {
+                hotelSearchButton.addEventListener('click', handleHotelSearch);
+            }
+    
+            // Tombol pencarian pesawat
+            const flightSearchButton = document.getElementById('search-btn');
+            if (flightSearchButton) {
+                flightSearchButton.addEventListener('click', handleFlightSearch);
+            }
+    
+            // Tombol "Pesan Sekarang" untuk semua hotel
+            document.querySelectorAll('.hotel-card .book-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const hotelName = this.closest('.hotel-card').querySelector('.hotel-title').textContent;
+                    bookHotel(hotelName);
+                });
+            });
+    
+            // Tombol "Pesan Sekarang" untuk semua pesawat
+            document.querySelectorAll('.flight-card .book-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const flightName = this.closest('.flight-card').querySelector('.flight-title').textContent;
+                    bookFlight(flightName);
+                });
+            });
+    
+            // Mencegah form submit default
+            document.getElementById('hotelForm').addEventListener('submit', e => e.preventDefault());
+            document.getElementById('flightForm').addEventListener('submit', e => e.preventDefault());
+        }
+    
+    
+        // =======================================================
+        // BAGIAN 2: LOGIKA FUNGSI
+        // =======================================================
+    
+        // Fungsi untuk ganti tab Pesawat/Hotel
+        function handleTabSwitch() {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+    
+            const isFlight = this.dataset.tab === 'flight';
+            document.getElementById('flightForm').style.display = isFlight ? 'block' : 'none';
+            document.getElementById('hotelForm').style.display = isFlight ? 'none' : 'block';
+        }
+    
+        // Fungsi untuk menangani PENCARIAN hotel
+        function handleHotelSearch(event) {
+            event.preventDefault();
+            
+            const destination = document.querySelector('#hotelForm #destination-input').value;
+            const checkin = document.querySelector('#hotelForm #checkin-input').value;
+            const checkout = document.querySelector('#hotelForm #checkout-input').value;
+            const guests = document.querySelector('#hotelForm #guests-input').value;
+    
+            if (!destination || !checkin || !checkout) {
+                alert('Mohon lengkapi tujuan dan tanggal untuk pencarian hotel.');
+                return;
+            }
+    
+            const searchData = { destination, checkin, checkout, guests };
+            sendDataToParent('save_data', 'hotel_search', searchData);
+    
+            // Tampilkan modal loading, lalu tampilkan hasil di halaman yang sama
+            showModal('hotel', () => {
+                 const hotelListings = document.querySelector('.hotel-listings');
+                 hotelListings.classList.add('show');
+                 hotelListings.scrollIntoView({ behavior: 'smooth' });
+            });
+        }
+    
+        // Fungsi untuk menangani BOOKING hotel
+        function bookHotel(hotelName) {
+            const searchData = {}; // Di aplikasi nyata, Anda akan ambil ini dari parent
+            
+            const bookingData = {
+                hotelName: hotelName,
+                bookingType: 'hotel',
+                ...searchData
+            };
+    
+            sendDataToParent('save_data', 'hotel_booking', bookingData);
+            
+            // **FIX UTAMA ADA DI SINI**
+            // Setelah booking, arahkan ke halaman PEMBAYARAN, bukan halaman lain.
+            console.log("Booking hotel disimpan, mengarahkan ke Pembayaran.html");
+            window.location.href = 'Pembayaran.html';
+        }
+        
+        // Fungsi untuk menangani PENCARIAN pesawat
+        function handleFlightSearch(event) {
+            event.preventDefault();
+            // Logika untuk simpan data pencarian pesawat & tampilkan modal
+            console.log("Pencarian Pesawat...");
+            // Implementasi mirip dengan handleHotelSearch
+        }
+    
+        // Fungsi untuk menangani BOOKING pesawat
+        function bookFlight(flightName) {
+            // Logika untuk simpan data booking pesawat
+            console.log(`Booking pesawat ${flightName}`);
+            sendDataToParent('save_data', 'flight_booking', { flightName: flightName });
+            // Arahkan ke pembayaran atau halaman selanjutnya
+            window.location.href = 'Pembayaran.html';
+        }
+    
+        // Fungsi untuk menampilkan modal
+        function showModal(type, callbackOnSuccess) {
             const modal = document.getElementById('modalOverlay');
-            const icon = document.getElementById('modalIcon');
             const title = document.getElementById('modalTitle');
             const message = document.getElementById('modalMessage');
             const buttons = document.getElementById('modalButtons');
-            const hotelListings = document.querySelector('.hotel-listings');
-            
+    
             modal.classList.add('active');
-            icon.className = 'modal-icon loading';
-            icon.textContent = '⏳';
-            title.textContent = 'Mengecek Ketersediaan';
-            message.textContent = 'Mohon tunggu, kami sedang mengecek ketersediaan kamar untuk tanggal yang Anda pilih...';
+            title.textContent = `Mengecek ${type === 'hotel' ? 'Kamar' : 'Penerbangan'}...`;
+            message.textContent = 'Mohon tunggu sebentar...';
             buttons.innerHTML = '';
-        
+    
             setTimeout(() => {
-                const isAvailable = Math.random() > 0.3;
+                title.textContent = `${type === 'hotel' ? 'Kamar' : 'Penerbangan'} Tersedia!`;
+                message.textContent = 'Hasil pencarian akan ditampilkan.';
+                buttons.innerHTML = `<button class="modal-button primary" onclick="closeModal()">OK</button>`;
                 
-                if (isAvailable) {
-                    icon.className = 'modal-icon success';
-                    icon.textContent = '✓';
-                    title.textContent = 'Kamar Tersedia!';
-                    message.textContent = 'Kamar tersedia untuk tanggal yang Anda pilih. Apakah Anda ingin melanjutkan pencarian hotel?';
-                    buttons.innerHTML = `
-                        <button class="modal-button primary" onclick="showHotelListings()">Lanjutkan</button>
-                        <button class="modal-button secondary" onclick="closeModalAndReset()">Tutup</button>
-                    `;
-                } else {
-                    icon.className = 'modal-icon error';
-                    icon.textContent = '✗';
-                    title.textContent = 'Kamar Tidak Tersedia';
-                    message.textContent = 'Maaf, kamar tidak tersedia untuk tanggal yang Anda pilih. Silakan pilih tanggal lain atau coba hotel lainnya.';
-                    buttons.innerHTML = `
-                        <button class="modal-button primary" onclick="closeModalAndReset()">Pilih Tanggal Lain</button>
-                        <button class="modal-button secondary" onclick="closeModalAndReset()">Tutup</button>
-                    `;
+                // Tutup modal lalu jalankan callback (misal: scroll ke hasil)
+                closeModal();
+                if (callbackOnSuccess) {
+                    callbackOnSuccess();
                 }
-            }, 2000);
+            }, 1500);
         }
-
-        // Flight availability check
-        function checkFlightAvailability() {
-            const modal = document.getElementById('modalOverlay');
-            const icon = document.getElementById('modalIcon');
-            const title = document.getElementById('modalTitle');
-            const message = document.getElementById('modalMessage');
-            const buttons = document.getElementById('modalButtons');
-            
-            modal.classList.add('active');
-            icon.className = 'modal-icon loading';
-            icon.textContent = '⏳';
-            title.textContent = 'Mengecek Ketersediaan';
-            message.textContent = 'Mohon tunggu, kami sedang mengecek ketersediaan penerbangan untuk tanggal yang Anda pilih...';
-            buttons.innerHTML = '';
-
-            setTimeout(() => {
-                const isAvailable = Math.random() > 0.3;
-                
-                if (isAvailable) {
-                    icon.className = 'modal-icon success';
-                    icon.textContent = '✓';
-                    title.textContent = 'Penerbangan Tersedia!';
-                    message.textContent = 'Penerbangan tersedia untuk tanggal yang Anda pilih. Apakah Anda ingin melanjutkan pencarian penerbangan?';
-                    buttons.innerHTML = `
-                        <button class="modal-button primary" onclick="showFlightListings()">Lanjutkan</button>
-                        <button class="modal-button secondary" onclick="closeModalAndResetFlight()">Tutup</button>
-                    `;
-                } else {
-                    icon.className = 'modal-icon error';
-                    icon.textContent = '✗';
-                    title.textContent = 'Penerbangan Tidak Tersedia';
-                    message.textContent = 'Maaf, penerbangan tidak tersedia untuk tanggal yang Anda pilih. Silakan pilih tanggal lain atau coba rute lainnya.';
-                    buttons.innerHTML = `
-                        <button class="modal-button primary" onclick="closeModalAndResetFlight()">Pilih Tanggal Lain</button>
-                        <button class="modal-button secondary" onclick="closeModalAndResetFlight()">Tutup</button>
-                    `;
-                }
-            }, 2000);
-        }
-
-        function showHotelListings() {
-            const hotelListings = document.querySelector('.hotel-listings');
-            hotelListings.classList.add('show');
-            closeModal();
-            hotelListings.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        function showFlightListings() {
-            const flightListings = document.getElementById('flightListings');
-            const hotelListings = document.querySelector('.hotel-listings');
-            
-            hotelListings.classList.remove('show');
-            flightListings.classList.add('show');
-            closeModal();
-            flightListings.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        function closeModalAndReset() {
-            const hotelListings = document.querySelector('.hotel-listings');
-            hotelListings.classList.remove('show');
-            closeModal();
-        }
-
-        function closeModalAndResetFlight() {
-            const flightListings = document.getElementById('flightListings');
-            flightListings.classList.remove('show');
-            closeModal();
-        }
-        
+    
         function closeModal() {
             document.getElementById('modalOverlay').classList.remove('active');
         }
-        
-        function bookHotel(hotelName) {
-            window.location.href = 'CekKetersediaanHotel.html';
-        }
-
-        function bookFlight(flightName) {
-            window.location.href = 'CekKetersediaanPesawat.html';
-        }
-        
-        // Heart icon functionality
-        document.querySelectorAll('.heart-icon').forEach(heart => {
-            heart.addEventListener('click', function() {
-                this.classList.toggle('liked');
-                this.textContent = this.classList.contains('liked') ? '♥' : '♡';
-            });
-        });
-        
-        // Modal close on outside click
-        document.getElementById('modalOverlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
-        });
-
-        // Prevent form default submission
-        document.getElementById('flightForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-        });
-
-        document.getElementById('hotelForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-        });
+    
     </script>
 </body>
 </html>

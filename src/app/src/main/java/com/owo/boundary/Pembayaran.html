@@ -836,14 +836,14 @@
                 <div class="hotel-card">
                     <img src="../assets/ramayana.png" alt="Ramayana Suites and Resort" class="hotel-image">
                     <div class="hotel-info">
-                        <h3 class="hotel-name">Ramayana Suites and Resort</h3>
+                        <h3 class="hotel-name" id="hotel-name">Ramayana Suites and Resort</h3>
                         <div class="hotel-rating">
                             <span class="rating-badge">4.4/5</span>
                             <span class="location-badge">Location 4.7/5</span>
                         </div>
                         
                         <div class="room-details">
-                            <div class="room-type">Deluxe Room</div>
+                            <div class="room-type" id="room-type">Deluxe Room</div>
                             <div class="room-features">👥 x2 • 2 single beds • Includes 2 great breakfasts • Non-smoking</div>
                             <div class="room-amenities">
                                 <span>⭕ Non-Refundable</span>
@@ -854,12 +854,12 @@
 
                 <div class="booking-dates">
                     <div class="date-info">
-                        <div class="date-label">Sat, May 10</div>
-                        <div class="date-value">16:00 - 24:00</div>
+                        <div class="date-label">CHECK-IN</div>
+                        <div class="date-value" id="checkin-date">--</div>
                     </div>
                     <div class="date-info">
-                        <div class="date-label">Sun, May 11</div>
-                        <div class="date-value">08:00 - 11:30</div>
+                        <div class="date-label">CHECK-OUT</div>
+                        <div class="date-value" id="checkout-date">--</div>
                     </div>
                 </div>
 
@@ -879,28 +879,16 @@
                 <div class="price-breakdown">
                     <div class="price-row">
                         <span class="price-label">1 room x 1 night</span>
-                        <span class="price-value">IDR1,158,211</span>
+                        <span class="price-value" id="base-price">IDR 0</span>
                     </div>
-                    <div class="price-row">
-                        <span class="price-label">Taxes & fees</span>
-                        <span class="price-value">IDR127,414</span>
-                    </div>
-                    <div class="price-row">
-                        <span class="price-label">VAT</span>
-                        <span class="price-value">IDR278,396</span>
-                    </div>
-                    <div class="price-row">
-                        <span class="price-label">Municipal room fee</span>
-                        <span class="price-value">IDR93,122</span>
-                    </div>
-                    
+                    ...
                     <div class="total-row">
                         <span>Total</span>
-                        <span>IDR1,658,253</span>
+                        <span id="total-price">IDR 0</span>
                     </div>
                 </div>
 
-                <button class="payment-button" onclick="processPayment()">PAYMENT</button>
+                <button class="payment-button" id="payment-button">PAYMENT</button>
             </div>
         </div>
     </div>
@@ -956,52 +944,89 @@
     </div>
 
     <script>
+        // --- FUNGSI KOMUNIKASI DENGAN PARENT ---
+        function getDataFromParent(type, callback) {
+            if (window.parent && window.parent !== window) {
+                const responseListener = function(event) {
+                    if (event.data.action === 'data_response' && event.data.type === type) {
+                        callback(event.data.data);
+                        window.removeEventListener('message', responseListener);
+                    }
+                };
+                window.addEventListener('message', responseListener);
+                window.parent.postMessage({ action: 'get_data', type: type }, '*');
+            } else {
+                callback(null);
+            }
+        }
+    
+        // --- FUNGSI UNTUK MENGUPDATE TAMPILAN ---
+        function updateUI(bookingData) {
+            if (!bookingData) {
+                console.error("Tidak ada data booking untuk ditampilkan.");
+                return;
+            }
+    
+            // Update Info Hotel
+            document.getElementById('hotel-name').textContent = bookingData.hotelName || 'Nama Hotel Tidak Tersedia';
+            document.getElementById('room-type').textContent = bookingData.roomType || 'Tipe Kamar Tidak Tersedia';
+            
+            // Update Tanggal
+            document.getElementById('checkin-date').textContent = bookingData.checkin || '--';
+            document.getElementById('checkout-date').textContent = bookingData.checkout || '--';
+    
+            // Update Harga (dengan perhitungan sederhana)
+            const basePrice = parseInt(bookingData.price.replace(/[^0-9]/g, ''), 10);
+            const taxes = Math.round(basePrice * 0.10); // Contoh pajak 10%
+            const totalPrice = basePrice + taxes;
+    
+            const formatter = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 });
+    
+            document.getElementById('base-price').textContent = formatter.format(basePrice);
+            document.getElementById('taxes-fees').textContent = formatter.format(taxes);
+            document.getElementById('total-price').textContent = formatter.format(totalPrice);
+        }
+    
+        // --- INISIALISASI HALAMAN ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ambil data booking terakhir dari parent
+            getDataFromParent('hotel_booking', function(bookingData) {
+                updateUI(bookingData);
+            });
+    
+            // Hubungkan event ke tombol "PAYMENT"
+            const paymentButton = document.getElementById('payment-button');
+            if(paymentButton) {
+                paymentButton.addEventListener('click', function(event) {
+                    // INI ADALAH PERBAIKAN UTAMA UNTUK MENCEGAH RELOAD
+                    event.preventDefault();
+    
+                    // Panggil fungsi proses pembayaran yang sudah ada
+                    processPayment();
+                });
+            }
+        });
+    
+    
+        // --- SISA SCRIPT ANDA (TIDAK PERLU DIUBAH) ---
+    
         // Payment method selection
         document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
             radio.addEventListener('change', function() {
-                // Update visual selection
-                document.querySelectorAll('.payment-option').forEach(option => {
-                    option.classList.remove('selected');
-                });
+                document.querySelectorAll('.payment-option').forEach(option => option.classList.remove('selected'));
                 this.closest('.payment-option').classList.add('selected');
-                
-                // Show/hide card details
                 const cardDetails = document.getElementById('cardDetails');
-                if (this.value === 'credit') {
-                    cardDetails.classList.add('show');
-                } else {
-                    cardDetails.classList.remove('show');
-                }
+                if (this.value === 'credit') cardDetails.classList.add('show');
+                else cardDetails.classList.remove('show');
             });
         });
-
-        // Card number formatting
-        document.getElementById('cardNumber').addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
-            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
-            if (formattedValue.length > 19) {
-                formattedValue = formattedValue.substring(0, 19);
-            }
-            e.target.value = formattedValue;
-        });
-
-        // CVV input restriction
-        document.getElementById('cvv').addEventListener('input', function(e) {
-            e.target.value = e.target.value.replace(/[^0-9]/g, '');
-        });
-
-        // Phone number formatting
-        document.getElementById('phone').addEventListener('input', function(e) {
-            e.target.value = e.target.value.replace(/[^0-9+\-\s]/g, '');
-        });
-
+    
         // Form validation
         function validateForm() {
             const requiredFields = ['firstName', 'lastName', 'email', 'phone'];
             let isValid = true;
-
-            requiredFields.forEach(fieldId => {
-                const field = document.getElementById(fieldId);
+            requiredFields.forEach(id => {
+                const field = document.getElementById(id);
                 if (!field.value.trim()) {
                     field.style.borderColor = '#EF4444';
                     isValid = false;
@@ -1009,13 +1034,10 @@
                     field.style.borderColor = '#E5E7EB';
                 }
             });
-
-            // Validate card details if credit card is selected
-            const creditCardSelected = document.getElementById('creditCard').checked;
-            if (creditCardSelected) {
+            if (document.getElementById('creditCard').checked) {
                 const cardFields = ['cardName', 'cardNumber', 'expiryMonth', 'expiryYear', 'cvv'];
-                cardFields.forEach(fieldId => {
-                    const field = document.getElementById(fieldId);
+                cardFields.forEach(id => {
+                    const field = document.getElementById(id);
                     if (!field.value.trim()) {
                         field.style.borderColor = '#EF4444';
                         isValid = false;
@@ -1024,57 +1046,37 @@
                     }
                 });
             }
-
             return isValid;
         }
-
-        // Process payment
+    
+        // Process payment (sekarang dipanggil dari event listener)
         function processPayment() {
             if (!validateForm()) {
                 alert('Mohon lengkapi semua field yang diperlukan');
                 return;
             }
-
-            // Simulate payment processing
-            const button = document.querySelector('.payment-button');
+            const button = document.getElementById('payment-button');
             button.disabled = true;
             button.textContent = 'Processing...';
-
+    
             setTimeout(() => {
                 document.getElementById('successModal').classList.add('show');
                 button.disabled = false;
                 button.textContent = 'PAYMENT';
             }, 2000);
         }
-
+    
         // Return to home
         function returnToHome() {
-            // In a real application, this would redirect to the home page
             window.location.href = 'RiwayatPemesanan.html';
         }
-
+    
         // Close modal when clicking outside
         document.getElementById('successModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 this.classList.remove('show');
             }
         });
-
-        // Auto-fill demo data (for testing purposes)
-        function fillDemoData() {
-            document.getElementById('firstName').value = 'John';
-            document.getElementById('lastName').value = 'Doe';
-            document.getElementById('email').value = 'john.doe@example.com';
-            document.getElementById('phone').value = '+62 812 3456 7890';
-            document.getElementById('cardName').value = 'John Doe';
-            document.getElementById('cardNumber').value = '1234 5678 9012 3456';
-            document.getElementById('expiryMonth').value = '12';
-            document.getElementById('expiryYear').value = '2025';
-            document.getElementById('cvv').value = '123';
-        }
-
-        // Uncomment the line below to auto-fill demo data for testing
-        // fillDemoData();
     </script>
 </body>
 </html>
