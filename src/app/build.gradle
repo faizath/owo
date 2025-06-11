@@ -14,17 +14,15 @@ plugins {
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
-    jcenter()
 }
 
 dependencies {
     // Use JUnit Jupiter for testing.
-    testImplementation libs.junit.jupiter
-
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // This dependency is used by the application.
-    implementation libs.guava
+    implementation 'com.google.guava:guava:31.1-jre'
     implementation 'org.mindrot:jbcrypt:0.4'
 }
 
@@ -43,11 +41,17 @@ java {
 application {
     // Define the main class for the application.
     mainClass = 'com.owo.App'
+    
+    // Add JVM arguments to allow access to jbcrypt
+    applicationDefaultJvmArgs = ['--add-opens', 'java.base/java.lang=ALL-UNNAMED']
 }
 
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+    
+    // Add JVM arguments for tests
+    jvmArgs += ['--add-opens', 'java.base/java.lang=ALL-UNNAMED']
 }
 
 sourceSets {
