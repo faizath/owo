@@ -23,7 +23,7 @@ class TiketTest {
         checkIn = LocalDate.of(2024, 3, 15);
         checkOut = LocalDate.of(2024, 3, 20);
         tiketHotel = new TiketHotel(1, 1000000.0f, true, checkIn, checkOut, "Grand Hotel", "101", "Jakarta");
-        tiketPesawat = new TiketPesawat(2, 2000000.0f, true, "GA123", "Jakarta", "Bali", "Garuda Indonesia");
+        tiketPesawat = new TiketPesawat(2, 2000000.0f, true, "GA123", "Jakarta", "Bali", "Garuda Indonesia", "Ekonomi");
     }
 
     @Test
@@ -34,6 +34,9 @@ class TiketTest {
         assertTrue(tiketHotel.isTersedia());
         assertEquals(checkIn, tiketHotel.getCheckIn());
         assertEquals(checkOut, tiketHotel.getCheckOut());
+        assertEquals("Grand Hotel", tiketHotel.getHotelName());
+        assertEquals("101", tiketHotel.getRoomNumber());
+        assertEquals("Jakarta", tiketHotel.getAddress());
     }
 
     @Test
@@ -44,9 +47,15 @@ class TiketTest {
         
         tiketHotel.setCheckIn(newCheckIn);
         tiketHotel.setCheckOut(newCheckOut);
+        tiketHotel.setHotelName("New Grand Hotel");
+        tiketHotel.setRoomNumber("202");
+        tiketHotel.setAddress("Surabaya");
         
         assertEquals(newCheckIn, tiketHotel.getCheckIn());
         assertEquals(newCheckOut, tiketHotel.getCheckOut());
+        assertEquals("New Grand Hotel", tiketHotel.getHotelName());
+        assertEquals("202", tiketHotel.getRoomNumber());
+        assertEquals("Surabaya", tiketHotel.getAddress());
     }
 
     @Test
@@ -59,6 +68,23 @@ class TiketTest {
         assertEquals("Garuda Indonesia", tiketPesawat.getMaskapai());
         assertEquals("Jakarta", tiketPesawat.getOrigin());
         assertEquals("Bali", tiketPesawat.getDestination());
+        assertEquals("Ekonomi", tiketPesawat.getKelas());
+    }
+
+    @Test
+    @DisplayName("Test TiketPesawat setters")
+    void testTiketPesawatSetters() {
+        tiketPesawat.setFlightNumber("GA456");
+        tiketPesawat.setMaskapai("Lion Air");
+        tiketPesawat.setOrigin("Surabaya");
+        tiketPesawat.setDestination("Jakarta");
+        tiketPesawat.setKelas("Bisnis");
+
+        assertEquals("GA456", tiketPesawat.getFlightNumber());
+        assertEquals("Lion Air", tiketPesawat.getMaskapai());
+        assertEquals("Surabaya", tiketPesawat.getOrigin());
+        assertEquals("Jakarta", tiketPesawat.getDestination());
+        assertEquals("Bisnis", tiketPesawat.getKelas());
     }
 
     @Test
