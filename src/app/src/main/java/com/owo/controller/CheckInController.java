@@ -9,10 +9,14 @@ import java.time.LocalDate;
 public class CheckInController {
 
     public boolean validasiCheckIn(Pemesanan pemesanan) {
+        if (pemesanan == null) {
+            System.err.println("   [GAGAL] Objek pemesanan tidak boleh null.");
+            return false;
+        }
         System.out.println("\n==> Memvalidasi check-in untuk Pemesanan ID: " + pemesanan.getId());
 
-        if (pemesanan == null || pemesanan.getTiket() == null) {
-            System.err.println("   [GAGAL] Objek pemesanan atau tiket tidak valid.");
+        if (pemesanan.getTiket() == null) {
+            System.err.println("   [GAGAL] Objek tiket pada pemesanan tidak boleh null.");
             return false;
         }
 
