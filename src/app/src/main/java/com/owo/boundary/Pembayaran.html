@@ -25,69 +25,45 @@
             padding: 20px;
         }
 
-        /* Header - Fixed at top */
+        /* Header  */
+
         .header {
             width: 100%;
-            height: 70px;                    
+            height: 59px;
             background: white;
+            padding: 0 100px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 0 60px;
-            position: fixed;                
-            top: 0;                         
-            z-index: 1000;                  
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 0;
-            border-radius: 0;
+            gap: 23px;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .logo {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-        }
-
-        .logo-image {
-            height: 48px; 
-            width: auto;
-            object-fit: contain;
-        }
-
-        .header-center {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            max-width: 500px;
-            margin: 0 40px;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 40px;
+            width: 148px;
+            height: 48px;
+            background-image: url('../assets/logo_owo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 8px;
         }
 
         .search-container {
-            width: 100%;
+            width: 426px;
             position: relative;
         }
 
         .search-input {
             width: 100%;
-            padding: 12px 20px 12px 45px; /* Add left padding for search icon */
-            border: 2px solid #E5E7EB;
-            border-radius: 12px;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-            font-size: 14px;
-            color: #6B7280;
+            padding: 12px 16px;
+            border: 1px solid #D9D9D9;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #000000;
             outline: none;
-            transition: border-color 0.3s ease;
-        }
-
-        .search-input:focus {
-            border-color: #613DC1;
         }
 
         .search-icon {
@@ -103,52 +79,49 @@
             background-position: center;
             cursor: pointer;
         }
-        
+
         .nav-menu {
             display: flex;
-            gap: 32px;
-            align-items: center;
+            gap: 40px;
+            margin-left: auto;
         }
 
         .nav-item {
             color: #613DC1;
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 20px;
+            font-weight: 700;
             text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .nav-item:hover {
-            color: #4E148C;
-        }
-
-        .user-section {                     
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .notification-icon {                
-            width: 30px;
-            height: 30px;
             cursor: pointer;
         }
 
-        .user-profile {                     
+        .user-section {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
         }
 
-        .user-avatar {                      
-            width: 35px;
-            height: 35px;
+        .notification-icon {
+            width: 45px;
+            height: 45px;
+            background-image: url('../assets/notification.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            background-image: url('../assets/profile_1.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
         }
 
         .user-greeting {
             color: #613DC1;
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 20px;
+            font-weight: 700;
         }
 
         /* Main Content */
@@ -565,6 +538,101 @@
             transition: background 0.3s ease;
         }
 
+        .footer {
+            background: white;
+            border-top: 1px solid black;
+            padding: 55px 0;
+            margin-top: 50px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 60px;
+            padding: 10 146px;
+        }
+
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .footer-logo {
+            width: 171px;
+            height: 59px;
+            background-image: url('../assets/logo_owo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 5px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .contact-icon {
+            width: 51px;
+            height: 51px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        .contact-icon.phone {
+            background-image: url('../assets/Phone.png');
+        }
+
+        .contact-icon.email {
+            background-image: url('../assets/Email.png');
+        }
+
+        .contact-text {
+            color: #2C0735;
+            font-size: 20px;
+            font-weight: 400;
+        }
+
+        .contact-link {
+            color: #2C0735;
+            text-decoration: underline;
+        }
+
+        .footer-section {
+            flex: 1;
+        }
+
+        .footer-title {
+            color: #2C0735;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .footer-link {
+            color: #2C0735;
+            font-size: 18px;
+            font-weight: 500;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid black;
+            color: black;
+            font-size: 20px;
+            font-weight: 400;
+        }
+
         .success-button:hover {
             background: #4E148C;
         }
@@ -638,39 +706,23 @@
 <body>
     <!-- Header -->
     <header class="header">
-        <a href="#" class="logo">
-            <img src="../assets/logo_owo.png" alt="OWO Logo" class="logo-image">
-        </a>
+        <div class="logo"></div>
         
-        <div class="header-center">
-            <div class="search-container">
-                <img src="../assets/Search.png" alt="Search" class="search-icon">
-                <input type="text" class="search-input" placeholder="Search ticket">
-            </div>
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search ticket">
+            <div class="search-icon"></div>
         </div>
         
-        <div class="header-right">
-            <nav class="nav-menu">
-                <a href="#" class="nav-item">Pesawat</a>
-                <a href="#" class="nav-item">Hotel</a>
-                <a href="#" class="nav-item">Tentang Kami</a>
-            </nav>
-            <div class="user-section">                      
-                <svg class="notification-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12.0201 2.91C8.71009 2.91 6.02009 5.6 6.02009 8.91V11.8C6.02009 12.41 5.76009 13.34 5.45009 13.86L4.30009 15.77C3.59009 16.95 4.08009 18.26 5.38009 18.7C9.69009 20.14 14.3401 20.14 18.6501 18.7C19.8601 18.3 20.3901 16.87 19.7301 15.77L18.5801 13.86C18.2801 13.34 18.0201 12.41 18.0201 11.8V8.91C18.0201 5.61 15.3201 2.91 12.0201 2.91Z" stroke="#613DC1" stroke-width="2" stroke-miterlimit="10" stroke-linecap="round"/>
-                    <path d="M13.8699 3.2C13.5599 3.11 13.2399 3.04 12.9099 3C11.9499 2.88 11.0299 2.95 10.1699 3.2C10.4599 2.46 11.1799 1.94 12.0199 1.94C12.8599 1.94 13.5799 2.46 13.8699 3.2Z" stroke="#613DC1" stroke-width="2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M15.02 19.06C15.02 20.71 13.67 22.06 12.02 22.06C11.2 22.06 10.44 21.72 9.90002 21.18C9.36002 20.64 9.02002 19.88 9.02002 19.06" stroke="#613DC1" stroke-width="2" stroke-miterlimit="10"/>
-                </svg>
-                
-                <div class="user-profile">                 
-                    <svg class="user-avatar" width="35" height="35" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M22.7251 23.9625C22.5938 23.9438 22.4251 23.9438 22.2751 23.9625C18.9751 23.85 16.3501 21.15 16.3501 17.8313C16.3501 14.4375 19.0876 11.6813 22.5001 11.6813C25.8938 11.6813 28.6501 14.4375 28.6501 17.8313C28.6313 21.15 26.0251 23.85 22.7251 23.9625Z" stroke="#613DC1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M35.1373 36.3375C31.7998 39.3938 27.3748 41.25 22.4998 41.25C17.6248 41.25 13.1998 39.3938 9.8623 36.3375C10.0498 34.575 11.1748 32.85 13.1811 31.5C18.3186 28.0875 26.7186 28.0875 31.8186 31.5C33.8248 32.85 34.9498 34.575 35.1373 36.3375Z" stroke="#613DC1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M22.5 41.25C32.8553 41.25 41.25 32.8553 41.25 22.5C41.25 12.1447 32.8553 3.75 22.5 3.75C12.1447 3.75 3.75 12.1447 3.75 22.5C3.75 32.8553 12.1447 41.25 22.5 41.25Z" stroke="#613DC1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <span class="user-greeting">Hi, Owo!</span>
-                </div>
-            </div>
+        <nav class="nav-menu">
+            <a href="#" class="nav-item">Pesawat</a>
+            <a href="#" class="nav-item">Hotel</a>
+            <a href="#" class="nav-item">Tentang Kami</a>
+        </nav>
+        
+        <div class="user-section">
+            <div class="notification-icon"></div>
+            <div class="user-avatar"></div>
+            <span class="user-greeting">Hi, Owo!</span>
         </div>
     </header>
 
@@ -852,6 +904,46 @@
             </div>
         </div>
     </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo"></div>
+                <div class="contact-item">
+                    <div class="contact-icon email"></div>
+                    <a href="mailto:support@owo.com" class="contact-text contact-link">support@owo.com</a>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon phone"></div>
+                    <span class="contact-text">+62 1234567890</span>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3 class="footer-title">Tentang Kami</h3>
+                <a href="#" class="footer-link">Profil Perusahaan</a>
+                <a href="#" class="footer-link">Kontak</a>
+            </div>
+
+            <div class="footer-section">
+                <h3 class="footer-title">Layanan</h3>
+                <a href="#" class="footer-link">Pesawat</a>
+                <a href="#" class="footer-link">Hotel</a>
+                <a href="#" class="footer-link">Bantuan dan Keluhan</a>
+            </div>
+
+            <div class="footer-section">
+                <h3 class="footer-title">Informasi</h3>
+                <a href="#" class="footer-link">Syarat & Ketentuan</a>
+                <a href="#" class="footer-link">Kebijakan Privasi</a>
+                <a href="#" class="footer-link">Kebijakan Pembatalan</a>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            © 2025 OwO . All Rights Reserved
+        </div>
+    </footer>
 
     <!-- Success Modal -->
     <div class="success-modal" id="successModal">
