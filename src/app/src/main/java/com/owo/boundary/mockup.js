@@ -289,9 +289,9 @@ const mockupHotels = [
         1,
         3329114,
         true,
-        new Date("2025-05-10"),
-        new Date("2025-05-11"),
-        "Nandini Jungle by Hanging Gardens",
+        new Date('2025-06-12'),
+        new Date('2025-06-12'),
+        "Nandini Jungle",
         "101",
         "Ubud, Bali, Indonesia"
     ),
@@ -299,9 +299,9 @@ const mockupHotels = [
         2,
         1158395,
         true,
-        new Date("2025-05-10"),
-        new Date("2025-05-11"),
-        "Ramayana Suites and Resort",
+        new Date('2025-06-12'),
+        new Date('2025-06-12'),
+        "Ramayana Suites",
         "201",
         "Ubud, Bali, Indonesia"
     ),
@@ -309,9 +309,9 @@ const mockupHotels = [
         3,
         1488858,
         true,
-        new Date("2025-05-10"),
-        new Date("2025-05-11"),
-        "The Garcia Ubud Hotel & Resort",
+        new Date('2025-06-12'),
+        new Date('2025-06-12'),
+        "The Garcia Ubud",
         "301",
         "Ubud, Bali, Indonesia"
     )

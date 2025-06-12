@@ -261,44 +261,64 @@
         // Display available hotels
         function displayHotels(hotels) {
             const hotelList = document.getElementById('hotelList');
-            hotelList.innerHTML = hotels.map(hotel => `
-                <div class="hotel-card">
-                    <div class="hotel-image">
-                        <img src="../assets/${hotel.hotelName.toLowerCase().replace(/\s+/g, '-')}.png" alt="${hotel.hotelName}">
-                    </div>
-                    
-                    <div class="hotel-content">
-                        <div class="hotel-header">
-                            <h3 class="hotel-title">${hotel.hotelName}</h3>
+            hotelList.innerHTML = hotels.map(hotel => {
+                // Map hotel names to their corresponding image files
+                let imageName = '';
+                switch(hotel.hotelName) {
+                    case 'Nandini Jungle':
+                        imageName = 'nandini.png';
+                        break;
+                    case 'Ramayana Suites':
+                        imageName = 'ramayana.png';
+                        break;
+                    case 'The Garcia Ubud':
+                        imageName = 'garcia.png';
+                        break;
+                    default:
+                        imageName = 'ramayana.png';
+                }
+
+                return `
+                    <div class="hotel-card">
+                        <div class="hotel-image">
+                            <img src="../assets/${imageName}" 
+                                 alt="${hotel.hotelName}"
+                                 onerror="this.src='../assets/ramayana.png'">
                         </div>
                         
-                        <div class="hotel-stars">
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                        </div>
-                        
-                        <p class="hotel-location">${hotel.address}</p>
-                        
-                        <div class="hotel-amenities">
-                            <div class="amenity">🛏️ 1 King Bed</div>
-                            <div class="amenity">🚿 Private Bathroom</div>
-                            <div class="amenity">🌊 Ocean View</div>
-                            <div class="amenity">🏊‍♂️ Swimming Pool</div>
-                        </div>
-                        
-                        <div class="hotel-footer">
-                            <div class="hotel-price">
-                                <span class="price-amount">${window.mockupData.formatCurrency(hotel.harga)}</span>
-                                <span class="price-period">per malam</span>
+                        <div class="hotel-content">
+                            <div class="hotel-header">
+                                <h3 class="hotel-title">${hotel.hotelName}</h3>
                             </div>
-                            <button class="book-button" onclick="bookHotel('${hotel.hotelName}')">Pesan Sekarang</button>
+                            
+                            <div class="hotel-stars">
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                            </div>
+                            
+                            <p class="hotel-location">${hotel.address}</p>
+                            
+                            <div class="hotel-amenities">
+                                <div class="amenity">🛏️ 1 King Bed</div>
+                                <div class="amenity">🚿 Private Bathroom</div>
+                                <div class="amenity">🌊 Ocean View</div>
+                                <div class="amenity">🏊‍♂️ Swimming Pool</div>
+                            </div>
+                            
+                            <div class="hotel-footer">
+                                <div class="hotel-price">
+                                    <span class="price-amount">${window.mockupData.formatCurrency(hotel.harga)}</span>
+                                    <span class="price-period">per malam</span>
+                                </div>
+                                <button class="book-button" onclick="bookHotel('${hotel.hotelName}')">Pesan Sekarang</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // Book hotel function

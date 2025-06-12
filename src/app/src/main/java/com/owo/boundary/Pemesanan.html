@@ -481,7 +481,7 @@
             display: block;
         }
 
-        .hotel-card, .flight-card {
+        .hotel-card {
             background: white;
             border-radius: 16px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
@@ -490,55 +490,52 @@
             align-items: stretch;
             overflow: hidden;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            min-height: 180px;
+            min-height: 240px;
             border: 1px solid rgba(97, 61, 193, 0.1);
         }
 
-        .hotel-card:hover, .flight-card:hover {
+        .hotel-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 12px 32px rgba(97, 61, 193, 0.15);
         }
 
         .hotel-image {
-            flex: 0 0 180px;
-            width: 180px;
-            height: 180px;
-            background: linear-gradient(45deg, #613DC1, #4E148C);
+            flex: 0 0 320px;
+            width: 320px;
+            height: 240px;
+            background: #f3f4f6;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 1.2rem;
             overflow: hidden;
+            position: relative;
         }
 
         .hotel-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            object-position: center;
         }
 
-        .hotel-content, .flight-content {
+        .hotel-content {
             flex: 1;
-            flex-grow: 1;
-            padding: 20px 24px;
-            position: relative;
+            padding: 24px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            gap: 16px;
             min-width: 0;
             background: linear-gradient(to right, #ffffff, #faf9ff);
         }
 
-        .hotel-header, .flight-header {
+        .hotel-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 12px;
         }
 
-        .hotel-title, .flight-title {
+        .hotel-title {
             color: #613DC1;
             font-size: 24px;
             font-weight: 700;
@@ -575,9 +572,17 @@
             font-size: 16px;
             font-weight: 500;
             margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .hotel-rating, .flight-rating {
+        .hotel-location::before {
+            content: "📍";
+            font-size: 18px;
+        }
+
+        .hotel-rating {
             display: flex;
             align-items: center;
             gap: 8px;
@@ -601,14 +606,14 @@
             color: #374151;
         }
 
-        .hotel-footer, .flight-footer {
+        .hotel-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-top: 24px;
         }
 
-        .hotel-price, .flight-price {
+        .hotel-price {
             display: flex;
             align-items: baseline;
             gap: 8px;
@@ -777,21 +782,6 @@
             display: flex;
             align-items: center;
             gap: 8px;
-        }
-
-        .rating-score {
-            font-size: 16px;
-            font-weight: 700;
-            color: #111827;
-        }
-
-        .rating-badge {
-            background: #F3F4F6;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #374151;
         }
 
         .flight-footer {
@@ -1173,8 +1163,8 @@
             <div class="modal-icon" id="modalIcon">
                 ⏳
             </div>
-            <h3 class="modal-title" id="modalTitle">Mengecek Ketersediaan</h3>
-            <p class="modal-message" id="modalMessage">Mohon tunggu, kami sedang mengecek ketersediaan kamar untuk tanggal yang Anda pilih...</p>
+            <h3 class="modal-title" id="modalTitle">Mencari Hotel...</h3>
+            <p class="modal-message" id="modalMessage">Mohon tunggu sebentar, kami sedang mencari hotel yang tersedia...</p>
             <div class="modal-buttons" id="modalButtons">
             </div>
         </div>
@@ -1357,170 +1347,6 @@
             }
         }
 
-        // Fungsi untuk menampilkan daftar hotel
-        function displayHotels(hotels) {
-            const hotelListings = document.querySelector('.hotel-listings');
-            if (!hotelListings) return;
-
-            hotelListings.innerHTML = hotels.map(hotel => `
-                <div class="hotel-card">
-                    <div class="hotel-image">
-                        <img src="../assets/${hotel.hotelName.toLowerCase().replace(/\s+/g, '-')}.png" alt="${hotel.hotelName}">
-                    </div>
-                    
-                    <div class="hotel-content">
-                        <div class="hotel-header">
-                            <h3 class="hotel-title">${hotel.hotelName}</h3>
-                            <div class="heart-icon">♡</div>
-                        </div>
-                        
-                        <div class="hotel-stars">
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                        </div>
-                        
-                        <p class="hotel-location">${hotel.address}</p>
-                        
-                        <div class="hotel-rating">
-                            <span class="rating-score">4.6/5</span>
-                            <span class="rating-badge">Location 4.5/5</span>
-                        </div>
-                        
-                        <div class="hotel-footer">
-                            <div class="hotel-price">
-                                <span class="price-amount">${window.mockupData.formatCurrency(hotel.harga)}</span>
-                                <span class="price-period">a night</span>
-                            </div>
-                            <button class="book-button" onclick="bookHotel('${hotel.hotelName}')">Pesan Sekarang</button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Fungsi untuk menampilkan daftar penerbangan
-        function displayFlights(flights) {
-            const flightListings = document.querySelector('.flight-listings');
-            if (!flightListings) return;
-
-            flightListings.innerHTML = flights.map(flight => {
-                // Determine if we should show the airline logo
-                const showLogo = ['Garuda Indonesia', 'Lion Air', 'Citilink'].includes(flight.maskapai);
-                let logoPath = '';
-                if (showLogo) {
-                    switch(flight.maskapai) {
-                        case 'Garuda Indonesia':
-                            logoPath = '../assets/garuda.jpg';
-                            break;
-                        case 'Lion Air':
-                            logoPath = '../assets/lion-air.jpg';
-                            break;
-                        case 'Citilink':
-                            logoPath = '../assets/citilink.jpg';
-                            break;
-                    }
-                }
-
-                return `
-                    <div class="flight-card">
-                        ${showLogo ? `
-                            <div class="flight-image">
-                                <img src="${logoPath}" alt="${flight.maskapai}">
-                            </div>
-                        ` : ''}
-                        
-                        <div class="flight-content">
-                            <div class="flight-header">
-                                <h3 class="flight-title">${flight.maskapai}</h3>
-                                <div class="heart-icon">♡</div>
-                            </div>
-                            
-                            <div class="flight-details">
-                                <div class="flight-time">${window.mockupData.formatTime(flight.waktuKeberangkatan)}</div>
-                                <div class="flight-duration">
-                                    <div class="flight-path"></div>
-                                    <span>2h 30m</span>
-                                </div>
-                                <div class="flight-time">${window.mockupData.formatTime(new Date(flight.waktuKeberangkatan.getTime() + 150 * 60000))}</div>
-                            </div>
-                            
-                            <div class="flight-info">
-                                <div class="flight-info-item">
-                                    <span class="flight-info-label">Dari</span>
-                                    <span class="flight-info-value">${flight.origin}</span>
-                                </div>
-                                <div class="flight-info-item">
-                                    <span class="flight-info-label">Ke</span>
-                                    <span class="flight-info-value">${flight.destination}</span>
-                                </div>
-                                <div class="flight-info-item">
-                                    <span class="flight-info-label">Tanggal</span>
-                                    <span class="flight-info-value">${window.mockupData.formatDate(flight.waktuKeberangkatan)}</span>
-                                </div>
-                                <div class="flight-info-item">
-                                    <span class="flight-info-label">Kelas</span>
-                                    <span class="flight-info-value">${flight.kelas}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="flight-rating">
-                                <span class="rating-score">4.8/5</span>
-                                <span class="rating-badge">Direct Flight</span>
-                            </div>
-                            
-                            <div class="flight-footer">
-                                <div class="flight-price">
-                                    <span class="price-amount">${window.mockupData.formatCurrency(flight.harga)}</span>
-                                    <span class="price-period">per orang</span>
-                                </div>
-                                <button class="book-button" onclick="bookFlight('${flight.maskapai}')">Pesan Sekarang</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Fungsi untuk menangani PENCARIAN hotel
-        function handleHotelSearch(event) {
-            event.preventDefault();
-            
-            const destination = document.querySelector('#hotelForm #destination-input')?.value;
-            const checkin = document.querySelector('#hotelForm #checkin-input')?.value;
-            const checkout = document.querySelector('#hotelForm #checkout-input')?.value;
-            const guests = document.querySelector('#hotelForm #guests-input')?.value;
-
-            if (!destination || !checkin || !checkout) {
-                alert('Mohon lengkapi tujuan dan tanggal untuk pencarian hotel.');
-                return;
-            }
-
-            const searchData = { destination, checkin, checkout, guests };
-            console.log('Saving hotel search data:', searchData);
-            sendDataToParent('save_data', 'hotel_search', searchData);
-
-            // Get available hotels
-            getDataFromParent('hotel_search', (hotels) => {
-                if (hotels && hotels.length > 0) {
-                    showModal('hotel', () => {
-                        displayHotels(hotels);
-                        const hotelListings = document.querySelector('.hotel-listings');
-                        if (hotelListings) {
-                            hotelListings.classList.add('show');
-                            hotelListings.scrollIntoView({ behavior: 'smooth' });
-                        }
-                    });
-                } else {
-                    showModal('hotel_not_found', () => {
-                        // Stay on the same page if no hotels found
-                    });
-                }
-            });
-        }
-
         // Tab switching functionality
         document.addEventListener('DOMContentLoaded', function() {
             // Populate destinations when the page loads
@@ -1586,7 +1412,82 @@
             }
 
             if (hotelForm) {
-                hotelForm.addEventListener('submit', handleHotelSearch);
+                hotelForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    
+                    const destination = document.querySelector('#hotelForm #destination-input')?.value;
+                    const checkin = document.querySelector('#hotelForm #checkin-input')?.value;
+                    const checkout = document.querySelector('#hotelForm #checkout-input')?.value;
+                    const guests = document.querySelector('#hotelForm #guests-input')?.value;
+
+                    if (!destination || !checkin || !checkout) {
+                        alert('Mohon lengkapi tujuan dan tanggal untuk pencarian hotel.');
+                        return;
+                    }
+
+                    const searchData = { destination, checkin, checkout, guests };
+                    console.log('Saving hotel search data:', searchData);
+                    sendDataToParent('save_data', 'hotel_search', searchData);
+
+                    // Show loading modal first
+                    showModal('hotel', () => {
+                        // Get available hotels from mockup data
+                        const hotels = window.mockupData.hotels;
+                        console.log('Available hotels:', hotels);
+
+                        if (hotels && hotels.length > 0) {
+                            // Filter hotels based on search criteria
+                            const filteredHotels = hotels.filter(hotel => {
+                                // Format hotel dates to match search date format (YYYY-MM-DD)
+                                const hotelCheckIn = new Date(hotel.checkIn);
+                                const hotelCheckOut = new Date(hotel.checkOut);
+                                const searchCheckIn = new Date(checkin);
+                                const searchCheckOut = new Date(checkout);
+                                
+                                // Check if hotel location matches destination
+                                const hotelLocation = hotel.address.toLowerCase();
+                                const searchLocation = destination.toLowerCase();
+                                const matchesLocation = hotelLocation.includes(searchLocation);
+                                
+                                // Check if dates are available
+                                const matchesDates = hotelCheckIn <= searchCheckIn && hotelCheckOut >= searchCheckOut;
+                                
+                                console.log('Hotel check:', {
+                                    hotel: hotel.hotelName,
+                                    location: hotel.address,
+                                    searchLocation: destination,
+                                    matchesLocation,
+                                    hotelCheckIn: hotelCheckIn.toISOString().split('T')[0],
+                                    hotelCheckOut: hotelCheckOut.toISOString().split('T')[0],
+                                    searchCheckIn: searchCheckIn.toISOString().split('T')[0],
+                                    searchCheckOut: searchCheckOut.toISOString().split('T')[0],
+                                    matchesDates
+                                });
+
+                                return matchesLocation && matchesDates;
+                            });
+
+                            console.log('Filtered hotels:', filteredHotels);
+
+                            if (filteredHotels.length > 0) {
+                                displayHotels(filteredHotels);
+                                const hotelListings = document.querySelector('.hotel-listings');
+                                if (hotelListings) {
+                                    hotelListings.classList.add('show');
+                                    hotelListings.scrollIntoView({ behavior: 'smooth' });
+                                }
+                            } else {
+                                showModal('hotel_not_found', () => {
+                                    // Stay on the same page if no hotels found
+                                });
+                            }
+                        } else {
+                            showModal('hotel_not_found', () => {
+                                // Stay on the same page if no hotels found
+                            });
+                        }
+                    });
+                });
             }
 
             // Add event listeners for tabs
@@ -1704,16 +1605,16 @@
 
             switch(type) {
                 case 'hotel':
-                    title.textContent = 'Mengecek Kamar...';
-                    message.textContent = 'Mohon tunggu sebentar...';
+                    title.textContent = 'Mencari Hotel...';
+                    message.textContent = 'Mohon tunggu sebentar, kami sedang mencari hotel yang tersedia...';
                     break;
                 case 'hotel_not_found':
                     title.textContent = 'Kamar Tidak Tersedia';
                     message.textContent = 'Maaf, tidak ada kamar yang tersedia untuk kriteria pencarian Anda. Silakan coba dengan tanggal atau lokasi yang berbeda.';
                     break;
                 case 'flight':
-                    title.textContent = 'Mengecek Penerbangan...';
-                    message.textContent = 'Mohon tunggu sebentar...';
+                    title.textContent = 'Mencari Penerbangan...';
+                    message.textContent = 'Mohon tunggu sebentar, kami sedang mencari penerbangan yang tersedia...';
                     break;
                 case 'flight_not_found':
                     title.textContent = 'Penerbangan Tidak Tersedia';
@@ -1723,29 +1624,161 @@
 
             buttons.innerHTML = '';
 
-            setTimeout(() => {
-                if (type === 'hotel' || type === 'flight') {
-                    title.textContent = `${type === 'hotel' ? 'Kamar' : 'Penerbangan'} Tersedia!`;
-                    message.textContent = 'Hasil pencarian akan ditampilkan.';
-                    buttons.innerHTML = `<button class="modal-button primary" onclick="closeModal()">OK</button>`;
-                    
-                    setTimeout(() => {
-                        closeModal();
-                        if (callbackOnSuccess) {
-                            callbackOnSuccess();
-                        }
-                    }, 1000);
-                } else {
-                    buttons.innerHTML = `
-                        <button class="modal-button primary" onclick="closeModal()">OK</button>
-                    `;
-                }
-            }, 1500);
+            if (type === 'hotel' || type === 'flight') {
+                setTimeout(() => {
+                    if (callbackOnSuccess) {
+                        callbackOnSuccess();
+                    }
+                    closeModal();
+                }, 1500);
+            } else if (type === 'hotel_not_found' || type === 'flight_not_found') {
+                buttons.innerHTML = `
+                    <button class="modal-button primary" onclick="closeModal()">OK</button>
+                `;
+            }
         }
 
         function closeModal() {
             const modal = document.getElementById('modalOverlay');
             if (modal) modal.classList.remove('active');
+        }
+
+        // Fungsi untuk menampilkan daftar hotel
+        function displayHotels(hotels) {
+            const hotelListings = document.querySelector('.hotel-listings');
+            if (!hotelListings) return;
+
+            hotelListings.innerHTML = hotels.map(hotel => {
+                // Map hotel names to their corresponding image files
+                let imageName = '';
+                switch(hotel.hotelName) {
+                    case 'Nandini Jungle':
+                        imageName = 'nandini.png';
+                        break;
+                    case 'Ramayana Suites':
+                        imageName = 'ramayana.png';
+                        break;
+                    case 'The Garcia Ubud':
+                        imageName = 'garcia.png';
+                        break;
+                    default:
+                        imageName = 'ramayana.png';
+                }
+
+                return `
+                    <div class="hotel-card">
+                        <div class="hotel-image">
+                            <img src="../assets/${imageName}" 
+                                 alt="${hotel.hotelName}"
+                                 onerror="this.src='../assets/ramayana.png'"
+                                 style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        
+                        <div class="hotel-content">
+                            <div class="hotel-header">
+                                <h3 class="hotel-title">${hotel.hotelName}</h3>
+                                <div class="heart-icon">♡</div>
+                            </div>
+                            
+                            <div class="hotel-stars">
+                                ${Array(5).fill('★').join('')}
+                            </div>
+                            
+                            <p class="hotel-location">${hotel.address}</p>
+                            
+                            <div class="hotel-rating">
+                                <span class="rating-score">4.8/5</span>
+                                <span class="rating-badge">Location 4.7/5</span>
+                            </div>
+                            
+                            <div class="hotel-footer">
+                                <div class="hotel-price">
+                                    <span class="price-amount">${window.mockupData.formatCurrency(hotel.harga)}</span>
+                                    <span class="price-period">per malam</span>
+                                </div>
+                                <button class="book-button" onclick="bookHotel('${hotel.hotelName}')">Pesan Sekarang</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Fungsi untuk menampilkan daftar penerbangan
+        function displayFlights(flights) {
+            const flightListings = document.querySelector('.flight-listings');
+            if (!flightListings) return;
+
+            flightListings.innerHTML = flights.map(flight => {
+                // Map airline names to their corresponding image files
+                let logoPath = '';
+                switch(flight.maskapai) {
+                    case 'Garuda Indonesia':
+                        logoPath = 'garuda.jpg';
+                        break;
+                    case 'Lion Air':
+                        logoPath = 'lion-air.jpg';
+                        break;
+                    case 'Citilink':
+                        logoPath = 'citilink.jpg';
+                        break;
+                    default:
+                        logoPath = 'garuda.jpg';
+                }
+
+                return `
+                    <div class="flight-card">
+                        <div class="flight-image">
+                            <img src="../assets/${logoPath}" 
+                                 alt="${flight.maskapai}"
+                                 onerror="this.src='../assets/garuda.jpg'">
+                        </div>
+                        <div class="flight-content">
+                            <div class="flight-header">
+                                <h3 class="flight-title">${flight.maskapai}</h3>
+                                <div class="heart-icon">♡</div>
+                            </div>
+                            <div class="flight-details">
+                                <div class="flight-time">${window.mockupData.formatTime(flight.waktuKeberangkatan)}</div>
+                                <div class="flight-duration">
+                                    <div class="flight-path"></div>
+                                    <span>2h 30m</span>
+                                </div>
+                                <div class="flight-time">${window.mockupData.formatTime(new Date(flight.waktuKeberangkatan.getTime() + 150 * 60000))}</div>
+                            </div>
+                            <div class="flight-info">
+                                <div class="flight-info-item">
+                                    <span class="flight-info-label">Dari</span>
+                                    <span class="flight-info-value">${flight.origin}</span>
+                                </div>
+                                <div class="flight-info-item">
+                                    <span class="flight-info-label">Ke</span>
+                                    <span class="flight-info-value">${flight.destination}</span>
+                                </div>
+                                <div class="flight-info-item">
+                                    <span class="flight-info-label">Tanggal</span>
+                                    <span class="flight-info-value">${window.mockupData.formatDate(flight.waktuKeberangkatan)}</span>
+                                </div>
+                                <div class="flight-info-item">
+                                    <span class="flight-info-label">Kelas</span>
+                                    <span class="flight-info-value">${flight.kelas}</span>
+                                </div>
+                            </div>
+                            <div class="flight-rating">
+                                <span class="rating-score">4.8/5</span>
+                                <span class="rating-badge">Direct Flight</span>
+                            </div>
+                            <div class="flight-footer">
+                                <div class="flight-price">
+                                    <span class="price-amount">${window.mockupData.formatCurrency(flight.harga)}</span>
+                                    <span class="price-period">per orang</span>
+                                </div>
+                                <button class="book-button" onclick="bookFlight('${flight.maskapai}')">Pesan Sekarang</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         // PERBAIKAN: Expose functions untuk debugging

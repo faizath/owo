@@ -3,101 +3,148 @@ function displayHotels(hotels) {
     const hotelListings = document.querySelector('.hotel-listings');
     if (!hotelListings) return;
 
-    hotelListings.innerHTML = hotels.map(hotel => `
-        <div class="hotel-card">
-            <div class="hotel-image">
-                <img src="../assets/${hotel.hotelName.toLowerCase().replace(/\s+/g, '-')}.png" alt="${hotel.hotelName}">
-            </div>
-            
-            <div class="hotel-content">
-                <div class="hotel-header">
-                    <h3 class="hotel-title">${hotel.hotelName}</h3>
-                    <div class="heart-icon">♡</div>
+    hotelListings.innerHTML = hotels.map(hotel => {
+        // Map hotel names to their corresponding image files
+        let imageName = '';
+        switch(hotel.hotelName) {
+            case 'Nandini Jungle':
+                imageName = 'nandini.png';
+                break;
+            case 'Ramayana Suites':
+                imageName = 'ramayana.png';
+                break;
+            case 'The Garcia Ubud':
+                imageName = 'garcia.png';
+                break;
+            default:
+                imageName = 'ramayana.png';
+        }
+
+        return `
+            <div class="hotel-card">
+                <div class="hotel-image">
+                    <img src="../assets/${imageName}" 
+                         alt="${hotel.hotelName}"
+                         style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
                 
-                <div class="hotel-stars">
-                    <span class="star">★</span>
-                    <span class="star">★</span>
-                    <span class="star">★</span>
-                    <span class="star">★</span>
-                    <span class="star">★</span>
-                </div>
-                
-                <p class="hotel-location">${hotel.address}</p>
-                
-                <div class="hotel-rating">
-                    <span class="rating-score">4.6/5</span>
-                    <span class="rating-badge">Location 4.5/5</span>
-                </div>
-                
-                <div class="hotel-footer">
-                    <div class="hotel-price">
-                        <span class="price-amount">${window.mockupData.formatCurrency(hotel.harga)}</span>
-                        <span class="price-period">per malam</span>
+                <div class="hotel-content">
+                    <div class="hotel-header">
+                        <h3 class="hotel-title">${hotel.hotelName}</h3>
+                        <div class="heart-icon">♡</div>
                     </div>
-                    <button class="book-button" onclick="bookHotel('${hotel.hotelName}')">Pesan Sekarang</button>
+                    
+                    <div class="hotel-stars">
+                        ${Array(5).fill('★').join('')}
+                    </div>
+                    
+                    <p class="hotel-location">${hotel.address}</p>
+                    
+                    <div class="hotel-rating">
+                        <span class="rating-score">4.8/5</span>
+                        <span class="rating-badge">Location 4.7/5</span>
+                    </div>
+                    
+                    <div class="hotel-footer">
+                        <div class="hotel-price">
+                            <span class="price-amount">${window.mockupData.formatCurrency(hotel.harga)}</span>
+                            <span class="price-period">per malam</span>
+                        </div>
+                        <button class="book-button" onclick="bookHotel('${hotel.hotelName}')">Pesan Sekarang</button>
+                    </div>
                 </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
-// Fungsi untuk menampilkan daftar penerbangan
+// Update displayFlights function
 function displayFlights(flights) {
     const flightListings = document.querySelector('.flight-listings');
     if (!flightListings) return;
 
-    flightListings.innerHTML = flights.map(flight => `
-        <div class="flight-card">
-            <div class="flight-content">
-                <div class="flight-header">
-                    <h3 class="flight-title">${flight.maskapai}</h3>
-                    <div class="heart-icon">♡</div>
-                </div>
-                
-                <div class="flight-details">
-                    <div class="flight-time">${window.mockupData.formatTime(flight.waktuKeberangkatan)}</div>
-                    <div class="flight-duration">
-                        <div class="flight-path"></div>
-                        <span>2h 30m</span>
-                    </div>
-                    <div class="flight-time">${window.mockupData.formatTime(new Date(flight.waktuKeberangkatan.getTime() + 150 * 60000))}</div>
-                </div>
-                
+    flightListings.innerHTML = flights.map(flight => {
+        // Format flight date and time
+        const departureDate = new Date(flight.waktuKeberangkatan);
+        const arrivalDate = new Date(flight.waktuKedatangan);
+        
+        const formatTime = (date) => {
+            return date.toLocaleTimeString('id-ID', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: false 
+            });
+        };
+
+        const formatDate = (date) => {
+            return date.toLocaleDateString('id-ID', { 
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short'
+            });
+        };
+
+        // Calculate duration
+        const duration = Math.round((arrivalDate - departureDate) / (1000 * 60)); // in minutes
+        const hours = Math.floor(duration / 60);
+        const minutes = duration % 60;
+        const durationText = `${hours}j ${minutes}m`;
+
+        // Format price
+        const formattedPrice = new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(flight.harga);
+
+        return `
+            <div class="flight-card">
                 <div class="flight-info">
-                    <div class="flight-info-item">
-                        <span class="flight-info-label">Dari</span>
-                        <span class="flight-info-value">${flight.origin}</span>
+                    <div class="flight-time">
+                        <div class="departure">
+                            <span class="time">${formatTime(departureDate)}</span>
+                            <span class="airport">${flight.origin}</span>
+                            <span class="date">${formatDate(departureDate)}</span>
+                        </div>
+                        <div class="flight-duration">
+                            <div class="duration-line"></div>
+                            <span class="duration">${durationText}</span>
+                        </div>
+                        <div class="arrival">
+                            <span class="time">${formatTime(arrivalDate)}</span>
+                            <span class="airport">${flight.destination}</span>
+                            <span class="date">${formatDate(arrivalDate)}</span>
+                        </div>
                     </div>
-                    <div class="flight-info-item">
-                        <span class="flight-info-label">Ke</span>
-                        <span class="flight-info-value">${flight.destination}</span>
-                    </div>
-                    <div class="flight-info-item">
-                        <span class="flight-info-label">Tanggal</span>
-                        <span class="flight-info-value">${window.mockupData.formatDate(flight.waktuKeberangkatan)}</span>
-                    </div>
-                    <div class="flight-info-item">
-                        <span class="flight-info-label">Kelas</span>
-                        <span class="flight-info-value">${flight.kelas}</span>
+                    <div class="flight-details">
+                        <div class="airline">
+                            <img src="assets/images/airlines/${flight.maskapai.toLowerCase()}.png" 
+                                 alt="${flight.maskapai}"
+                            <span>${flight.maskapai}</span>
+                        </div>
+                        <div class="flight-number">${flight.nomorPenerbangan}</div>
+                        <div class="flight-class">${flight.kelas}</div>
                     </div>
                 </div>
-                
-                <div class="flight-rating">
-                    <span class="rating-score">4.8/5</span>
-                    <span class="rating-badge">Direct Flight</span>
-                </div>
-                
-                <div class="flight-footer">
-                    <div class="flight-price">
-                        <span class="price-amount">${window.mockupData.formatCurrency(flight.harga)}</span>
-                        <span class="price-period">per orang</span>
-                    </div>
-                    <button class="book-button" onclick="bookFlight('${flight.maskapai}')">Pesan Sekarang</button>
+                <div class="flight-price">
+                    <div class="price">${formattedPrice}</div>
+                    <button class="book-btn" onclick="bookFlight('${flight.nomorPenerbangan}')">
+                        Pilih
+                    </button>
                 </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
+
+    // Add event listeners to book buttons
+    document.querySelectorAll('.book-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const flightCard = e.target.closest('.flight-card');
+            const flightNumber = flightCard.querySelector('.flight-number').textContent;
+            bookFlight(flightNumber);
+        });
+    });
 }
 
 // Update handleHotelSearch function
@@ -118,17 +165,58 @@ function handleHotelSearch(event) {
     console.log('Saving hotel search data:', searchData);
     sendDataToParent('save_data', 'hotel_search', searchData);
 
-    // Get available hotels
-    getDataFromParent('hotel_search', (hotels) => {
+    // Show loading modal first
+    showModal('hotel', () => {
+        // Get available hotels from mockup data
+        const hotels = window.mockupData.hotels;
+        console.log('Available hotels:', hotels);
+
         if (hotels && hotels.length > 0) {
-            showModal('hotel', () => {
-                displayHotels(hotels);
+            // Filter hotels based on search criteria
+            const filteredHotels = hotels.filter(hotel => {
+                // Format hotel dates to match search date format (YYYY-MM-DD)
+                const hotelCheckIn = new Date(hotel.checkIn);
+                const hotelCheckOut = new Date(hotel.checkOut);
+                const searchCheckIn = new Date(checkin);
+                const searchCheckOut = new Date(checkout);
+                
+                // Check if hotel location matches destination
+                const hotelLocation = hotel.address.toLowerCase();
+                const searchLocation = destination.toLowerCase();
+                const matchesLocation = hotelLocation.includes(searchLocation);
+                
+                // Check if dates are available
+                const matchesDates = hotelCheckIn <= searchCheckIn && hotelCheckOut >= searchCheckOut;
+                
+                console.log('Hotel check:', {
+                    hotel: hotel.hotelName,
+                    location: hotel.address,
+                    searchLocation: destination,
+                    matchesLocation,
+                    hotelCheckIn: hotelCheckIn.toISOString().split('T')[0],
+                    hotelCheckOut: hotelCheckOut.toISOString().split('T')[0],
+                    searchCheckIn: searchCheckIn.toISOString().split('T')[0],
+                    searchCheckOut: searchCheckOut.toISOString().split('T')[0],
+                    matchesDates
+                });
+
+                return matchesLocation && matchesDates;
+            });
+
+            console.log('Filtered hotels:', filteredHotels);
+
+            if (filteredHotels.length > 0) {
+                displayHotels(filteredHotels);
                 const hotelListings = document.querySelector('.hotel-listings');
                 if (hotelListings) {
                     hotelListings.classList.add('show');
                     hotelListings.scrollIntoView({ behavior: 'smooth' });
                 }
-            });
+            } else {
+                showModal('hotel_not_found', () => {
+                    // Stay on the same page if no hotels found
+                });
+            }
         } else {
             showModal('hotel_not_found', () => {
                 // Stay on the same page if no hotels found
@@ -141,32 +229,91 @@ function handleHotelSearch(event) {
 function handleFlightSearch(event) {
     event.preventDefault();
     
-    const from = document.querySelector('#flightForm #departure')?.value;
-    const to = document.querySelector('#flightForm #arrival')?.value;
+    const fromSelect = document.querySelector('#flightForm #departure');
+    const toSelect = document.querySelector('#flightForm #arrival');
     const departure = document.querySelector('#flightForm #departureDate')?.value;
     const passengers = document.querySelector('#flightForm #passengers')?.value;
     const flightClass = document.querySelector('#flightForm #flightClass')?.value;
 
-    if (!from || !to || !departure) {
+    if (!fromSelect?.value || !toSelect?.value || !departure) {
         alert('Mohon lengkapi semua field untuk pencarian pesawat.');
         return;
     }
 
-    const searchData = { from, to, departure, passengers, flightClass };
+    // Extract airport codes from the selected values
+    const fromCode = fromSelect.value.match(/\(([^)]+)\)/)?.[1];
+    const toCode = toSelect.value.match(/\(([^)]+)\)/)?.[1];
+
+    if (!fromCode || !toCode) {
+        alert('Format bandara tidak valid.');
+        return;
+    }
+
+    const searchData = { 
+        from: fromCode,
+        to: toCode,
+        departure, 
+        passengers, 
+        flightClass
+    };
+    
     console.log('Saving flight search data:', searchData);
     sendDataToParent('save_data', 'flight_search', searchData);
 
-    // Get available flights
-    getDataFromParent('flight_search', (flights) => {
+    // Show loading modal first
+    showModal('flight', () => {
+        // Get available flights from mockup data
+        const flights = window.mockupData.flights;
+        console.log('Available flights:', flights);
+
         if (flights && flights.length > 0) {
-            showModal('flight', () => {
-                displayFlights(flights);
+            // Filter flights based on search criteria
+            const filteredFlights = flights.filter(flight => {
+                // Format flight date to match search date format (YYYY-MM-DD)
+                const flightDate = new Date(flight.waktuKeberangkatan);
+                const formattedFlightDate = flightDate.toISOString().split('T')[0];
+                
+                // Extract airport codes from the flight data
+                const originCode = flight.origin.match(/\(([^)]+)\)/)?.[1];
+                const destCode = flight.destination.match(/\(([^)]+)\)/)?.[1];
+                
+                // Compare with search criteria
+                const matchesRoute = originCode === searchData.from && destCode === searchData.to;
+                const matchesDate = formattedFlightDate === searchData.departure;
+                const matchesClass = !searchData.flightClass || flight.kelas.toLowerCase() === searchData.flightClass.toLowerCase();
+
+                console.log('Flight check:', {
+                    flight: flight.origin + ' -> ' + flight.destination,
+                    originCode,
+                    destCode,
+                    from: searchData.from,
+                    to: searchData.to,
+                    matchesRoute,
+                    matchesDate,
+                    matchesClass,
+                    flightDate: formattedFlightDate,
+                    searchDate: searchData.departure,
+                    flightClass: flight.kelas,
+                    searchClass: searchData.flightClass
+                });
+
+                return matchesRoute && matchesDate && matchesClass;
+            });
+
+            console.log('Filtered flights:', filteredFlights);
+
+            if (filteredFlights.length > 0) {
+                displayFlights(filteredFlights);
                 const flightListings = document.querySelector('.flight-listings');
                 if (flightListings) {
                     flightListings.classList.add('show');
                     flightListings.scrollIntoView({ behavior: 'smooth' });
                 }
-            });
+            } else {
+                showModal('flight_not_found', () => {
+                    // Stay on the same page if no flights found
+                });
+            }
         } else {
             showModal('flight_not_found', () => {
                 // Stay on the same page if no flights found
@@ -254,42 +401,51 @@ function getDataFromParent(type, callback, timeout = 5000) {
     }
 }
 
-// Fungsi untuk mengisi dropdown destinasi
+// Function to populate destinations
 function populateDestinations() {
-    const departureSelect = document.querySelector('#flightForm #departure');
-    const arrivalSelect = document.querySelector('#flightForm #arrival');
-    const destinationInput = document.querySelector('#hotelForm #destination-input');
-    const flightClassSelect = document.querySelector('#flightForm #flightClass');
+    const departureSelect = document.getElementById('departure');
+    const arrivalSelect = document.getElementById('arrival');
+    const destinationSelect = document.getElementById('destination-input');
+    const flightClassSelect = document.getElementById('flightClass');
 
-    if (departureSelect && arrivalSelect) {
-        const airports = window.mockupData.destinations.airports;
-        const options = airports.map(airport => 
-            `<option value="${airport.name}">${airport.name}</option>`
-        ).join('');
-        
-        departureSelect.innerHTML = options;
-        arrivalSelect.innerHTML = options;
+    if (!departureSelect || !arrivalSelect || !destinationSelect || !flightClassSelect) {
+        console.warn('Destination select elements not found');
+        return;
     }
 
-    if (destinationInput) {
-        const cities = window.mockupData.destinations.cities;
-        const options = cities.map(city => 
-            `<option value="${city.name}">${city.name}, ${city.country}</option>`
-        ).join('');
-        
-        destinationInput.innerHTML = options;
-    }
+    // Clear existing options
+    departureSelect.innerHTML = '<option value="">Pilih Bandara Keberangkatan</option>';
+    arrivalSelect.innerHTML = '<option value="">Pilih Bandara Tujuan</option>';
+    destinationSelect.innerHTML = '<option value="">Pilih Kota Tujuan</option>';
+    flightClassSelect.innerHTML = '<option value="">Pilih Kelas</option>';
 
-    if (flightClassSelect) {
-        const classes = window.mockupData.destinations.flightClasses;
-        const options = classes.map(cls => 
-            `<option value="${cls.code}">${cls.name}</option>`
-        ).join('');
-        
-        flightClassSelect.innerHTML = options;
-    }
+    // Add airports to departure and arrival selects
+    window.mockupData.destinations.airports.forEach(airport => {
+        const option = document.createElement('option');
+        option.value = `${airport.city} (${airport.code})`;
+        option.textContent = `${airport.city} (${airport.code})`;
+        departureSelect.appendChild(option.cloneNode(true));
+        arrivalSelect.appendChild(option);
+    });
+
+    // Add cities to hotel destination select
+    window.mockupData.destinations.cities.forEach(city => {
+        const option = document.createElement('option');
+        option.value = city.name;
+        option.textContent = `${city.name}, ${city.country}`;
+        destinationSelect.appendChild(option);
+    });
+
+    // Add flight classes
+    window.mockupData.destinations.flightClasses.forEach(flightClass => {
+        const option = document.createElement('option');
+        option.value = flightClass.name.toLowerCase();
+        option.textContent = flightClass.name;
+        flightClassSelect.appendChild(option);
+    });
 }
 
+// Fungsi untuk setup event listeners
 function setupEventListeners() {
     // Populate destinations when the page loads
     populateDestinations();
@@ -299,58 +455,7 @@ function setupEventListeners() {
     const hotelForm = document.getElementById('hotelForm');
 
     if (flightForm) {
-        flightForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            const fromSelect = document.querySelector('#flightForm #departure');
-            const toSelect = document.querySelector('#flightForm #arrival');
-            const departure = document.querySelector('#flightForm #departureDate')?.value;
-            const passengers = document.querySelector('#flightForm #passengers')?.value;
-            const flightClass = document.querySelector('#flightForm #flightClass')?.value;
-
-            if (!fromSelect?.value || !toSelect?.value || !departure) {
-                alert('Mohon lengkapi semua field untuk pencarian pesawat.');
-                return;
-            }
-
-            // Extract airport codes from the selected values
-            const fromCode = fromSelect.value.match(/\(([^)]+)\)/)?.[1];
-            const toCode = toSelect.value.match(/\(([^)]+)\)/)?.[1];
-
-            if (!fromCode || !toCode) {
-                alert('Format bandara tidak valid.');
-                return;
-            }
-
-            const searchData = { 
-                from: fromCode,
-                to: toCode,
-                departure, 
-                passengers, 
-                flightClass
-            };
-            
-            console.log('Saving flight search data:', searchData);
-            sendDataToParent('save_data', 'flight_search', searchData);
-
-            // Get available flights
-            getDataFromParent('flight_search', (flights) => {
-                if (flights && flights.length > 0) {
-                    showModal('flight', () => {
-                        displayFlights(flights);
-                        const flightListings = document.querySelector('.flight-listings');
-                        if (flightListings) {
-                            flightListings.classList.add('show');
-                            flightListings.scrollIntoView({ behavior: 'smooth' });
-                        }
-                    });
-                } else {
-                    showModal('flight_not_found', () => {
-                        // Stay on the same page if no flights found
-                    });
-                }
-            });
-        });
+        flightForm.addEventListener('submit', handleFlightSearch);
     }
 
     if (hotelForm) {
@@ -381,14 +486,15 @@ function setupEventListeners() {
 // Initialize event listeners when DOM is loaded
 document.addEventListener('DOMContentLoaded', setupEventListeners);
 
-// Update showModal function
+// Fungsi untuk menampilkan modal
 function showModal(type, callbackOnSuccess) {
     const modal = document.getElementById('modalOverlay');
     const title = document.getElementById('modalTitle');
     const message = document.getElementById('modalMessage');
     const buttons = document.getElementById('modalButtons');
+    const icon = document.getElementById('modalIcon');
 
-    if (!modal || !title || !message || !buttons) {
+    if (!modal || !title || !message || !buttons || !icon) {
         console.warn('Modal elements not found, skipping modal');
         if (callbackOnSuccess) callbackOnSuccess();
         return;
@@ -398,43 +504,55 @@ function showModal(type, callbackOnSuccess) {
 
     switch(type) {
         case 'hotel':
-            title.textContent = 'Mengecek Kamar...';
-            message.textContent = 'Mohon tunggu sebentar...';
+            title.textContent = 'Mencari Hotel...';
+            message.textContent = 'Mohon tunggu sebentar, kami sedang mencari hotel yang tersedia...';
+            icon.textContent = '⏳';
+            icon.className = 'modal-icon loading';
             break;
         case 'hotel_not_found':
             title.textContent = 'Kamar Tidak Tersedia';
             message.textContent = 'Maaf, tidak ada kamar yang tersedia untuk kriteria pencarian Anda. Silakan coba dengan tanggal atau lokasi yang berbeda.';
+            icon.textContent = '❌';
+            icon.className = 'modal-icon error';
             break;
         case 'flight':
-            title.textContent = 'Mengecek Penerbangan...';
-            message.textContent = 'Mohon tunggu sebentar...';
+            title.textContent = 'Mencari Penerbangan...';
+            message.textContent = 'Mohon tunggu sebentar, kami sedang mencari penerbangan yang tersedia...';
+            icon.textContent = '⏳';
+            icon.className = 'modal-icon loading';
             break;
         case 'flight_not_found':
             title.textContent = 'Penerbangan Tidak Tersedia';
             message.textContent = 'Maaf, tidak ada penerbangan yang tersedia untuk kriteria pencarian Anda. Silakan coba dengan tanggal atau rute yang berbeda.';
+            icon.textContent = '❌';
+            icon.className = 'modal-icon error';
+            break;
+        case 'booking_success':
+            title.textContent = 'Pesanan Berhasil';
+            message.textContent = 'Pesanan Anda telah berhasil diproses. Silakan lakukan pembayaran untuk menyelesaikan transaksi.';
+            icon.textContent = '✅';
+            icon.className = 'modal-icon success';
             break;
     }
 
     buttons.innerHTML = '';
 
-    setTimeout(() => {
-        if (type === 'hotel' || type === 'flight') {
-            title.textContent = `${type === 'hotel' ? 'Kamar' : 'Penerbangan'} Tersedia!`;
-            message.textContent = 'Hasil pencarian akan ditampilkan.';
-            buttons.innerHTML = `<button class="modal-button primary" onclick="closeModal()">OK</button>`;
-            
-            setTimeout(() => {
-                closeModal();
-                if (callbackOnSuccess) {
-                    callbackOnSuccess();
-                }
-            }, 1000);
-        } else {
-            buttons.innerHTML = `
-                <button class="modal-button primary" onclick="closeModal()">OK</button>
-            `;
-        }
-    }, 1500);
+    if (type === 'hotel' || type === 'flight') {
+        setTimeout(() => {
+            if (callbackOnSuccess) {
+                callbackOnSuccess();
+            }
+        }, 2000);
+    } else {
+        buttons.innerHTML = `
+            <button class="modal-button primary" onclick="closeModal()">OK</button>
+        `;
+    }
+}
+
+function closeModal() {
+    const modal = document.getElementById('modalOverlay');
+    if (modal) modal.classList.remove('active');
 }
 
 // Update bookHotel function
@@ -457,20 +575,73 @@ function bookHotel(hotelName) {
 }
 
 // Update bookFlight function
-function bookFlight(flightName) {
-    console.log('Booking flight:', flightName);
+function bookFlight(flightNumber) {
+    // Get flight data from mockup data
+    const flights = window.mockupData.flights;
+    const flight = flights.find(f => f.nomorPenerbangan === flightNumber);
     
-    getDataFromParent('flight_search', function(searchData) {
-        const bookingData = {
-            flightName: flightName,
-            bookingType: 'flight',
-            ...(searchData || {})
-        };
-        
-        console.log('Saving flight booking:', bookingData);
-        sendDataToParent('save_data', 'flight_booking', bookingData);
-        
-        // Redirect to flight availability page
-        window.location.href = 'CekKetersediaanPesawat.html';
+    if (!flight) {
+        console.error('Flight not found:', flightNumber);
+        return;
+    }
+
+    // Get form data
+    const passengers = document.querySelector('#flightForm #passengers')?.value || '1';
+    const flightClass = document.querySelector('#flightForm #flightClass')?.value || 'Economy';
+
+    // Calculate total price
+    const totalPrice = flight.harga * parseInt(passengers);
+
+    // Format price
+    const formattedPrice = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(totalPrice);
+
+    // Format dates
+    const formatDate = (date) => {
+        return new Date(date).toLocaleDateString('id-ID', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    };
+
+    const formatTime = (date) => {
+        return new Date(date).toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+    };
+
+    // Create booking data
+    const bookingData = {
+        flightNumber: flight.nomorPenerbangan,
+        airline: flight.maskapai,
+        origin: flight.origin,
+        destination: flight.destination,
+        departureDate: formatDate(flight.waktuKeberangkatan),
+        departureTime: formatTime(flight.waktuKeberangkatan),
+        arrivalDate: formatDate(flight.waktuKedatangan),
+        arrivalTime: formatTime(flight.waktuKedatangan),
+        passengers: passengers,
+        flightClass: flightClass,
+        totalPrice: totalPrice,
+        formattedPrice: formattedPrice
+    };
+
+    // Save booking data
+    console.log('Saving flight booking data:', bookingData);
+    sendDataToParent('save_data', 'flight_booking', bookingData);
+
+    // Show success message
+    showModal('booking_success', () => {
+        // Redirect to payment page or show payment form
+        console.log('Redirecting to payment...');
+        // You can add your payment redirection logic here
     });
 } 
