@@ -39,7 +39,7 @@ public class App extends Application {
         if (TestViewer != null) {
             webEngine.load(TestViewer.toExternalForm());
         } else {
-            System.err.println("HTML file not found.");
+            System.err.println("HTML file not found. Looking for: /com/owo/boundary/App.html");
         }
         webEngine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
             if (newState == javafx.concurrent.Worker.State.SUCCEEDED) {
@@ -47,11 +47,13 @@ public class App extends Application {
                 window.setMember("javaBridge", new JavaBridge());
 
                 // Override JS function to call JavaBridge
-                webEngine.executeScript(
-                    "window.onButtonClicked = function() {" +
-                    "    javaBridge.handleClick('Button was clicked! (overridden)');" +
-                    "}"
-                );
+                // webEngine.executeScript(
+                //     "window.onButtonClicked = function() {" +
+                //     "    javaBridge.handleClick('Button was clicked! (overridden)');" +
+                //     "}"
+                // );
+            } else {
+                System.err.println("HTML file not found.");
             }
         });
 

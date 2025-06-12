@@ -24,6 +24,7 @@ dependencies {
     // This dependency is used by the application.
     implementation 'com.google.guava:guava:31.1-jre'
     implementation 'org.mindrot:jbcrypt:0.4'
+    implementation 'org.xerial:sqlite-jdbc:3.45.1.0'
 }
 
 javafx {
@@ -41,24 +42,46 @@ java {
 application {
     // Define the main class for the application.
     mainClass = 'com.owo.App'
-    
-    // Add JVM arguments to allow access to jbcrypt
-    applicationDefaultJvmArgs = ['--add-opens', 'java.base/java.lang=ALL-UNNAMED']
 }
 
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
-    
-    // Add JVM arguments for tests
+}
+
+tasks.withType(JavaExec) {
     jvmArgs += ['--add-opens', 'java.base/java.lang=ALL-UNNAMED']
+}
+
+tasks.withType(Test) {
+    jvmArgs += ['--add-opens', 'java.base/java.lang=ALL-UNNAMED']
+}
+
+// Disable configuration cache for JavaFX tasks
+tasks.withType(JavaExec).configureEach {
+    notCompatibleWithConfigurationCache("JavaFX tasks are not compatible with configuration cache")
+}
+
+// Disable configuration cache for test tasks
+tasks.withType(Test).configureEach {
+    notCompatibleWithConfigurationCache("Test tasks are not compatible with configuration cache")
 }
 
 sourceSets {
     main {
+        java {
+            srcDirs = ['src/main/java']
+        }
         resources {
-            srcDir 'src/main/java'
-            exclude '**/*.java'
+            srcDirs = ['src/main/resources']
+        }
+    }
+    test {
+        java {
+            srcDirs = ['src/test/java']
+        }
+        resources {
+            srcDirs = ['src/test/resources']
         }
     }
 }

@@ -1,7 +1,9 @@
 package com.owo.entity;
 
-public class Refund {
+import java.util.ArrayList;
 
+public class Refund {
+    private static ArrayList<Refund> allRefund = new ArrayList<>();
     private String id;
     private int pemesananID;
     private String alasan;
@@ -19,6 +21,7 @@ public class Refund {
         this.alasan = alasan;
         this.status = RefundStatus.PENDING_REVIEW;
         this.jumlahRefund = jumlahRefund;
+        allRefund.add(this);
     }
 
     public String getId() {
@@ -89,5 +92,14 @@ public class Refund {
         COMPLETED,
         FAILED
 
+    }
+
+    public static Refund getRefundByID(String ID) {
+        for (Refund refund : allRefund) {
+            if (refund.getId().equals(ID)) {
+                return refund;
+            }
+        }
+        return null;
     }
 }

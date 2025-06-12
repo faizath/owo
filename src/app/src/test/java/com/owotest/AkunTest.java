@@ -10,11 +10,12 @@ class AkunTest {
 
     @BeforeEach
     void setUp() {
-        akun = new Akun("Test User", "test@example.com", "password123");
+        akun = new Akun(1, "Test User", "test@example.com", "password123");
     }
 
     @Test
     void testConstructorAndGetters() {
+        assertEquals(1, akun.getID());
         assertEquals("Test User", akun.getNama());
         assertEquals("test@example.com", akun.getEmail());
     }

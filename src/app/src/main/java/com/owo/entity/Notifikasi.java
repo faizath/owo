@@ -11,13 +11,18 @@ public class Notifikasi {
     private LocalDateTime waktu;
     private boolean terkirm;
 
-    public Notifikasi(int userID, String pesan) {
-        this.ID = allNotifikasi.size() + 1;
+    public Notifikasi(int ID, int userID, String pesan) {
+        this.ID = ID;
         this.userID = userID;
         this.pesan = pesan;
         this.waktu = LocalDateTime.now();
         this.terkirm = false;
         allNotifikasi.add(this);
+    }
+
+    public Notifikasi(int ID, int userID, String pesan, LocalDateTime waktu) {
+        this(ID, userID, pesan);
+        this.waktu = waktu;
     }
 
     public int getID() {
@@ -42,5 +47,14 @@ public class Notifikasi {
     
     public void setTerkirm() {
         this.terkirm = true;
+    }
+
+    public static Notifikasi getNotifikasiByID(int ID) {
+        for (Notifikasi notifikasi : allNotifikasi) {
+            if (notifikasi.getID() == ID) {
+                return notifikasi;
+            }
+        }
+        return null;
     }
 }

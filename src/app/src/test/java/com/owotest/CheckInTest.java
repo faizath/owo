@@ -27,22 +27,22 @@ public class CheckInTest {
 
         TiketPesawat tiketHariIni = new TiketPesawat(101, 1500000f, true, "GA-202", "CGK", "DPS", "Garuda Indonesia",
                 "Ekonomi", LocalDateTime.now());
-        pemesananBisaCheckIn = new Pemesanan(1, "cust-01", tiketHariIni);
+        pemesananBisaCheckIn = new Pemesanan(1, "1", tiketHariIni);
         pemesananBisaCheckIn.setStatus("CONFIRMED");
 
         TiketPesawat tiketBesok = new TiketPesawat(102, 1200000f, true, "QZ-7510", "SUB", "CGK", "AirAsia", "Ekonomi",
                 LocalDateTime.now().plusDays(1));
-        pemesananTerlaluAwal = new Pemesanan(2, "cust-02", tiketBesok);
+        pemesananTerlaluAwal = new Pemesanan(2, "2", tiketBesok);
         pemesananTerlaluAwal.setStatus("CONFIRMED");
 
         TiketPesawat tiketStatusSalah = new TiketPesawat(103, 950000f, true, "SJ-182", "CGK", "PNK", "Sriwijaya Air",
                 "Bisnis", LocalDateTime.now());
-        pemesananStatusSalah = new Pemesanan(3, "cust-03", tiketStatusSalah);
+        pemesananStatusSalah = new Pemesanan(3, "3", tiketStatusSalah);
         pemesananStatusSalah.setStatus("PENDING");
 
         TiketHotel tiketHotelHariIni = new TiketHotel(201, 800000f, true, LocalDate.now(), LocalDate.now().plusDays(2),
                 "Hotel Owo", "101", "Jalan Merdeka No. 45");
-        pemesananHotelBisaCheckIn = new Pemesanan(4, "cust-04", tiketHotelHariIni);
+        pemesananHotelBisaCheckIn = new Pemesanan(4, "4", tiketHotelHariIni);
         pemesananHotelBisaCheckIn.setStatus("CONFIRMED");
     }
 

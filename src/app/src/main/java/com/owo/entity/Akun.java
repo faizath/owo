@@ -9,11 +9,11 @@ public class Akun {
     private int ID;
     private String nama, email, hashedPassword;
 
-    public Akun(String nama, String email, String password) {
+    public Akun(int ID, String nama, String email, String password) {
+        this.ID = ID;
         this.nama = nama;
         this.email = email;
         this.hashedPassword = passwordUtil.hashPassword(password);
-        this.ID = allAkun.size() + 1;
         allAkun.add(this);
     }
 
@@ -27,6 +27,10 @@ public class Akun {
 
     public String getEmail() {
         return email;
+    }
+
+    public String getHashedPassword() {
+        return hashedPassword;
     }
 
     public void setNama(String nama) {
@@ -47,6 +51,15 @@ public class Akun {
 
     public boolean checkEmail(String email) {
         return this.email.equals(email);
+    }
+
+    public static Akun getAkunByID(int ID) {
+        for (Akun akun : allAkun) {
+            if (akun.getID() == ID) {
+                return akun;
+            }
+        }
+        return null;
     }
 
     public static Akun getAkunByEmail(String email) {

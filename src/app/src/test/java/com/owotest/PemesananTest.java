@@ -13,7 +13,7 @@ public class PemesananTest {
     private Pemesanan pemesananPesawat;
     private Pemesanan pemesananHotel;
     private final int id = 1;
-    private final String customerId = "C001";
+    private final String customerId = "1";
     private final TiketPesawat tiketPesawat = new TiketPesawat(1, 100000.0f, true, "GA123", "Jakarta", "Bali", "Garuda Indonesia", "Ekonomi", LocalDateTime.now().plusDays(1));
     private final TiketHotel tiketHotel = new TiketHotel(2, 500000.0f, true, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3), "Grand Hotel", "101", "Jakarta");
 
@@ -52,7 +52,7 @@ public class PemesananTest {
 
     @Test
     void testSetAndGetCustomerId() {
-        String newCustomerId = "C002";
+        String newCustomerId = "2";
         pemesananPesawat.setCustomerId(newCustomerId);
         assertEquals(newCustomerId, pemesananPesawat.getCustomerId());
 

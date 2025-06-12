@@ -10,29 +10,31 @@ import java.time.LocalDateTime;
 
 public class NotifikasiTest {
     private Notifikasi notifikasi;
+    private static final int TEST_ID = 1;
     private static final int TEST_USER_ID = 1;
     private static final String TEST_PESAN = "Test notification message";
+    private static final LocalDateTime TEST_WAKTU = LocalDateTime.now();
 
     @BeforeEach
     void setUp() {
-        notifikasi = new Notifikasi(TEST_USER_ID, TEST_PESAN);
+        notifikasi = new Notifikasi(TEST_ID, TEST_USER_ID, TEST_PESAN, TEST_WAKTU);
     }
 
     @Test
     @DisplayName("Test Notifikasi constructor and initial values")
     void testConstructor() {
         assertNotNull(notifikasi);
+        assertEquals(TEST_ID, notifikasi.getID());
         assertEquals(TEST_USER_ID, notifikasi.getUserID());
         assertEquals(TEST_PESAN, notifikasi.getPesan());
+        assertEquals(TEST_WAKTU, notifikasi.getWaktu());
         assertFalse(notifikasi.isTerkirm());
-        assertNotNull(notifikasi.getWaktu());
-        assertTrue(notifikasi.getWaktu() instanceof LocalDateTime);
     }
 
     @Test
     @DisplayName("Test getID method")
     void testGetID() {
-        assertTrue(notifikasi.getID() > 0);
+        assertEquals(TEST_ID, notifikasi.getID());
     }
 
     @Test
@@ -50,10 +52,7 @@ public class NotifikasiTest {
     @Test
     @DisplayName("Test getWaktu method")
     void testGetWaktu() {
-        LocalDateTime waktu = notifikasi.getWaktu();
-        assertNotNull(waktu);
-        assertTrue(waktu.isBefore(LocalDateTime.now().plusSeconds(1)));
-        assertTrue(waktu.isAfter(LocalDateTime.now().minusSeconds(1)));
+        assertEquals(TEST_WAKTU, notifikasi.getWaktu());
     }
 
     @Test
@@ -72,7 +71,7 @@ public class NotifikasiTest {
     @Test
     @DisplayName("Test multiple notifications have different IDs")
     void testMultipleNotifications() {
-        Notifikasi notifikasi2 = new Notifikasi(2, "Second notification");
+        Notifikasi notifikasi2 = new Notifikasi(2, TEST_USER_ID, "Second notification", TEST_WAKTU);
         assertNotEquals(notifikasi.getID(), notifikasi2.getID());
     }
 }

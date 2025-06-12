@@ -1,6 +1,9 @@
 package com.owo.entity;
 
+import java.util.ArrayList;
+
 public abstract class Tiket {
+    private static ArrayList<Tiket> allTiket = new ArrayList<>();
     private int id;
     private float harga;
     private boolean tersedia;
@@ -9,6 +12,7 @@ public abstract class Tiket {
         this.id = id;
         this.harga = harga;
         this.tersedia = tersedia;
+        allTiket.add(this);
     }
 
     public int getId() {
@@ -33,5 +37,14 @@ public abstract class Tiket {
 
     public void setTersedia(boolean tersedia) {
         this.tersedia = tersedia;
+    }
+
+    public static Tiket getTiketByID(int ID) {
+        for (Tiket tiket : allTiket) {
+            if (tiket.getId() == ID) {
+                return tiket;
+            }
+        }
+        return null;
     }
 }
