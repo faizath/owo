@@ -1164,6 +1164,17 @@
             const routeClass = isPast ? 'history-route' : 'booking-route';
             const detailsClass = isPast ? 'history-details' : 'booking-details';
 
+            const isCheckedIn = localStorage.getItem(`checkedIn_${booking.transactionId}`) === 'true';
+
+            let refundButtonHTML = `<button class="action-button btn-refund" id="refund-${booking.transactionId}" onclick="goToRefund('${booking.transactionId}')">Ajukan Refund</button>`;
+
+            if (booking.refundable) {
+                if (isCheckedIn) {
+                    refundButtonHTML = `<button class="action-button btn-refund" disabled title="Anda sudah check-in">Refund Tidak Tersedia</button>`;
+                } else {
+                    refundButtonHTML = `<button class="action-button btn-refund" id="refund-${booking.transactionId}" onclick="goToRefund('${booking.transactionId}')">Ajukan Refund</button>`;
+                }
+            }
             return `
                 <div class="${cardClass}">
                     <div class="${headerClass}">
@@ -1182,12 +1193,11 @@
                     </div>
                     ${!isPast ? `
                     <div class="booking-actions">
-                        ${booking.refundable ? `<button class="action-button btn-refund" onclick="goToRefund('${booking.transactionId}')">Ajukan Refund</button>` : ''}
-                        <button class="action-button btn-checkin" id="checkin-${booking.transactionId}" onclick="openCheckInModal('${booking.transactionId}', '${booking.from} - ${booking.to}', '${formatDate(booking.departure)}', '${booking.airlineName}')">Check In</button>
+                        ${refundButtonHTML} <button class="action-button btn-checkin" id="checkin-${booking.transactionId}" onclick="openCheckInModal('${booking.transactionId}', '${booking.from} - ${booking.to}', '${formatDate(booking.departure)}', '${booking.airlineName}')">Check In</button>
                     </div>` : ''}
                 </div>
             `;
-        }
+        }   
 
         // Fungsi untuk membuat kartu booking hotel
         function createHotelBookingCard(booking, isPast) {
@@ -1196,6 +1206,22 @@
             const headerClass = isPast ? 'history-header' : 'booking-header';
             const routeClass = isPast ? 'history-route' : 'booking-route';
             const detailsClass = isPast ? 'history-details' : 'booking-details';
+
+            // ---- LOGIKA BARU DIMULAI DISINI ----
+            // Cek apakah booking ini sudah di-check-in dari localStorage
+            const isCheckedIn = localStorage.getItem(`checkedIn_${booking.transactionId}`) === 'true';
+
+            // Tentukan teks dan status untuk tombol refund
+            let refundButtonHTML = refundButtonHTML = `<button class="action-button btn-refund" id="refund-${booking.transactionId}" onclick="goToRefund('${booking.transactionId}')">Ajukan Refund</button>`;
+            if (booking.refundable) {
+                if (isCheckedIn) {
+                    // Jika sudah check-in, buat tombol non-aktif
+                    refundButtonHTML = `<button class="action-button btn-refund" disabled title="Anda sudah check-in">Refund Tidak Tersedia</button>`;
+                } else {
+                    // Jika belum check-in dan refundable, buat tombol aktif
+                    refundButtonHTML = `<button class="action-button btn-refund" id="refund-${booking.transactionId}" onclick="goToRefund('${booking.transactionId}')">Ajukan Refund</button>`;
+                }
+            }
 
             return `
                 <div class="${cardClass}">
@@ -1215,8 +1241,7 @@
                     </div>
                     ${!isPast ? `
                     <div class="booking-actions">
-                        ${booking.refundable ? `<button class="action-button btn-refund" onclick="goToRefund('${booking.transactionId}')">Ajukan Refund</button>` : ''}
-                        <button class="action-button btn-checkin" id="checkin-${booking.transactionId}" onclick="openCheckInModal('${booking.transactionId}', '${booking.hotelName}', '${formatDate(booking.checkin)}', 'Tamu: ${booking.guests}')">Check In</button>
+                        ${refundButtonHTML} <button class="action-button btn-checkin" id="checkin-${booking.transactionId}" onclick="openCheckInModal('${booking.transactionId}', '${booking.hotelName}', '${formatDate(booking.checkin)}', 'Tamu: ${booking.guests}')">Check In</button>
                     </div>` : ''}
                 </div>
             `;
@@ -1265,7 +1290,7 @@
 
                     if (!activeBookingsFound) currentContainer.insertAdjacentHTML('beforeend', '<p style="padding: 15px 0;">Tidak ada pesanan aktif saat ini.</p>');
                     if (!historyBookingsFound) historyListContainer.insertAdjacentHTML('beforeend', '<p style="padding: 15px 0;">Belum ada riwayat pemesanan.</p>');
-                    updateCheckinButtons();
+                    updateAllButtonStates();
                 });
             });
         }
@@ -1330,7 +1355,8 @@
                     setTimeout(() => {
                         closeCheckInModal();
                         updateCheckinButton(currentBookingCode);
-                    }, 3000);
+                        updateRefundButton(currentBookingCode); 
+                    }, 2000); 
                 } else {
                     document.getElementById('error-detail').textContent = 'Terjadi kesalahan sistem. Silakan coba lagi.';
                     document.getElementById('modal-error-message').style.display = 'block';
@@ -1349,19 +1375,42 @@
             }
         }
 
-        function updateCheckinButtons() {
-            document.querySelectorAll('.btn-checkin').forEach(button => {
-                const bookingCode = button.id.replace('checkin-', '');
-                const isCheckedIn = localStorage.getItem(`checkedIn_${bookingCode}`);
-                if (isCheckedIn === 'true') {
+        // GANTI FUNGSI updateCheckinButtons DENGAN INI
+        function updateAllButtonStates() {
+            // Ambil semua tombol checkin dan refund
+            const allBookingActions = document.querySelectorAll('.booking-actions');
+            
+            allBookingActions.forEach(actionDiv => {
+                const checkinButton = actionDiv.querySelector('.btn-checkin');
+                if (!checkinButton) return;
+
+                const bookingCode = checkinButton.id.replace('checkin-', '');
+                const isCheckedIn = localStorage.getItem(`checkedIn_${bookingCode}`) === 'true';
+
+                if (isCheckedIn) {
+                    // Jika sudah check-in, update kedua tombol
                     updateCheckinButton(bookingCode);
+                    updateRefundButton(bookingCode);
                 }
             });
+        }
+
+        function updateRefundButton(bookingCode) {
+            const button = document.getElementById(`refund-${bookingCode}`);
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'Refund Tidak Tersedia';
+                button.title = 'Anda sudah check-in';
+                button.style.background = '#ccc';
+                button.style.cursor = 'not-allowed';
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Riwayat Pemesanan page loaded');
             loadAndDisplayBookings();
+            updateAllButtonStates(); 
+
             document.getElementById('checkinModal').addEventListener('click', function(e) {
                 if (e.target === this) closeCheckInModal();
             });
