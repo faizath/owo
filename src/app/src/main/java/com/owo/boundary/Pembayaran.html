@@ -944,139 +944,344 @@
     </div>
 
     <script>
-        // --- FUNGSI KOMUNIKASI DENGAN PARENT ---
-        function getDataFromParent(type, callback) {
+        // SCRIPT UNTUK Pembayaran.html - REVISI LENGKAP
+        // Fungsi helper untuk mendapatkan data dari parent dengan timeout
+        function getDataFromParent(type, callback, timeout = 5000) {
+            console.log('Requesting data from parent:', type);
+            
             if (window.parent && window.parent !== window) {
+                let responseReceived = false;
+                
                 const responseListener = function(event) {
+                    console.log('Response received:', event.data);
                     if (event.data.action === 'data_response' && event.data.type === type) {
+                        responseReceived = true;
                         callback(event.data.data);
                         window.removeEventListener('message', responseListener);
                     }
                 };
+                
                 window.addEventListener('message', responseListener);
-                window.parent.postMessage({ action: 'get_data', type: type }, '*');
+                
+                // Kirim request
+                window.parent.postMessage({
+                    action: 'get_data',
+                    type: type
+                }, '*');
+                
+                // Timeout untuk menghindari hanging
+                setTimeout(() => {
+                    if (!responseReceived) {
+                        console.warn('Timeout waiting for data from parent');
+                        window.removeEventListener('message', responseListener);
+                        callback(null);
+                    }
+                }, timeout);
             } else {
+                console.warn('Not in iframe, returning null');
                 callback(null);
             }
         }
-    
-        // --- FUNGSI UNTUK MENGUPDATE TAMPILAN ---
+
+        // Fungsi untuk mengirim data ke parent
+        function sendDataToParent(action, type, data) {
+            console.log('Sending to parent:', { action, type, data });
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ action: action, type: type, data: data }, '*');
+            } else {
+                console.error("Tidak bisa mengirim data: Halaman tidak berada di dalam iframe parent yang benar.");
+            }
+        }
+
+        // Fungsi untuk mengupdate UI berdasarkan data booking
         function updateUI(bookingData) {
+            console.log('Updating UI with booking data:', bookingData);
+            
             if (!bookingData) {
                 console.error("Tidak ada data booking untuk ditampilkan.");
+                // Set default values jika tidak ada data
+                setDefaultValues();
                 return;
             }
-    
-            // Update Info Hotel
-            document.getElementById('hotel-name').textContent = bookingData.hotelName || 'Nama Hotel Tidak Tersedia';
-            document.getElementById('room-type').textContent = bookingData.roomType || 'Tipe Kamar Tidak Tersedia';
-            
-            // Update Tanggal
-            document.getElementById('checkin-date').textContent = bookingData.checkin || '--';
-            document.getElementById('checkout-date').textContent = bookingData.checkout || '--';
-    
-            // Update Harga (dengan perhitungan sederhana)
-            const basePrice = parseInt(bookingData.price.replace(/[^0-9]/g, ''), 10);
-            const taxes = Math.round(basePrice * 0.10); // Contoh pajak 10%
-            const totalPrice = basePrice + taxes;
-    
-            const formatter = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 });
-    
-            document.getElementById('base-price').textContent = formatter.format(basePrice);
-            document.getElementById('taxes-fees').textContent = formatter.format(taxes);
-            document.getElementById('total-price').textContent = formatter.format(totalPrice);
+
+            // Deteksi jenis booking (hotel/flight)
+            const isHotelBooking = bookingData.bookingType === 'hotel' || bookingData.hotelName;
+            const isFlightBooking = bookingData.bookingType === 'flight' || bookingData.flightName;
+
+            if (isHotelBooking) {
+                updateHotelBookingUI(bookingData);
+            } else if (isFlightBooking) {
+                updateFlightBookingUI(bookingData);
+            } else {
+                console.warn('Unknown booking type, setting defaults');
+                setDefaultValues();
+            }
         }
-    
-        // --- INISIALISASI HALAMAN ---
-        document.addEventListener('DOMContentLoaded', function() {
-            // Ambil data booking terakhir dari parent
-            getDataFromParent('hotel_booking', function(bookingData) {
-                updateUI(bookingData);
+
+        // Update UI untuk booking hotel
+        function updateHotelBookingUI(bookingData) {
+            // Update Info Hotel
+            const hotelNameEl = document.getElementById('hotel-name');
+            const roomTypeEl = document.getElementById('room-type');
+            const checkinEl = document.getElementById('checkin-date');
+            const checkoutEl = document.getElementById('checkout-date');
+            
+            if (hotelNameEl) hotelNameEl.textContent = bookingData.hotelName || 'Nama Hotel Tidak Tersedia';
+            if (roomTypeEl) roomTypeEl.textContent = bookingData.roomType || 'Tipe Kamar Tidak Tersedia';
+            if (checkinEl) checkinEl.textContent = bookingData.checkin || '--';
+            if (checkoutEl) checkoutEl.textContent = bookingData.checkout || '--';
+            
+            // Update harga
+            updatePricing(bookingData.price || 'Rp 500.000');
+            
+            // Update booking summary title
+            const summaryTitle = document.querySelector('.booking-summary h3');
+            if (summaryTitle) summaryTitle.textContent = 'Hotel Booking Summary';
+        }
+
+        // Update UI untuk booking flight
+        function updateFlightBookingUI(bookingData) {
+            // Update Info Flight - sesuaikan dengan element yang ada di HTML
+            const flightNameEl = document.getElementById('hotel-name'); // Reuse element
+            const routeEl = document.getElementById('room-type'); // Reuse element
+            const departureEl = document.getElementById('checkin-date'); // Reuse element
+            const passengersEl = document.getElementById('checkout-date'); // Reuse element
+            
+            if (flightNameEl) flightNameEl.textContent = bookingData.flightName || 'Nama Penerbangan Tidak Tersedia';
+            if (routeEl) routeEl.textContent = `${bookingData.from || 'Asal'} → ${bookingData.to || 'Tujuan'}`;
+            if (departureEl) departureEl.textContent = bookingData.departure || '--';
+            if (passengersEl) passengersEl.textContent = `${bookingData.passengers || '1'} penumpang`;
+            
+            // Update harga
+            updatePricing(bookingData.price || 'Rp 1.500.000');
+            
+            // Update booking summary title
+            const summaryTitle = document.querySelector('.booking-summary h3');
+            if (summaryTitle) summaryTitle.textContent = 'Flight Booking Summary';
+        }
+
+        // Set nilai default jika tidak ada data
+        function setDefaultValues() {
+            const hotelNameEl = document.getElementById('hotel-name');
+            const roomTypeEl = document.getElementById('room-type');
+            const checkinEl = document.getElementById('checkin-date');
+            const checkoutEl = document.getElementById('checkout-date');
+            
+            if (hotelNameEl) hotelNameEl.textContent = 'Booking Information';
+            if (roomTypeEl) roomTypeEl.textContent = 'Tidak ada data booking';
+            if (checkinEl) checkinEl.textContent = '--';
+            if (checkoutEl) checkoutEl.textContent = '--';
+            
+            updatePricing('Rp 0');
+        }
+
+        // Update pricing dengan perhitungan pajak
+        function updatePricing(priceString) {
+            // Extract number dari string harga
+            const basePrice = parseInt(priceString.replace(/[^0-9]/g, ''), 10) || 0;
+            const taxes = Math.round(basePrice * 0.10); // Pajak 10%
+            const serviceFee = Math.round(basePrice * 0.05); // Service fee 5%
+            const totalPrice = basePrice + taxes + serviceFee;
+            
+            const formatter = new Intl.NumberFormat('id-ID', { 
+                style: 'currency', 
+                currency: 'IDR', 
+                minimumFractionDigits: 0 
             });
-    
-            // Hubungkan event ke tombol "PAYMENT"
+            
+            const basePriceEl = document.getElementById('base-price');
+            const taxesFeesEl = document.getElementById('taxes-fees');
+            const totalPriceEl = document.getElementById('total-price');
+            
+            if (basePriceEl) basePriceEl.textContent = formatter.format(basePrice);
+            if (taxesFeesEl) taxesFeesEl.textContent = formatter.format(taxes + serviceFee);
+            if (totalPriceEl) totalPriceEl.textContent = formatter.format(totalPrice);
+        }
+
+        // Inisialisasi halaman
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Pembayaran page loaded');
+            
+            // Setup event listeners
+            setupPaymentEventListeners();
+            
+            // Load data booking
+            loadBookingData();
+        });
+
+        // Load data booking dari parent
+        function loadBookingData() {
+            // Coba ambil hotel booking dulu
+            getDataFromParent('hotel_booking', function(hotelBookingData) {
+                if (hotelBookingData) {
+                    console.log('Hotel booking data found:', hotelBookingData);
+                    updateUI(hotelBookingData);
+                    window.currentBookingData = hotelBookingData;
+                } else {
+                    // Jika tidak ada hotel booking, coba flight booking
+                    getDataFromParent('flight_booking', function(flightBookingData) {
+                        if (flightBookingData) {
+                            console.log('Flight booking data found:', flightBookingData);
+                            updateUI(flightBookingData);
+                            window.currentBookingData = flightBookingData;
+                        } else {
+                            console.warn('No booking data found');
+                            setDefaultValues();
+                        }
+                    });
+                }
+            });
+        }
+
+        // Setup semua event listeners
+        function setupPaymentEventListeners() {
+            // Payment method selection
+            document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    document.querySelectorAll('.payment-option').forEach(option => 
+                        option.classList.remove('selected')
+                    );
+                    this.closest('.payment-option').classList.add('selected');
+                    
+                    const cardDetails = document.getElementById('cardDetails');
+                    if (cardDetails) {
+                        if (this.value === 'credit') {
+                            cardDetails.classList.add('show');
+                        } else {
+                            cardDetails.classList.remove('show');
+                        }
+                    }
+                });
+            });
+
+            // Payment button
             const paymentButton = document.getElementById('payment-button');
-            if(paymentButton) {
+            if (paymentButton) {
                 paymentButton.addEventListener('click', function(event) {
-                    // INI ADALAH PERBAIKAN UTAMA UNTUK MENCEGAH RELOAD
                     event.preventDefault();
-    
-                    // Panggil fungsi proses pembayaran yang sudah ada
                     processPayment();
                 });
             }
-        });
-    
-    
-        // --- SISA SCRIPT ANDA (TIDAK PERLU DIUBAH) ---
-    
-        // Payment method selection
-        document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                document.querySelectorAll('.payment-option').forEach(option => option.classList.remove('selected'));
-                this.closest('.payment-option').classList.add('selected');
-                const cardDetails = document.getElementById('cardDetails');
-                if (this.value === 'credit') cardDetails.classList.add('show');
-                else cardDetails.classList.remove('show');
-            });
-        });
-    
-        // Form validation
+
+            // Success modal close
+            const successModal = document.getElementById('successModal');
+            if (successModal) {
+                successModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.classList.remove('show');
+                    }
+                });
+            }
+        }
+
+        // Validasi form
         function validateForm() {
             const requiredFields = ['firstName', 'lastName', 'email', 'phone'];
             let isValid = true;
+            
             requiredFields.forEach(id => {
                 const field = document.getElementById(id);
-                if (!field.value.trim()) {
-                    field.style.borderColor = '#EF4444';
-                    isValid = false;
-                } else {
-                    field.style.borderColor = '#E5E7EB';
-                }
-            });
-            if (document.getElementById('creditCard').checked) {
-                const cardFields = ['cardName', 'cardNumber', 'expiryMonth', 'expiryYear', 'cvv'];
-                cardFields.forEach(id => {
-                    const field = document.getElementById(id);
+                if (field) {
                     if (!field.value.trim()) {
                         field.style.borderColor = '#EF4444';
                         isValid = false;
                     } else {
                         field.style.borderColor = '#E5E7EB';
                     }
+                }
+            });
+            
+            // Validasi kartu kredit jika dipilih
+            const creditCardRadio = document.getElementById('creditCard');
+            if (creditCardRadio && creditCardRadio.checked) {
+                const cardFields = ['cardName', 'cardNumber', 'expiryMonth', 'expiryYear', 'cvv'];
+                cardFields.forEach(id => {
+                    const field = document.getElementById(id);
+                    if (field) {
+                        if (!field.value.trim()) {
+                            field.style.borderColor = '#EF4444';
+                            isValid = false;
+                        } else {
+                            field.style.borderColor = '#E5E7EB';
+                        }
+                    }
                 });
             }
+            
             return isValid;
         }
-    
-        // Process payment (sekarang dipanggil dari event listener)
+
+        // Proses pembayaran
         function processPayment() {
             if (!validateForm()) {
                 alert('Mohon lengkapi semua field yang diperlukan');
                 return;
             }
+            
             const button = document.getElementById('payment-button');
-            button.disabled = true;
-            button.textContent = 'Processing...';
-    
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'Processing...';
+            }
+            
+            // Simulasi proses pembayaran
             setTimeout(() => {
-                document.getElementById('successModal').classList.add('show');
-                button.disabled = false;
-                button.textContent = 'PAYMENT';
+                // Simpan data pembayaran yang berhasil
+                const paymentData = {
+                    ...window.currentBookingData,
+                    paymentStatus: 'completed',
+                    paymentTimestamp: new Date().toISOString(),
+                    paymentMethod: getSelectedPaymentMethod(),
+                    transactionId: 'TXN' + Date.now()
+                };
+                
+                console.log('Payment completed:', paymentData);
+                
+                // Simpan ke parent
+                const bookingType = paymentData.bookingType || (paymentData.hotelName ? 'hotel' : 'flight');
+                sendDataToParent('save_data', `${bookingType}_booking`, paymentData);
+                
+                // Reset button
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = 'PAYMENT';
+                }
+                
+                // Tampilkan modal sukses
+                const successModal = document.getElementById('successModal');
+                if (successModal) {
+                    successModal.classList.add('show');
+                }
             }, 2000);
         }
-    
+
+        // Get selected payment method
+        function getSelectedPaymentMethod() {
+            const selectedRadio = document.querySelector('input[name="paymentMethod"]:checked');
+            return selectedRadio ? selectedRadio.value : 'unknown';
+        }
+
         // Return to home
         function returnToHome() {
-            window.location.href = 'RiwayatPemesanan.html';
-        }
-    
-        // Close modal when clicking outside
-        document.getElementById('successModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.classList.remove('show');
+            const successModal = document.getElementById('successModal');
+            if (successModal) {
+                successModal.classList.remove('show');
             }
-        });
+            
+            // Redirect ke halaman riwayat pemesanan
+            setTimeout(() => {
+                window.location.href = 'RiwayatPemesanan.html';
+            }, 300);
+        }
+
+        // Expose functions untuk debugging
+        window.pembayaranDebug = {
+            getDataFromParent: getDataFromParent,
+            sendDataToParent: sendDataToParent,
+            currentBookingData: window.currentBookingData,
+            processPayment: processPayment,
+            loadBookingData: loadBookingData
+        };
     </script>
 </body>
 </html>

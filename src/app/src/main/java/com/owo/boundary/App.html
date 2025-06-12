@@ -99,7 +99,8 @@
     </iframe>
 
     <script>
-        // Object untuk menyimpan semua data aplikasi (struktur diubah)
+        // PARENT WINDOW SCRIPT - PERBAIKAN UTAMA
+        // Object untuk menyimpan semua data aplikasi
         window.travelAppData = {
             hotelBooking: null,
             flightBooking: null,
@@ -113,8 +114,8 @@
                 flight: null
             }
         };
-    
-        // Fungsi untuk menyimpan data (logika diubah untuk menimpa data)
+
+        // Fungsi untuk menyimpan data
         function saveData(type, data) {
             const timestamp = new Date().toISOString();
             const dataWithTimestamp = {
@@ -122,56 +123,58 @@
                 timestamp: timestamp,
                 id: Date.now() + Math.random()
             };
-        
+
             // Pastikan objek utama ada
             if (!window.travelAppData) {
-                // Inisialisasi ulang jika hilang total (sangat defensif)
-                window.travelAppData = { hotelBooking: null, flightBooking: null, searchHistory: {}, userPreferences: {}, favorites: {} };
+                window.travelAppData = { 
+                    hotelBooking: null, 
+                    flightBooking: null, 
+                    searchHistory: { hotel: null, flight: null }, 
+                    userPreferences: {}, 
+                    favorites: { hotel: null, flight: null } 
+                };
             }
-        
+
             switch(type) {
                 case 'hotel_search':
-                    // PERIKSA & BUAT JIKA searchHistory TIDAK ADA
                     if (!window.travelAppData.searchHistory) {
                         window.travelAppData.searchHistory = { hotel: null, flight: null };
                     }
                     window.travelAppData.searchHistory.hotel = dataWithTimestamp;
                     break;
-        
+
                 case 'flight_search':
-                    // PERIKSA & BUAT JIKA searchHistory TIDAK ADA
                     if (!window.travelAppData.searchHistory) {
                         window.travelAppData.searchHistory = { hotel: null, flight: null };
                     }
                     window.travelAppData.searchHistory.flight = dataWithTimestamp;
                     break;
-        
+
                 case 'hotel_booking':
+                case 'hotel_booking_complete': // Support untuk kedua tipe
                     window.travelAppData.hotelBooking = dataWithTimestamp;
                     break;
-        
+
                 case 'flight_booking':
+                case 'flight_booking_complete':
                     window.travelAppData.flightBooking = dataWithTimestamp;
                     break;
-        
+
                 case 'hotel_favorite':
-                     // PERIKSA & BUAT JIKA favorites TIDAK ADA
                     if (!window.travelAppData.favorites) {
                         window.travelAppData.favorites = { hotel: null, flight: null };
                     }
                     window.travelAppData.favorites.hotel = dataWithTimestamp;
                     break;
-        
+
                 case 'flight_favorite':
-                     // PERIKSA & BUAT JIKA favorites TIDAK ADA
                     if (!window.travelAppData.favorites) {
                         window.travelAppData.favorites = { hotel: null, flight: null };
                     }
                     window.travelAppData.favorites.flight = dataWithTimestamp;
                     break;
-        
+
                 case 'user_preference':
-                    // PERIKSA & BUAT JIKA userPreferences TIDAK ADA
                     if (!window.travelAppData.userPreferences) {
                         window.travelAppData.userPreferences = {};
                     }
@@ -186,19 +189,26 @@
             updateDataPanel();
             
             // Log untuk debugging
-            console.log('Data saved (overwritten):', type, dataWithTimestamp);
+            console.log('Data saved:', type, dataWithTimestamp);
             console.log('Current app data:', window.travelAppData);
         }
-    
-        // Fungsi untuk mengambil data (disesuaikan dengan struktur baru)
+
+        // Fungsi untuk mengambil data
         function getData(type) {
+            console.log('Getting data for type:', type);
             switch(type) {
                 case 'all':
                     return window.travelAppData;
-                case 'hotel_booking': // nama disesuaikan
+                case 'hotel_booking':
+                case 'hotel_booking_complete':
                     return window.travelAppData.hotelBooking;
-                case 'flight_booking': // nama disesuaikan
+                case 'flight_booking':
+                case 'flight_booking_complete':
                     return window.travelAppData.flightBooking;
+                case 'hotel_search':
+                    return window.travelAppData.searchHistory ? window.travelAppData.searchHistory.hotel : null;
+                case 'flight_search':
+                    return window.travelAppData.searchHistory ? window.travelAppData.searchHistory.flight : null;
                 case 'search_history':
                     return window.travelAppData.searchHistory;
                 case 'favorites':
@@ -209,10 +219,9 @@
                     return null;
             }
         }
-    
-        // Fungsi untuk menghapus data (logika diubah)
+
+        // Fungsi untuk menghapus data
         function clearData(type) {
-            // DIUBAH: Mengatur ulang properti menjadi null atau object kosong
             switch(type) {
                 case 'all':
                     window.travelAppData = {
@@ -223,7 +232,7 @@
                         favorites: { hotel: null, flight: null }
                     };
                     break;
-                case 'hotel_bookings': // tetap menggunakan nama jamak untuk konsistensi event
+                case 'hotel_bookings':
                     window.travelAppData.hotelBooking = null;
                     break;
                 case 'flight_bookings':
@@ -238,46 +247,63 @@
             }
             updateDataPanel();
         }
-    
-        // Setup listener untuk komunikasi dengan iframe (tidak perlu diubah)
+
+        // SETUP LISTENER YANG DIPERBAIKI
         function setupIframeListener() {
             window.addEventListener('message', function(event) {
-                if (event.source !== document.getElementById('pemesananIframe').contentWindow) {
+                // PERBAIKAN: Cek apakah ada iframe dengan id 'pemesananIframe'
+                const iframe = document.getElementById('pemesananIframe');
+                
+                // PERBAIKAN: Terima message dari semua iframe yang valid
+                if (!iframe || (event.source !== iframe.contentWindow && event.origin !== window.location.origin)) {
+                    console.log('Message rejected - not from valid iframe');
                     return;
                 }
+
+                console.log('Message received from iframe:', event.data);
                 const { action, type, data } = event.data;
+
                 switch(action) {
                     case 'save_data':
+                        console.log('Saving data:', type, data);
                         saveData(type, data);
                         break;
                     case 'get_data':
+                        console.log('Getting data for:', type);
+                        const responseData = getData(type);
+                        console.log('Responding with data:', responseData);
+                        
+                        // PERBAIKAN: Gunakan event.source untuk memastikan response dikirim ke iframe yang benar
                         event.source.postMessage({
                             action: 'data_response',
                             type: type,
-                            data: getData(type)
+                            data: responseData
                         }, '*');
                         break;
                     case 'clear_data':
+                        console.log('Clearing data:', type);
                         clearData(type);
                         break;
                 }
             });
+            console.log('Parent listener is now active.');
         }
-    
-        // Fungsi untuk mengupdate tampilan data panel (logika diubah total)
+
+        // Fungsi untuk mengupdate tampilan data panel
         function updateDataPanel() {
             const dataContent = document.getElementById('dataContent');
+            if (!dataContent) return; // Skip jika element tidak ada
+            
             const data = window.travelAppData;
             
             if (isDataEmpty(data)) {
                 dataContent.innerHTML = '<p>Belum ada data tersimpan.</p>';
                 return;
             }
-    
+
             let html = '';
-    
-            // DIUBAH: Menampilkan data tunggal, bukan loop
-            if (data.searchHistory.hotel || data.searchHistory.flight) {
+
+            if (data.searchHistory && (data.searchHistory.hotel || data.searchHistory.flight)) {
                 html += '<h4>Riwayat Pencarian Terakhir:</h4>';
                 if(data.searchHistory.hotel) {
                     const search = data.searchHistory.hotel;
@@ -300,19 +326,19 @@
                     `;
                 }
             }
-    
+
             if (data.hotelBooking) {
                 html += '<h4>Booking Hotel Terakhir:</h4>';
                 const booking = data.hotelBooking;
                 html += `
                     <div class="data-item">
                         <strong>${booking.hotelName || 'Hotel'}</strong><br>
-                        ${booking.destination || 'N/A'}<br>
+                        ${booking.roomType || booking.destination || 'N/A'}<br>
                         <small>${new Date(booking.timestamp).toLocaleString()}</small>
                     </div>
                 `;
             }
-    
+
             if (data.flightBooking) {
                 html += '<h4>Booking Pesawat Terakhir:</h4>';
                 const booking = data.flightBooking;
@@ -324,12 +350,12 @@
                     </div>
                 `;
             }
-    
-            if (data.favorites.hotel || data.favorites.flight) {
+
+            if (data.favorites && (data.favorites.hotel || data.favorites.flight)) {
                 html += '<h4>Favorit Terakhir:</h4>';
                 if(data.favorites.hotel) {
                     const fav = data.favorites.hotel;
-                     html += `
+                    html += `
                         <div class="data-item">
                             <strong>♥ ${fav.name || 'Favorit Hotel'}</strong><br>
                             <small>${new Date(fav.timestamp).toLocaleString()}</small>
@@ -338,7 +364,7 @@
                 }
                 if(data.favorites.flight) {
                     const fav = data.favorites.flight;
-                     html += `
+                    html += `
                         <div class="data-item">
                             <strong>♥ ${fav.name || 'Favorit Pesawat'}</strong><br>
                             <small>${new Date(fav.timestamp).toLocaleString()}</small>
@@ -346,34 +372,31 @@
                     `;
                 }
             }
-    
+
             dataContent.innerHTML = html;
         }
-    
-        // Fungsi helper untuk mengecek apakah data kosong (logika diubah)
+
+        // Fungsi helper untuk mengecek apakah data kosong
         function isDataEmpty(data) {
             return data.hotelBooking === null && 
-                   data.flightBooking === null && 
-                   data.searchHistory.hotel === null && 
-                   data.searchHistory.flight === null &&
-                   data.favorites.hotel === null && 
-                   data.favorites.flight === null &&
-                   Object.keys(data.userPreferences).length === 0;
+                data.flightBooking === null && 
+                (!data.searchHistory || (data.searchHistory.hotel === null && data.searchHistory.flight === null)) &&
+                (!data.favorites || (data.favorites.hotel === null && data.favorites.flight === null)) &&
+                Object.keys(data.userPreferences).length === 0;
         }
-    
-        // --- Fungsi lainnya tidak perlu diubah ---
-    
+
+        // Fungsi utilitas lainnya
         function toggleDataPanel() {
             const panel = document.getElementById('dataPanel');
-            panel.classList.toggle('hidden');
+            if (panel) panel.classList.toggle('hidden');
         }
-    
+
         function clearAllData() {
             if (confirm('Apakah Anda yakin ingin menghapus semua data?')) {
                 clearData('all');
             }
         }
-    
+
         function exportData() {
             const dataStr = JSON.stringify(window.travelAppData, null, 2);
             const dataBlob = new Blob([dataStr], {type: 'application/json'});
@@ -384,7 +407,7 @@
             link.click();
             URL.revokeObjectURL(url);
         }
-    
+
         function importData(event) {
             const file = event.target.files[0];
             if (file) {
@@ -402,7 +425,7 @@
                 reader.readAsText(file);
             }
         }
-    
+
         // Expose functions to global scope
         window.travelApp = {
             saveData: saveData,
@@ -412,48 +435,13 @@
             importData: importData,
             data: window.travelAppData
         };
-    
+
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             updateDataPanel();
-            console.log('Travel App initialized with single-entry data structure.');
-
-            setupIframeListener(); 
-            console.log('Travel App initialized and listener is set up.');
+            setupIframeListener();
+            console.log('Travel App initialized with data structure:', window.travelAppData);
         });
-
-        function setupIframeListener() {
-            window.addEventListener('message', function(event) {
-                // Pastikan pesan datang dari iframe yang benar
-                // PASTIKAN ID IFRAME ANDA ADALAH 'pemesananIframe'
-                if (event.source !== document.getElementById('pemesananIframe').contentWindow) {
-                    return;
-                }
-    
-                const { action, type, data } = event.data;
-    
-                switch(action) {
-                    case 'save_data':
-                        saveData(type, data);
-                        break;
-                    case 'get_data':
-                        // Kirim data kembali ke iframe
-                        console.log('Parent received get_data request for:', type); // Tambahan log untuk debug
-                        const responseData = getData(type);
-                        event.source.postMessage({
-                            action: 'data_response',
-                            type: type,
-                            data: responseData
-                        }, '*');
-                        break;
-                    case 'clear_data':
-                        clearData(type);
-                        break;
-                }
-            });
-            console.log('Parent listener is now active.'); // Tambahan log untuk memastikan fungsi dipanggil
-        }
-
     </script>
 </body>
 </html>

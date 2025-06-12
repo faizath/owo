@@ -1370,168 +1370,303 @@
     </footer>
 
     <script>
-        // =======================================================
-        // BAGIAN 1: FUNGSI HELPER & INISIALISASI
-        // =======================================================
-    
+        // SCRIPT UNTUK PEMESANAN.HTML - PERBAIKAN UTAMA
         // Fungsi helper untuk mengirim data ke parent window
         function sendDataToParent(action, type, data) {
+            console.log('Sending to parent:', { action, type, data });
             if (window.parent && window.parent !== window) {
                 window.parent.postMessage({ action: action, type: type, data: data }, '*');
             } else {
                 console.error("Tidak bisa mengirim data: Halaman tidak berada di dalam iframe parent yang benar.");
             }
         }
-    
+
+        // PERBAIKAN: Fungsi untuk mendapatkan data dari parent dengan timeout
+        function getDataFromParent(type, callback, timeout = 5000) {
+            console.log('Requesting data from parent:', type);
+            
+            if (window.parent && window.parent !== window) {
+                let responseReceived = false;
+                
+                const responseListener = function(event) {
+                    console.log('Response received:', event.data);
+                    if (event.data.action === 'data_response' && event.data.type === type) {
+                        responseReceived = true;
+                        callback(event.data.data);
+                        window.removeEventListener('message', responseListener);
+                    }
+                };
+                
+                window.addEventListener('message', responseListener);
+                
+                // Kirim request
+                window.parent.postMessage({
+                    action: 'get_data',
+                    type: type
+                }, '*');
+                
+                // PERBAIKAN: Tambahkan timeout untuk menghindari hanging
+                setTimeout(() => {
+                    if (!responseReceived) {
+                        console.warn('Timeout waiting for data from parent');
+                        window.removeEventListener('message', responseListener);
+                        callback(null);
+                    }
+                }, timeout);
+            } else {
+                console.warn('Not in iframe, returning null');
+                callback(null);
+            }
+        }
+
         // Tunggu sampai semua elemen halaman siap
         document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
+            
+            // PERBAIKAN: Load data yang tersimpan jika ada
+            loadPreviousSearchData();
         });
-    
+
+        // PERBAIKAN: Load data pencarian sebelumnya
+        function loadPreviousSearchData() {
+            getDataFromParent('hotel_search', function(searchData) {
+                if (searchData) {
+                    console.log('Loading previous search data:', searchData);
+                    populateFormWithData(searchData);
+                }
+            });
+        }
+
+        // PERBAIKAN: Populate form dengan data sebelumnya
+        function populateFormWithData(searchData) {
+            if (searchData.destination) {
+                const destinationInput = document.querySelector('#hotelForm #destination-input');
+                if (destinationInput) destinationInput.value = searchData.destination;
+            }
+            
+            if (searchData.checkin) {
+                const checkinInput = document.querySelector('#hotelForm #checkin-input');
+                if (checkinInput) checkinInput.value = searchData.checkin;
+            }
+            
+            if (searchData.checkout) {
+                const checkoutInput = document.querySelector('#hotelForm #checkout-input');
+                if (checkoutInput) checkoutInput.value = searchData.checkout;
+            }
+            
+            if (searchData.guests) {
+                const guestsInput = document.querySelector('#hotelForm #guests-input');
+                if (guestsInput) guestsInput.value = searchData.guests;
+            }
+        }
+
         // Fungsi untuk memasang semua event listener
         function setupEventListeners() {
             // Tab switching
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.addEventListener('click', handleTabSwitch);
             });
-    
+
             // Tombol pencarian hotel
             const hotelSearchButton = document.getElementById('search-hotel-button');
             if (hotelSearchButton) {
                 hotelSearchButton.addEventListener('click', handleHotelSearch);
             }
-    
+
             // Tombol pencarian pesawat
             const flightSearchButton = document.getElementById('search-btn');
             if (flightSearchButton) {
                 flightSearchButton.addEventListener('click', handleFlightSearch);
             }
-    
-            // Tombol "Pesan Sekarang" untuk semua hotel
-            document.querySelectorAll('.hotel-card .book-button').forEach(button => {
-                button.addEventListener('click', function() {
-                    const hotelName = this.closest('.hotel-card').querySelector('.hotel-title').textContent;
-                    bookHotel(hotelName);
-                });
-            });
-    
-            // Tombol "Pesan Sekarang" untuk semua pesawat
-            document.querySelectorAll('.flight-card .book-button').forEach(button => {
-                button.addEventListener('click', function() {
-                    const flightName = this.closest('.flight-card').querySelector('.flight-title').textContent;
-                    bookFlight(flightName);
-                });
-            });
-    
+
+            // PERBAIKAN: Setup event listeners untuk booking buttons dengan delegation
+            setupBookingButtons();
+
             // Mencegah form submit default
-            document.getElementById('hotelForm').addEventListener('submit', e => e.preventDefault());
-            document.getElementById('flightForm').addEventListener('submit', e => e.preventDefault());
+            const hotelForm = document.getElementById('hotelForm');
+            const flightForm = document.getElementById('flightForm');
+            
+            if (hotelForm) hotelForm.addEventListener('submit', e => e.preventDefault());
+            if (flightForm) flightForm.addEventListener('submit', e => e.preventDefault());
         }
-    
-    
-        // =======================================================
-        // BAGIAN 2: LOGIKA FUNGSI
-        // =======================================================
-    
+
+        // PERBAIKAN: Setup booking buttons dengan event delegation
+        function setupBookingButtons() {
+            // Event delegation untuk hotel booking buttons
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('book-button') && e.target.closest('.hotel-card')) {
+                    e.preventDefault();
+                    const hotelCard = e.target.closest('.hotel-card');
+                    const hotelName = hotelCard.querySelector('.hotel-title') ? 
+                                    hotelCard.querySelector('.hotel-title').textContent : 
+                                    'Hotel';
+                    bookHotel(hotelName);
+                }
+                
+                if (e.target.classList.contains('book-button') && e.target.closest('.flight-card')) {
+                    e.preventDefault();
+                    const flightCard = e.target.closest('.flight-card');
+                    const flightName = flightCard.querySelector('.flight-title') ? 
+                                    flightCard.querySelector('.flight-title').textContent : 
+                                    'Flight';
+                    bookFlight(flightName);
+                }
+            });
+        }
+
         // Fungsi untuk ganti tab Pesawat/Hotel
         function handleTabSwitch() {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             this.classList.add('active');
-    
+
             const isFlight = this.dataset.tab === 'flight';
-            document.getElementById('flightForm').style.display = isFlight ? 'block' : 'none';
-            document.getElementById('hotelForm').style.display = isFlight ? 'none' : 'block';
+            const flightForm = document.getElementById('flightForm');
+            const hotelForm = document.getElementById('hotelForm');
+            
+            if (flightForm) flightForm.style.display = isFlight ? 'block' : 'none';
+            if (hotelForm) hotelForm.style.display = isFlight ? 'none' : 'block';
         }
-    
+
         // Fungsi untuk menangani PENCARIAN hotel
         function handleHotelSearch(event) {
             event.preventDefault();
             
-            const destination = document.querySelector('#hotelForm #destination-input').value;
-            const checkin = document.querySelector('#hotelForm #checkin-input').value;
-            const checkout = document.querySelector('#hotelForm #checkout-input').value;
-            const guests = document.querySelector('#hotelForm #guests-input').value;
-    
+            const destination = document.querySelector('#hotelForm #destination-input')?.value;
+            const checkin = document.querySelector('#hotelForm #checkin-input')?.value;
+            const checkout = document.querySelector('#hotelForm #checkout-input')?.value;
+            const guests = document.querySelector('#hotelForm #guests-input')?.value;
+
             if (!destination || !checkin || !checkout) {
                 alert('Mohon lengkapi tujuan dan tanggal untuk pencarian hotel.');
                 return;
             }
-    
+
             const searchData = { destination, checkin, checkout, guests };
+            console.log('Saving hotel search data:', searchData);
             sendDataToParent('save_data', 'hotel_search', searchData);
-    
+
             // Tampilkan modal loading, lalu tampilkan hasil di halaman yang sama
             showModal('hotel', () => {
-                 const hotelListings = document.querySelector('.hotel-listings');
-                 hotelListings.classList.add('show');
-                 hotelListings.scrollIntoView({ behavior: 'smooth' });
+                const hotelListings = document.querySelector('.hotel-listings');
+                if (hotelListings) {
+                    hotelListings.classList.add('show');
+                    hotelListings.scrollIntoView({ behavior: 'smooth' });
+                }
             });
         }
-    
-        // Fungsi untuk menangani BOOKING hotel
-        function bookHotel(hotelName) {
-            const searchData = {}; // Di aplikasi nyata, Anda akan ambil ini dari parent
-            
-            const bookingData = {
-                hotelName: hotelName,
-                bookingType: 'hotel',
-                ...searchData
-            };
-    
-            sendDataToParent('save_data', 'hotel_booking', bookingData);
-            
-            // **FIX UTAMA ADA DI SINI**
-            // Setelah booking, arahkan ke halaman PEMBAYARAN, bukan halaman lain.
-            console.log("Booking hotel disimpan, mengarahkan ke Pembayaran.html");
-            window.location.href = 'Pembayaran.html';
-        }
-        
-        // Fungsi untuk menangani PENCARIAN pesawat
+
+        // Fungsi untuk menangani PENCARIAN pesawat  
         function handleFlightSearch(event) {
             event.preventDefault();
-            // Logika untuk simpan data pencarian pesawat & tampilkan modal
-            console.log("Pencarian Pesawat...");
-            // Implementasi mirip dengan handleHotelSearch
+            
+            const from = document.querySelector('#flightForm #from-input')?.value;
+            const to = document.querySelector('#flightForm #to-input')?.value;
+            const departure = document.querySelector('#flightForm #departure-input')?.value;
+            const passengers = document.querySelector('#flightForm #passengers-input')?.value;
+
+            if (!from || !to || !departure) {
+                alert('Mohon lengkapi semua field untuk pencarian pesawat.');
+                return;
+            }
+
+            const searchData = { from, to, departure, passengers };
+            console.log('Saving flight search data:', searchData);
+            sendDataToParent('save_data', 'flight_search', searchData);
+
+            showModal('flight', () => {
+                const flightListings = document.querySelector('.flight-listings');
+                if (flightListings) {
+                    flightListings.classList.add('show');
+                    flightListings.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
         }
-    
+
+        // Fungsi untuk menangani BOOKING hotel
+        function bookHotel(hotelName) {
+            console.log('Booking hotel:', hotelName);
+            
+            // PERBAIKAN: Ambil data pencarian saat ini
+            getDataFromParent('hotel_search', function(searchData) {
+                const bookingData = {
+                    hotelName: hotelName,
+                    bookingType: 'hotel',
+                    ...(searchData || {})
+                };
+                
+                console.log('Saving hotel booking:', bookingData);
+                sendDataToParent('save_data', 'hotel_booking', bookingData);
+                
+                // PERBAIKAN: Redirect ke CekKetersediaanHotel.html sebagai langkah antara
+                console.log("Booking hotel disimpan, mengarahkan ke CekKetersediaanHotel.html");
+                window.location.href = 'CekKetersediaanHotel.html';
+            });
+        }
+
         // Fungsi untuk menangani BOOKING pesawat
         function bookFlight(flightName) {
-            // Logika untuk simpan data booking pesawat
-            console.log(`Booking pesawat ${flightName}`);
-            sendDataToParent('save_data', 'flight_booking', { flightName: flightName });
-            // Arahkan ke pembayaran atau halaman selanjutnya
-            window.location.href = 'Pembayaran.html';
+            console.log('Booking flight:', flightName);
+            
+            getDataFromParent('flight_search', function(searchData) {
+                const bookingData = {
+                    flightName: flightName,
+                    bookingType: 'flight',
+                    ...(searchData || {})
+                };
+                
+                console.log('Saving flight booking:', bookingData);
+                sendDataToParent('save_data', 'flight_booking', bookingData);
+                
+                // Redirect ke halaman pembayaran
+                window.location.href = 'Pembayaran.html';
+            });
         }
-    
+
         // Fungsi untuk menampilkan modal
         function showModal(type, callbackOnSuccess) {
             const modal = document.getElementById('modalOverlay');
             const title = document.getElementById('modalTitle');
             const message = document.getElementById('modalMessage');
             const buttons = document.getElementById('modalButtons');
-    
+
+            if (!modal || !title || !message || !buttons) {
+                console.warn('Modal elements not found, skipping modal');
+                if (callbackOnSuccess) callbackOnSuccess();
+                return;
+            }
+
             modal.classList.add('active');
             title.textContent = `Mengecek ${type === 'hotel' ? 'Kamar' : 'Penerbangan'}...`;
             message.textContent = 'Mohon tunggu sebentar...';
             buttons.innerHTML = '';
-    
+
             setTimeout(() => {
                 title.textContent = `${type === 'hotel' ? 'Kamar' : 'Penerbangan'} Tersedia!`;
                 message.textContent = 'Hasil pencarian akan ditampilkan.';
                 buttons.innerHTML = `<button class="modal-button primary" onclick="closeModal()">OK</button>`;
                 
-                // Tutup modal lalu jalankan callback (misal: scroll ke hasil)
-                closeModal();
-                if (callbackOnSuccess) {
-                    callbackOnSuccess();
-                }
+                // Tutup modal lalu jalankan callback
+                setTimeout(() => {
+                    closeModal();
+                    if (callbackOnSuccess) {
+                        callbackOnSuccess();
+                    }
+                }, 1000);
             }, 1500);
         }
-    
+
         function closeModal() {
-            document.getElementById('modalOverlay').classList.remove('active');
+            const modal = document.getElementById('modalOverlay');
+            if (modal) modal.classList.remove('active');
         }
-    
+
+        // PERBAIKAN: Expose functions untuk debugging
+        window.bookingDebug = {
+            sendDataToParent: sendDataToParent,
+            getDataFromParent: getDataFromParent,
+            bookHotel: bookHotel,
+            bookFlight: bookFlight
+        };
     </script>
 </body>
 </html>
