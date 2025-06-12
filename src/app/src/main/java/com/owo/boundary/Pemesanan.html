@@ -1419,13 +1419,21 @@
                     const checkin = document.querySelector('#hotelForm #checkin-input')?.value;
                     const checkout = document.querySelector('#hotelForm #checkout-input')?.value;
                     const guests = document.querySelector('#hotelForm #guests-input')?.value;
+                    const rooms = document.querySelector('#hotelForm #rooms')?.value;
 
                     if (!destination || !checkin || !checkout) {
                         alert('Mohon lengkapi tujuan dan tanggal untuk pencarian hotel.');
                         return;
                     }
 
-                    const searchData = { destination, checkin, checkout, guests };
+                    const searchData = { 
+                        destination, 
+                        checkin, 
+                        checkout, 
+                        guests,
+                        rooms: parseInt(rooms) || 1
+                    };
+                    
                     console.log('Saving hotel search data:', searchData);
                     sendDataToParent('save_data', 'hotel_search', searchData);
 
@@ -1554,10 +1562,15 @@
         function bookHotel(hotelName) {
             console.log('Booking hotel:', hotelName);
             
+            // Get room count from the form
+            const rooms = document.querySelector('#hotelForm #rooms')?.value || '1';
+            console.log('Room count from form:', rooms);
+            
             getDataFromParent('hotel_search', function(searchData) {
                 const bookingData = {
                     hotelName: hotelName,
                     bookingType: 'hotel',
+                    rooms: parseInt(rooms), // Add room count to booking data
                     ...(searchData || {})
                 };
                 

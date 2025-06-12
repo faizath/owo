@@ -210,6 +210,39 @@
     </div>
 
     <script>
+        // Fungsi helper untuk mendapatkan data dari parent dengan timeout
+        function getDataFromParent(type, callback, timeout = 5000) {
+            if (window.parent && window.parent !== window) {
+                let responseReceived = false;
+
+                const responseListener = function(event) {
+                    if (event.data.action === 'data_response' && event.data.type === type) {
+                        responseReceived = true;
+                        callback(event.data.data);
+                        window.removeEventListener('message', responseListener);
+                    }
+                };
+
+                window.addEventListener('message', responseListener);
+
+                // Kirim request
+                window.parent.postMessage({
+                    action: 'get_data',
+                    type: type
+                }, '*');
+
+                // Timeout untuk menghindari hanging
+                setTimeout(() => {
+                    if (!responseReceived) {
+                        window.removeEventListener('message', responseListener);
+                        callback(null);
+                    }
+                }, timeout);
+            } else {
+                callback(null);
+            }
+        }
+
         // Get search data from parent window
         function getSearchData() {
             return new Promise((resolve) => {
@@ -242,9 +275,10 @@
         // Display search details
         function displaySearchDetails(searchData) {
             const searchDetails = document.getElementById('searchDetails');
+            
             searchDetails.innerHTML = `
                 <div class="detail-item">
-                    <strong>Destinasi:</strong> ${searchData.destination}
+                    <strong>Lokasi:</strong> ${searchData.destination || 'N/A'}
                 </div>
                 <div class="detail-item">
                     <strong>Check-in:</strong> ${new Date(searchData.checkin).toLocaleDateString('id-ID')}
@@ -254,6 +288,9 @@
                 </div>
                 <div class="detail-item">
                     <strong>Tamu:</strong> ${searchData.guests} orang
+                </div>
+                <div class="detail-item">
+                    <strong>Kamar:</strong> ${searchData.rooms} kamar
                 </div>
             `;
         }
@@ -329,42 +366,93 @@
             if (window.parent && window.parent !== window) {
                 // Get search data for additional information
                 const searchDetails = document.getElementById('searchDetails');
-                const guests = searchDetails.querySelector('.detail-item:nth-child(4) strong').nextSibling.textContent.trim().split(' ')[0];
+                const guests = parseInt(searchDetails.querySelector('.detail-item:nth-child(4) strong').nextSibling.textContent.trim().split(' ')[0]) || 1;
+                const rooms = parseInt(searchDetails.querySelector('.detail-item:nth-child(5) strong').nextSibling.textContent.trim().split(' ')[0]) || 1;
                 
-                // Get the exact price shown in the UI
-                const hotelCards = document.querySelectorAll('.hotel-card');
-                let displayedPrice = window.mockupData.formatCurrency(hotelData.harga);
+                // Get dates from search details
+                const checkinText = searchDetails.querySelector('.detail-item:nth-child(2) strong').nextSibling.textContent.trim();
+                const checkoutText = searchDetails.querySelector('.detail-item:nth-child(3) strong').nextSibling.textContent.trim();
                 
-                for (const card of hotelCards) {
-                    const title = card.querySelector('.hotel-title');
-                    if (title && title.textContent.trim() === hotelName) {
-                        const priceElement = card.querySelector('.price-amount');
-                        if (priceElement) {
-                            displayedPrice = priceElement.textContent.trim();
+                // Convert dates from Indonesian format to YYYY-MM-DD
+                const checkin = convertToISODate(checkinText);
+                const checkout = convertToISODate(checkoutText);
+                
+                // Calculate number of nights
+                const nights = calculateNights(checkin, checkout);
+                
+                // Calculate total price using raw price from hotel data
+                const basePrice = hotelData.harga; // Use raw price
+                const totalPrice = basePrice * rooms * nights; // Multiply by rooms and nights
+                
+                // Get the original booking data to ensure we have the correct room count
+                getDataFromParent('hotel_booking', function(bookingData) {
+                    const finalRooms = bookingData?.rooms || rooms; // Use rooms from booking data if available
+                    
+                    window.parent.postMessage({
+                        action: 'save_data',
+                        type: 'hotel_booking',
+                        data: {
+                            ...hotelData,
+                            bookingType: 'hotel',
+                            checkin: checkin,
+                            checkout: checkout,
+                            guests: guests,
+                            rooms: finalRooms, // Use the final room count
+                            nights: nights,
+                            price: totalPrice,
+                            harga: totalPrice,
+                            roomType: hotelData.roomType || 'Standard Room',
+                            bedType: hotelData.bedType || 'Standard Room',
+                            breakfast: hotelData.breakfast || false,
+                            refundable: hotelData.refundable || false
                         }
-                        break;
-                    }
-                }
-                
-                window.parent.postMessage({
-                    action: 'save_data',
-                    type: 'hotel_booking',
-                    data: {
-                        ...hotelData,
-                        bookingType: 'hotel',
-                        checkin: document.querySelector('.detail-item:nth-child(2) strong').nextSibling.textContent.trim(),
-                        checkout: document.querySelector('.detail-item:nth-child(3) strong').nextSibling.textContent.trim(),
-                        guests: guests,
-                        price: displayedPrice,
-                        roomType: hotelData.roomType || 'Standard Room',
-                        bedType: hotelData.bedType || 'Standard Room',
-                        breakfast: hotelData.breakfast || false,
-                        refundable: hotelData.refundable || false
-                    }
-                }, '*');
+                    }, '*');
+                    
+                    // Redirect to payment page
+                    window.location.href = 'Pembayaran.html';
+                });
+            } else {
+                // Redirect to payment page
+                window.location.href = 'Pembayaran.html';
             }
-            // Redirect to payment page
-            window.location.href = 'Pembayaran.html';
+        }
+
+        // Function to convert Indonesian date format to YYYY-MM-DD
+        function convertToISODate(dateStr) {
+            try {
+                // Parse Indonesian date format (DD/MM/YYYY)
+                const [day, month, year] = dateStr.split('/').map(num => num.trim());
+                return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+            } catch (error) {
+                console.error('Error converting date:', error);
+                return dateStr; // Return original string if conversion fails
+            }
+        }
+
+        // Function to calculate number of nights between check-in and check-out
+        function calculateNights(checkin, checkout) {
+            if (!checkin || !checkout) return 1;
+            
+            try {
+                const start = new Date(checkin);
+                const end = new Date(checkout);
+                
+                // Calculate the difference in milliseconds
+                const diffTime = Math.abs(end - start);
+                // Convert to days
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                console.log('Night calculation:', {
+                    checkin,
+                    checkout,
+                    diffDays
+                });
+                
+                return diffDays || 1; // Return at least 1 night
+            } catch (error) {
+                console.error('Error calculating nights:', error);
+                return 1;
+            }
         }
 
         // Initialize page
@@ -382,7 +470,60 @@
                 const listener = (event) => {
                     if (event.data.action === 'data_response' && event.data.type === 'hotel_search') {
                         window.removeEventListener('message', listener);
-                        displayHotels(window.mockupData.hotels);
+                        const searchData = event.data.data;
+                        console.log('Received search data:', searchData);
+                        
+                        // Filter hotels based on search criteria
+                        const filteredHotels = window.mockupData.hotels.filter(hotel => {
+                            // Format hotel dates to match search date format (YYYY-MM-DD)
+                            const hotelCheckIn = new Date(hotel.checkIn);
+                            const hotelCheckOut = new Date(hotel.checkOut);
+                            const searchCheckIn = new Date(searchData.checkin);
+                            const searchCheckOut = new Date(searchData.checkout);
+                            
+                            // Check if hotel location matches destination
+                            const hotelLocation = hotel.address.toLowerCase();
+                            const searchLocation = searchData.destination.toLowerCase();
+                            const matchesLocation = hotelLocation.includes(searchLocation);
+                            
+                            // Check if dates are available
+                            const matchesDates = hotelCheckIn <= searchCheckIn && hotelCheckOut >= searchCheckOut;
+                            
+                            console.log('Hotel check:', {
+                                hotel: hotel.hotelName,
+                                location: hotel.address,
+                                searchLocation: searchData.destination,
+                                matchesLocation,
+                                hotelCheckIn: hotelCheckIn.toISOString().split('T')[0],
+                                hotelCheckOut: hotelCheckOut.toISOString().split('T')[0],
+                                searchCheckIn: searchCheckIn.toISOString().split('T')[0],
+                                searchCheckOut: searchCheckOut.toISOString().split('T')[0],
+                                matchesDates
+                            });
+
+                            return matchesLocation && matchesDates;
+                        });
+
+                        console.log('Filtered hotels:', filteredHotels);
+                        if (filteredHotels.length === 0) {
+                            // Show no hotels found message
+                            const hotelList = document.getElementById('hotelList');
+                            hotelList.innerHTML = `
+                                <div class="hotel-card">
+                                    <div class="hotel-content">
+                                        <div class="hotel-header">
+                                            <h3 class="hotel-title">Tidak ada hotel yang tersedia</h3>
+                                        </div>
+                                        <p style="text-align: center; color: #6B7280; margin: 20px 0;">
+                                            Maaf, tidak ada hotel yang tersedia untuk kriteria pencarian Anda.
+                                            Silakan coba dengan tanggal atau lokasi yang berbeda.
+                                        </p>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            displayHotels(filteredHotels);
+                        }
                     }
                 };
 

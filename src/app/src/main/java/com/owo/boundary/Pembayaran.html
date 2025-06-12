@@ -1051,6 +1051,7 @@
                                 <div class="room-type">${bookingData.roomType || 'Standard Room'}</div>
                                 <div class="room-features">
                                     👥 ${bookingData.guests || 1} tamu • 
+                                    🏠 ${bookingData.rooms || bookingData.roomCount || 1} kamar • 
                                     ${bookingData.bedType || 'Standard Room'} • 
                                     ${bookingData.breakfast ? 'Includes breakfast' : 'No breakfast'}
                                 </div>
@@ -1099,12 +1100,14 @@
             getDataFromParent('hotel_booking', function(hotelData) {
                 if (hotelData) {
                     const guests = parseInt(hotelData.guests) || 1;
+                    const rooms = parseInt(hotelData.rooms) || 1;
                     const nights = calculateNights(hotelData.checkin, hotelData.checkout);
-                    // For hotels, multiply by both guests and nights
-                    const actualAmount = basePrice * guests * nights;
+                    // For hotels, multiply by rooms and nights
+                    const actualAmount = basePrice * rooms * nights;
                     console.log('Hotel calculation:', {
                         basePrice,
                         guests,
+                        rooms,
                         nights,
                         actualAmount
                     });
