@@ -833,23 +833,8 @@
 
             <!-- Booking Details -->
             <div class="booking-details">
-                <div class="hotel-card">
-                    <img src="../assets/ramayana.png" alt="Ramayana Suites and Resort" class="hotel-image">
-                    <div class="hotel-info">
-                        <h3 class="hotel-name" id="hotel-name">Ramayana Suites and Resort</h3>
-                        <div class="hotel-rating">
-                            <span class="rating-badge">4.4/5</span>
-                            <span class="location-badge">Location 4.7/5</span>
-                        </div>
-                        
-                        <div class="room-details">
-                            <div class="room-type" id="room-type">Deluxe Room</div>
-                            <div class="room-features">👥 x2 • 2 single beds • Includes 2 great breakfasts • Non-smoking</div>
-                            <div class="room-amenities">
-                                <span>⭕ Non-Refundable</span>
-                            </div>
-                        </div>
-                    </div>
+                <div id="bookingDetailsContainer">
+                    <!-- Booking details will be dynamically inserted here -->
                 </div>
 
                 <div class="booking-dates">
@@ -863,25 +848,15 @@
                     </div>
                 </div>
 
-                <div class="booking-options">
-                    <select class="option-select">
-                        <option>1 Night</option>
-                        <option>2 Nights</option>
-                        <option>3 Nights</option>
-                    </select>
-                    <select class="option-select">
-                        <option>1 Room</option>
-                        <option>2 Rooms</option>
-                        <option>3 Rooms</option>
-                    </select>
-                </div>
-
                 <div class="price-breakdown">
                     <div class="price-row">
-                        <span class="price-label">1 room x 1 night</span>
+                        <span class="price-label">Base Price</span>
                         <span class="price-value" id="base-price">IDR 0</span>
                     </div>
-                    ...
+                    <div class="price-row">
+                        <span class="price-label">Taxes & Fees</span>
+                        <span class="price-value" id="taxes-fees">IDR 0</span>
+                    </div>
                     <div class="total-row">
                         <span>Total</span>
                         <span id="total-price">IDR 0</span>
@@ -1020,6 +995,8 @@
 
         // Update UI untuk booking hotel
         function updateHotelBookingUI(bookingData) {
+            console.log('Updating hotel booking UI with:', bookingData);
+            
             // Update Info Hotel
             const hotelNameEl = document.getElementById('hotel-name');
             const roomTypeEl = document.getElementById('room-type');
@@ -1028,36 +1005,92 @@
             
             if (hotelNameEl) hotelNameEl.textContent = bookingData.hotelName || 'Nama Hotel Tidak Tersedia';
             if (roomTypeEl) roomTypeEl.textContent = bookingData.roomType || 'Tipe Kamar Tidak Tersedia';
-            if (checkinEl) checkinEl.textContent = bookingData.checkin || '--';
-            if (checkoutEl) checkoutEl.textContent = bookingData.checkout || '--';
+            if (checkinEl) checkinEl.textContent = formatDate(bookingData.checkin) || '--';
+            if (checkoutEl) checkoutEl.textContent = formatDate(bookingData.checkout) || '--';
             
-            // Update harga
-            updatePricing(bookingData.price || 'Rp 500.000');
+            // Update booking details container
+            const container = document.getElementById('bookingDetailsContainer');
+            if (container) {
+                container.innerHTML = `
+                    <div class="hotel-card">
+                        <img src="${bookingData.imageUrl || '../assets/garuda.jpg'}" alt="${bookingData.hotelName}" class="hotel-image" onerror="this.src='../assets/default-flight.jpg'">
+                        <div class="hotel-info">
+                            <h3 class="hotel-name">${bookingData.hotelName}</h3>
+                            <div class="hotel-rating">
+                                <span class="rating-badge">${bookingData.rating || '4.4'}/5</span>
+                                <span class="location-badge">${bookingData.destination || 'Location'}</span>
+                            </div>
+                            
+                            <div class="room-details">
+                                <div class="room-type">${bookingData.roomType}</div>
+                                <div class="room-features">👥 ${bookingData.guests} • ${bookingData.bedType || 'Standard Room'} • ${bookingData.breakfast ? 'Includes breakfast' : 'No breakfast'}</div>
+                                <div class="room-amenities">
+                                    <span>⭕ ${bookingData.refundable ? 'Refundable' : 'Non-Refundable'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
             
-            // Update booking summary title
-            const summaryTitle = document.querySelector('.booking-summary h3');
-            if (summaryTitle) summaryTitle.textContent = 'Hotel Booking Summary';
+            // Update pricing with the base price from availability page
+            if (bookingData.basePrice) {
+                updatePricing(bookingData.basePrice);
+            } else if (bookingData.price) {
+                updatePricing(bookingData.price);
+            }
         }
 
         // Update UI untuk booking flight
         function updateFlightBookingUI(bookingData) {
-            // Update Info Flight - sesuaikan dengan element yang ada di HTML
+            console.log('Updating flight booking UI with:', bookingData);
+            
+            // Update Info Flight
             const flightNameEl = document.getElementById('hotel-name'); // Reuse element
             const routeEl = document.getElementById('room-type'); // Reuse element
             const departureEl = document.getElementById('checkin-date'); // Reuse element
-            const passengersEl = document.getElementById('checkout-date'); // Reuse element
+            const returnEl = document.getElementById('checkout-date'); // Reuse element
             
-            if (flightNameEl) flightNameEl.textContent = bookingData.flightName || 'Nama Penerbangan Tidak Tersedia';
+            if (flightNameEl) flightNameEl.textContent = bookingData.airlineName || 'Nama Penerbangan Tidak Tersedia';
             if (routeEl) routeEl.textContent = `${bookingData.from || 'Asal'} → ${bookingData.to || 'Tujuan'}`;
-            if (departureEl) departureEl.textContent = bookingData.departure || '--';
-            if (passengersEl) passengersEl.textContent = `${bookingData.passengers || '1'} penumpang`;
+            if (departureEl) departureEl.textContent = formatDate(bookingData.departure) || '--';
+            if (returnEl) returnEl.textContent = formatDate(bookingData.return) || '--';
             
-            // Update harga
-            updatePricing(bookingData.price || 'Rp 1.500.000');
+            // Update booking details container
+            const container = document.getElementById('bookingDetailsContainer');
+            if (container) {
+                container.innerHTML = `
+                    <div class="hotel-card">
+                        <img src="${bookingData.imageUrl || '../assets/garuda.jpg'}" alt="${bookingData.airlineName}" class="hotel-image" onerror="this.src='../assets/default-flight.jpg'">
+                        <div class="hotel-info">
+                            <h3 class="hotel-name">${bookingData.airlineName}</h3>
+                            <div class="hotel-rating">
+                                <span class="rating-badge">${bookingData.rating || '4.4'}/5</span>
+                                <span class="location-badge">${bookingData.from} → ${bookingData.to}</span>
+                            </div>
+                            
+                            <div class="room-details">
+                                <div class="room-type">${bookingData.flightClass}</div>
+                                <div class="room-features">
+                                    👥 ${bookingData.passengers} penumpang • 
+                                    ${bookingData.duration || '2h 30m'} • 
+                                    ${bookingData.flightType || 'Direct Flight'}
+                                </div>
+                                <div class="room-amenities">
+                                    <span>⭕ ${bookingData.refundable ? 'Refundable' : 'Non-Refundable'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
             
-            // Update booking summary title
-            const summaryTitle = document.querySelector('.booking-summary h3');
-            if (summaryTitle) summaryTitle.textContent = 'Flight Booking Summary';
+            // Update pricing with the base price from availability page
+            if (bookingData.basePrice) {
+                updatePricing(bookingData.basePrice);
+            } else if (bookingData.price) {
+                updatePricing(bookingData.price);
+            }
         }
 
         // Set nilai default jika tidak ada data
@@ -1077,25 +1110,91 @@
 
         // Update pricing dengan perhitungan pajak
         function updatePricing(priceString) {
-            // Extract number dari string harga
-            const basePrice = parseInt(priceString.replace(/[^0-9]/g, ''), 10) || 0;
-            const taxes = Math.round(basePrice * 0.10); // Pajak 10%
-            const serviceFee = Math.round(basePrice * 0.05); // Service fee 5%
-            const totalPrice = basePrice + taxes + serviceFee;
+            console.log('Updating price with:', priceString);
             
-            const formatter = new Intl.NumberFormat('id-ID', { 
-                style: 'currency', 
-                currency: 'IDR', 
-                minimumFractionDigits: 0 
+            // Get the base price from the availability page
+            const basePrice = parsePrice(priceString);
+            console.log('Base price from availability:', basePrice);
+            
+            // Get the actual amount from parent data
+            getDataFromParent('flight_booking', function(flightData) {
+                if (flightData) {
+                    console.log('Flight booking data found:', flightData);
+                    const passengers = parseInt(flightData.passengers) || 1;
+                    const actualAmount = basePrice * passengers;
+                    console.log('Calculated amount:', actualAmount, 'for', passengers, 'passengers');
+                    
+                    // Calculate additional fees based on actual amount
+                    const taxes = Math.round(actualAmount * 0.10); // 10% tax
+                    const serviceFee = Math.round(actualAmount * 0.05); // 5% service fee
+                    const totalPrice = actualAmount + taxes + serviceFee;
+                    
+                    console.log('Price breakdown:', {
+                        basePrice,
+                        passengers,
+                        actualAmount,
+                        taxes,
+                        serviceFee,
+                        totalPrice
+                    });
+                    
+                    // Update the UI elements
+                    const basePriceEl = document.getElementById('base-price');
+                    const taxesFeesEl = document.getElementById('taxes-fees');
+                    const totalPriceEl = document.getElementById('total-price');
+                    
+                    if (basePriceEl) basePriceEl.textContent = formatPrice(actualAmount);
+                    if (taxesFeesEl) taxesFeesEl.textContent = formatPrice(taxes + serviceFee);
+                    if (totalPriceEl) totalPriceEl.textContent = formatPrice(totalPrice);
+                } else {
+                    // If no flight booking, try hotel booking
+                    getDataFromParent('hotel_booking', function(hotelData) {
+                        if (hotelData) {
+                            console.log('Hotel booking data found:', hotelData);
+                            const guests = parseInt(hotelData.guests) || 1;
+                            const actualAmount = basePrice * guests;
+                            console.log('Calculated amount:', actualAmount, 'for', guests, 'guests');
+                            
+                            // Calculate additional fees based on actual amount
+                            const taxes = Math.round(actualAmount * 0.10); // 10% tax
+                            const serviceFee = Math.round(actualAmount * 0.05); // 5% service fee
+                            const totalPrice = actualAmount + taxes + serviceFee;
+                            
+                            console.log('Price breakdown:', {
+                                basePrice,
+                                guests,
+                                actualAmount,
+                                taxes,
+                                serviceFee,
+                                totalPrice
+                            });
+                            
+                            // Update the UI elements
+                            const basePriceEl = document.getElementById('base-price');
+                            const taxesFeesEl = document.getElementById('taxes-fees');
+                            const totalPriceEl = document.getElementById('total-price');
+                            
+                            if (basePriceEl) basePriceEl.textContent = formatPrice(actualAmount);
+                            if (taxesFeesEl) taxesFeesEl.textContent = formatPrice(taxes + serviceFee);
+                            if (totalPriceEl) totalPriceEl.textContent = formatPrice(totalPrice);
+                        } else {
+                            console.warn('No booking data found, using base price only');
+                            // If no booking data found, use base price only
+                            const taxes = Math.round(basePrice * 0.10);
+                            const serviceFee = Math.round(basePrice * 0.05);
+                            const totalPrice = basePrice + taxes + serviceFee;
+                            
+                            const basePriceEl = document.getElementById('base-price');
+                            const taxesFeesEl = document.getElementById('taxes-fees');
+                            const totalPriceEl = document.getElementById('total-price');
+                            
+                            if (basePriceEl) basePriceEl.textContent = formatPrice(basePrice);
+                            if (taxesFeesEl) taxesFeesEl.textContent = formatPrice(taxes + serviceFee);
+                            if (totalPriceEl) totalPriceEl.textContent = formatPrice(totalPrice);
+                        }
+                    });
+                }
             });
-            
-            const basePriceEl = document.getElementById('base-price');
-            const taxesFeesEl = document.getElementById('taxes-fees');
-            const totalPriceEl = document.getElementById('total-price');
-            
-            if (basePriceEl) basePriceEl.textContent = formatter.format(basePrice);
-            if (taxesFeesEl) taxesFeesEl.textContent = formatter.format(taxes + serviceFee);
-            if (totalPriceEl) totalPriceEl.textContent = formatter.format(totalPrice);
         }
 
         // Inisialisasi halaman
@@ -1282,6 +1381,134 @@
             processPayment: processPayment,
             loadBookingData: loadBookingData
         };
+
+        // Function to create booking details HTML
+        function createBookingDetailsHTML(bookingData) {
+            if (!bookingData) return '';
+
+            if (bookingData.bookingType === 'flight') {
+                return `
+                    <div class="hotel-card">
+                        <img src="${bookingData.imageUrl || '../assets/garuda.jpg'}" alt="${bookingData.airlineName}" class="hotel-image" onerror="this.src='../assets/default-flight.jpg'">
+                        <div class="hotel-info">
+                            <h3 class="hotel-name">${bookingData.airlineName}</h3>
+                            <div class="hotel-rating">
+                                <span class="rating-badge">${bookingData.rating || '4.4'}/5</span>
+                                <span class="location-badge">${bookingData.from} → ${bookingData.to}</span>
+                            </div>
+                            
+                            <div class="room-details">
+                                <div class="room-type">${bookingData.flightClass}</div>
+                                <div class="room-features">👥 ${bookingData.passengers} • ${bookingData.duration || '2h 30m'} • ${bookingData.flightType || 'Direct Flight'}</div>
+                                <div class="room-amenities">
+                                    <span>⭕ ${bookingData.refundable ? 'Refundable' : 'Non-Refundable'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Handle hotel booking data
+                const imageUrl = getHotelImageUrl(bookingData.hotelName);
+                return `
+                    <div class="hotel-card">
+                        <img src="${imageUrl}" alt="${bookingData.hotelName}" class="hotel-image" onerror="this.src='../assets/default-hotel.jpg'">
+                        <div class="hotel-info">
+                            <h3 class="hotel-name">${bookingData.hotelName}</h3>
+                            <div class="hotel-rating">
+                                <span class="rating-badge">${bookingData.rating || '4.4'}/5</span>
+                                <span class="location-badge">${bookingData.destination || 'Location'}</span>
+                            </div>
+                            
+                            <div class="room-details">
+                                <div class="room-type">${bookingData.roomType}</div>
+                                <div class="room-features">👥 ${bookingData.guests} • ${bookingData.bedType || 'Standard Room'} • ${bookingData.breakfast ? 'Includes breakfast' : 'No breakfast'}</div>
+                                <div class="room-amenities">
+                                    <span>⭕ ${bookingData.refundable ? 'Refundable' : 'Non-Refundable'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Function to get hotel image URL based on hotel name
+        function getHotelImageUrl(hotelName) {
+            const hotelImages = {
+                'Nandini Jungle': '../assets/nandini-jungle.jpg',
+                'Ramayana Suites and Resort': '../assets/ramayana.png',
+                'default': '../assets/default-hotel.jpg'
+            };
+            return hotelImages[hotelName] || hotelImages.default;
+        }
+
+        // Function to parse price string to number
+        function parsePrice(priceString) {
+            if (!priceString) return 0;
+            // Remove 'Rp' and any dots, then replace comma with dot for decimal
+            const cleanPrice = priceString.replace('Rp', '').replace(/\./g, '').replace(',', '.');
+            return parseFloat(cleanPrice) || 0;
+        }
+
+        // Function to format price to IDR
+        function formatPrice(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        // Update booking details
+        function updateBookingDetails(bookingData) {
+            if (!bookingData) {
+                console.warn('No booking data provided');
+                return;
+            }
+
+            console.log('Updating booking details with:', bookingData);
+
+            const container = document.getElementById('bookingDetailsContainer');
+            if (container) {
+                container.innerHTML = createBookingDetailsHTML(bookingData);
+            }
+
+            // Update dates based on booking type
+            const checkinEl = document.getElementById('checkin-date');
+            const checkoutEl = document.getElementById('checkout-date');
+            
+            if (bookingData.bookingType === 'flight') {
+                if (checkinEl) checkinEl.textContent = formatDate(bookingData.departure) || '--';
+                if (checkoutEl) checkoutEl.textContent = formatDate(bookingData.return) || '--';
+            } else {
+                if (checkinEl) checkinEl.textContent = formatDate(bookingData.checkin) || '--';
+                if (checkoutEl) checkoutEl.textContent = formatDate(bookingData.checkout) || '--';
+            }
+
+            // Update pricing
+            if (bookingData.basePrice) {
+                updatePricing(bookingData.basePrice);
+            } else if (bookingData.price) {
+                updatePricing(bookingData.price);
+            }
+        }
+
+        // Function to format date from YYYY-MM-DD to DD MMMM YYYY
+        function formatDate(dateString) {
+            if (!dateString) return '--';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return '--';
+                
+                const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+            } catch (e) {
+                console.error('Error formatting date:', e);
+                return '--';
+            }
+        }
     </script>
 </body>
 </html>

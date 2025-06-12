@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OWO - Pilih Kamar</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>OWO - Ketersediaan Hotel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="mockup.js"></script>
     <style>
         * {
             margin: 0;
@@ -14,1178 +15,333 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: #4E148C9E;
-            min-height: 100vh;
-            padding-top: 20px;
-        }
-
-        .header {
-            width: 100%;
-            height: 59px;
-            background: white;
-            padding: 0 100px;
-            display: flex;
-            align-items: center;
-            gap: 23px;
-            position: fixed;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .logo {
-            width: 148px;
-            height: 48px;
-            background-image: url('../assets/logo_owo.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            border-radius: 8px;
-        }
-
-        .search-container {
-            width: 426px;
-            position: relative;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #D9D9D9;
-            border-radius: 8px;
-            font-size: 16px;
-            color: #000000;
-            outline: none;
-        }
-
-        .search-icon {
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 20px;
-            height: 20px;
-            background-image: url('../assets/Search.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            cursor: pointer;
-        }
-
-        .nav-menu {
-            display: flex;
-            gap: 40px;
-            margin-left: auto;
-        }
-
-        .nav-item {
-            color: #613DC1;
-            font-size: 20px;
-            font-weight: 700;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .user-section {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .notification-icon {
-            width: 45px;
-            height: 45px;
-            background-image: url('../assets/notification.png');
-            background-size: cover;
-            background-position: center;
-            border-radius: 50%;
-        }
-
-        .user-avatar {
-            width: 50px;
-            height: 50px;
-            background-image: url('../assets/profile_1.png');
-            background-size: cover;
-            background-position: center;
-            border-radius: 50%;
-        }
-
-        .user-greeting {
-            color: #613DC1;
-            font-size: 20px;
-            font-weight: 700;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f3ff;
+            padding: 20px;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding-top: 60px;
         }
 
-        .back-button {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-bottom: 20px;
-            transition: background 0.3s ease;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-        }
-
-        .back-button:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .hotel-section {
+        .header {
             background: white;
-            border-radius: 16px;
+            padding: 20px;
+            border-radius: 12px;
             margin-bottom: 20px;
-            overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .hotel-header {
+        .header h1 {
+            color: #613DC1;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .search-details {
             display: flex;
-            height: 280px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .detail-item {
+            background: #f5f3ff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .detail-item strong {
+            color: #613DC1;
+        }
+
+        .hotel-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .hotel-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            transition: transform 0.3s ease;
+        }
+
+        .hotel-card:hover {
+            transform: translateY(-4px);
         }
 
         .hotel-image {
-            width: 400px;
+            flex: 0 0 300px;
+            height: 250px;
+            background: #e0e7ff;
+            position: relative;
+        }
+
+        .hotel-image img {
+            width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        .hotel-info {
+        .hotel-content {
             flex: 1;
-            padding: 24px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
         }
 
+        .hotel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
         .hotel-title {
             color: #613DC1;
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 700;
-            margin-bottom: 12px;
         }
 
         .hotel-stars {
             display: flex;
             gap: 4px;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .star {
-            width: 24px;
-            height: 24px;
             color: #FBBF24;
         }
 
         .hotel-location {
-            color: #613DC1;
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 16px;
-        }
-
-        .hotel-ratings {
-            display: flex;
-            gap: 20px;
-            margin-bottom: auto;
-        }
-
-        .rating-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .rating-score {
-            font-size: 16px;
-            font-weight: 700;
-            color: #111827;
-        }
-
-        .rating-badge {
-            background: #F3F4F6;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #374151;
-        }
-
-        .rooms-container {
-            padding: 0 24px 24px;
-        }
-
-        .room-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 0;
-            border-bottom: 1px solid #E5E7EB;
-        }
-
-        .room-item:last-child {
-            border-bottom: none;
-        }
-
-        .room-info {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .room-name {
-            font-size: 18px;
-            font-weight: 600;
-            color: #111827;
-        }
-
-        .room-details {
-            display: flex;
-            align-items: center;
-            gap: 12px;
             color: #6B7280;
-            font-size: 14px;
+            margin-bottom: 15px;
         }
 
-        .room-capacity {
+        .hotel-amenities {
             display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .capacity-icon {
-            width: 16px;
-            height: 16px;
-            color: #613DC1;
-        }
-
-        .room-pricing {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .room-price {
-            font-size: 24px;
-            font-weight: 700;
-            color: #111827;
-        }
-
-        .check-availability-btn {
-            background: #613DC1;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s ease;
-            white-space: nowrap;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-        }
-
-        .check-availability-btn:hover {
-            background: #4E148C;
-        }
-
-        /* Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal {
-            background: white;
-            border-radius: 16px;
-            padding: 32px;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
-        }
-
-        .modal-overlay.active .modal {
-            transform: scale(1);
-        }
-
-        .modal-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-        }
-
-        .modal-icon.success {
-            background: #D1FAE5;
-            color: #059669;
-        }
-
-        .modal-icon.error {
-            background: #FEE2E2;
-            color: #DC2626;
-        }
-
-        .modal-icon.loading {
-            background: #DBEAFE;
-            color: #2563EB;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .modal-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: #111827;
-        }
-
-        .modal-message {
-            font-size: 16px;
-            color: #6B7280;
-            margin-bottom: 24px;
-            line-height: 1.5;
-        }
-
-        .availability-info {
-            background: #F0F9FF;
-            border: 2px solid #0EA5E9;
-            border-radius: 8px;
-            padding: 16px;
-            margin: 16px 0;
-            text-align: left;
-        }
-
-        .availability-info h4 {
-            color: #0369A1;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .availability-details {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            font-size: 14px;
-            color: #374151;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
-
-        .modal-button {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s ease;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-        }
-
-        .modal-button.primary {
-            background: #613DC1;
-            color: white;
-        }
-
-        .modal-button.primary:hover {
-            background: #4E148C;
-        }
-
-        .modal-button.secondary {
-            background: #F3F4F6;
-            color: #374151;
-        }
-
-        .modal-button.secondary:hover {
-            background: #E5E7EB;
-        }
-
-        .rating-star {
-            width: 40px;
-            height: 40px;
-            margin-right: 4px;
-        }
-        .footer {
-            background: white;
-            border-top: 1px solid black;
-            padding: 55px 0;
-            margin-top: 50px;
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            gap: 60px;
-            padding: 10 146px;
-        }
-
-        .footer-brand {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .footer-logo {
-            width: 171px;
-            height: 59px;
-            background-image: url('../assets/logo_owo.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            border-radius: 5px;
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: center;
             gap: 15px;
-        }
-
-        .contact-icon {
-            width: 51px;
-            height: 51px;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            border-radius: 50%;
-        }
-
-        .contact-icon.phone {
-            background-image: url('../assets/Phone.png');
-        }
-
-        .contact-icon.email {
-            background-image: url('../assets/Email.png');
-        }
-
-        .contact-text {
-            color: #2C0735;
-            font-size: 20px;
-            font-weight: 400;
-        }
-
-        .contact-link {
-            color: #2C0735;
-            text-decoration: underline;
-        }
-
-        .footer-section {
-            flex: 1;
-        }
-
-        .footer-title {
-            color: #2C0735;
-            font-size: 20px;
-            font-weight: 700;
             margin-bottom: 20px;
         }
 
-        .footer-link {
-            color: #2C0735;
-            font-size: 18px;
-            font-weight: 500;
-            text-decoration: none;
-            display: block;
-            margin-bottom: 10px;
+        .amenity {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #4B5563;
+            font-size: 14px;
         }
 
-        .footer-bottom {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid black;
-            color: black;
-            font-size: 20px;
-            font-weight: 400;
+        .hotel-footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        @media (max-width: 768px) {
-            .hotel-header {
-                flex-direction: column;
-                height: auto;
-            }
-            
-            .hotel-image {
-                width: 100%;
-                height: 200px;
-            }
-            
-            .room-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 16px;
-            }
-            
-            .room-pricing {
-                width: 100%;
-                justify-content: space-between;
-            }
+        .hotel-price {
+            display: flex;
+            flex-direction: column;
         }
 
-        .hotel-section.selected {
-            border: 3px solid #613DC1 !important;
-            box-shadow: 0 8px 32px rgba(97, 61, 193, 0.2) !important;
+        .price-amount {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
         }
-        
-        .search-input.with-search-data {
-            background-color: #F0F9FF;
-            border-color: #0EA5E9;
+
+        .price-period {
+            color: #6B7280;
+            font-size: 14px;
+        }
+
+        .book-button {
+            background: #613DC1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .book-button:hover {
+            background: #4E148C;
+        }
+
+        .back-button {
+            background: #F3F4F6;
+            color: #374151;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .back-button:hover {
+            background: #E5E7EB;
         }
     </style>
 </head>
 <body>
-    <header class="header">
-        <div class="logo"></div>
-        
-        <div class="search-container">
-            <input type="text" class="search-input" id="searchInput" placeholder="Search ticket">
-            <div class="search-icon"></div>
-        </div>
-        
-        <nav class="nav-menu">
-            <a href="#" class="nav-item">Pesawat</a>
-            <a href="#" class="nav-item">Hotel</a>
-            <a href="#" class="nav-item">Tentang Kami</a>
-        </nav>
-        
-        <div class="user-section">
-            <div class="notification-icon"></div>
-            <div class="user-avatar"></div>
-            <span class="user-greeting" id="userGreeting">Hi, Owo!</span>
-        </div>
-    </header>
-
     <div class="container">
-        <button class="back-button" onclick="goBack()">← Kembali ke Pencarian</button>
-
-        <!-- Nandini Jungle by Hanging Gardens -->
-        <div class="hotel-section">
-            <div class="hotel-header">
-                <img src="../assets/nandini.png" alt="Nandini Jungle by Hanging Gardens" class="hotel-image">
-                
-                <div class="hotel-info">
-                    <h2 class="hotel-title">Nandini Jungle by Hanging Gardens</h2>
-                    
-                    <div class="hotel-stars">
-                        <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                        <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                        <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                        <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                        <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                    </div>
-                    
-                    <p class="hotel-location">Indonesia</p>
-                    
-                    <div class="hotel-ratings">
-                        <div class="rating-item">
-                            <img src="../assets/logo_owo2.png" alt="Owo" class="rating-star">
-                            <span class="rating-score">4.6/5</span>
-                        </div>
-                        <div class="rating-item">
-                            <span class="rating-badge">Location 4.5/5</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="rooms-container">
-                <div class="room-item">
-                    <div class="room-info">
-                        <div class="room-name">Jungle View Villa</div>
-                        <div class="room-details">
-                            <div class="room-capacity">
-                                <svg class="capacity-icon" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                                </svg>
-                                <span>2 guests</span>
-                            </div>
-                            <span>•</span>
-                            <span>Includes breakfast for 2 guests</span>
-                        </div>
-                    </div>
-                    <div class="room-pricing">
-                        <span class="room-price">Rp3,329,114</span>
-                        <button class="check-availability-btn" onclick="checkRoomAvailability('Nandini Jungle', 'Jungle View Villa', 'Rp3,329,114', 3)">
-                            Cek Ketersediaan 
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="room-item">
-                    <div class="room-info">
-                        <div class="room-name">Cottage Villa</div>
-                        <div class="room-details">
-                            <div class="room-capacity">
-                                <svg class="capacity-icon" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                                </svg>
-                                <span>2 guests</span>
-                            </div>
-                            <span>•</span>
-                            <span>Includes breakfast for 2 guests</span>
-                        </div>
-                    </div>
-                    <div class="room-pricing">
-                        <span class="room-price">Rp2,747,511</span>
-                        <button class="check-availability-btn" onclick="checkRoomAvailability('Nandini Jungle', 'Cottage Villa', 'Rp2,747,511', 0)">
-                            Cek Ketersediaan 
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Ramayana Suites and Resort -->
-        <div class="hotel-section">
-            <div class="hotel-header">
-                <img src="../assets/ramayana.png" alt="Ramayana Suites and Resort" class="hotel-image">
-                
-                <div class="hotel-info">
-                    <h2 class="hotel-title">Ramayana Suites and Resort</h2>
-                    
-                    <div class="hotel-stars">
-                        <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                        <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                        <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                        <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                        <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                    </div>
-                    
-                    <p class="hotel-location">Indonesia</p>
-                    
-                    <div class="hotel-ratings">
-                        <div class="rating-item">
-                             <img src="../assets/logo_owo2.png" alt="Owo" class="rating-star">
-                            <span class="rating-score">4.4/5</span>
-                        </div>
-                        <div class="rating-item">
-                            <span class="rating-badge">Location 4.7/5</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="rooms-container">
-                <div class="room-item">
-                    <div class="room-info">
-                        <div class="room-name">Deluxe Room</div>
-                        <div class="room-details">
-                            <div class="room-capacity">
-                                <svg class="capacity-icon" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                                </svg>
-                                <span>2 guests</span>
-                            </div>
-                            <span>•</span>
-                            <span>Includes breakfast for 2 guests</span>
-                        </div>
-                    </div>
-                    <div class="room-pricing">
-                        <span class="room-price">Rp1,158,311</span>
-                        <button class="check-availability-btn" onclick="checkRoomAvailability('Ramayana Suites', 'Deluxe Room', 'Rp1,158,311', 7)">
-                            Cek Ketersediaan 
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="room-item">
-                    <div class="room-info">
-                        <div class="room-name">Deluxe Room</div>
-                        <div class="room-details">
-                            <div class="room-capacity">
-                                <svg class="capacity-icon" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                                </svg>
-                                <span>2 guests</span>
-                            </div>
-                            <span>•</span>
-                            <span>Includes breakfast for 2 guests</span>
-                        </div>
-                    </div>
-                    <div class="room-pricing">
-                        <span class="room-price">Rp1,009,511</span>
-                        <button class="check-availability-btn" onclick="checkRoomAvailability('Ramayana Suites', 'Deluxe Room Premium', 'Rp1,009,511', 2)">
-                            Cek Ketersediaan 
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- The Garcia Ubud Hotel & Resort -->
-        <div class="hotel-section">
-            <div class="hotel-header">
-                <img src="../assets/garcia.png" alt="The Garcia Ubud Hotel & Resort" class="hotel-image">
-                
-                <div class="hotel-info">
-                    <h2 class="hotel-title">The Garcia Ubud Hotel & Resort</h2>
-                    
-                    <div class="hotel-stars">
-                        <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                        <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                        <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                        <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                        <svg class="star" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                    </div>
-                    
-                    <p class="hotel-location">Indonesia</p>
-                    
-                    <div class="hotel-ratings">
-                        <div class="rating-item">
-                            <img src="../assets/logo_owo2.png" alt="Owo" class="rating-star">
-                            <span class="rating-score">4.0/5</span>
-                        </div>
-                        <div class="rating-item">
-                            <span class="rating-badge">Great for couples</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="rooms-container">
-                <div class="room-item">
-                    <div class="room-info">
-                        <div class="room-name">Deluxe Room</div>
-                        <div class="room-details">
-                            <div class="room-capacity">
-                                <svg class="capacity-icon" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                                </svg>
-                                <span>2 guests</span>
-                            </div>
-                            <span>•</span>
-                            <span>Includes breakfast for 2 guests</span>
-                        </div>
-                    </div>
-                    <div class="room-pricing">
-                        <span class="room-price">Rp1,488,858</span>
-                        <button class="check-availability-btn" onclick="checkRoomAvailability('The Garcia Ubud', 'Deluxe Room', 'Rp1,488,858', 5)">
-                            Cek Ketersediaan 
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="room-item">
-                    <div class="room-info">
-                        <div class="room-name">Deluxe Room</div>
-                        <div class="room-details">
-                            <div class="room-capacity">
-                                <svg class="capacity-icon" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                                </svg>
-                                <span>2 guests</span>
-                            </div>
-                            <span>•</span>
-                            <span>Includes breakfast for 2 guests</span>
-                        </div>
-                    </div>
-                    <div class="room-pricing">
-                        <span class="room-price">Rp1,288,858</span>
-                        <button class="check-availability-btn" onclick="checkRoomAvailability('The Garcia Ubud', 'Deluxe Room Superior', 'Rp1,288,858', 0)">
-                            Cek Ketersediaan 
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-brand">
-                <div class="footer-logo"></div>
-                <div class="contact-item">
-                    <div class="contact-icon email"></div>
-                    <a href="mailto:support@owo.com" class="contact-text contact-link">support@owo.com</a>
-                </div>
-                <div class="contact-item">
-                    <div class="contact-icon phone"></div>
-                    <span class="contact-text">+62 1234567890</span>
-                </div>
-            </div>
-
-            <div class="footer-section">
-                <h3 class="footer-title">Tentang Kami</h3>
-                <a href="#" class="footer-link">Profil Perusahaan</a>
-                <a href="#" class="footer-link">Kontak</a>
-            </div>
-
-            <div class="footer-section">
-                <h3 class="footer-title">Layanan</h3>
-                <a href="#" class="footer-link">Pesawat</a>
-                <a href="#" class="footer-link">Hotel</a>
-                <a href="#" class="footer-link">Bantuan dan Keluhan</a>
-            </div>
-
-            <div class="footer-section">
-                <h3 class="footer-title">Informasi</h3>
-                <a href="#" class="footer-link">Syarat & Ketentuan</a>
-                <a href="#" class="footer-link">Kebijakan Privasi</a>
-                <a href="#" class="footer-link">Kebijakan Pembatalan</a>
-            </div>
-        </div>
+        <button class="back-button" onclick="window.history.back()">← Kembali</button>
         
-        <div class="footer-bottom">
-            © 2025 OwO . All Rights Reserved
+        <div class="header">
+            <h1>Hasil Pencarian Hotel</h1>
+            <div class="search-details" id="searchDetails">
+                <!-- Will be populated by JavaScript -->
+            </div>
         </div>
-    </footer>
-    
 
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal">
-            <div class="modal-icon" id="modalIcon">
-                ⏳
-            </div>
-            <h3 class="modal-title" id="modalTitle">Mengecek Ketersediaan</h3>
-            <p class="modal-message" id="modalMessage">Mohon tunggu, kami sedang mengecek ketersediaan kamar...</p>
-            <div id="availabilityInfo" class="availability-info" style="display: none;">
-                <h4>Informasi Ketersediaan</h4>
-                <div class="availability-details" id="availabilityDetails">
-                </div>
-            </div>
-            <div class="modal-buttons" id="modalButtons">
-            </div>
+        <div class="hotel-list" id="hotelList">
+            <!-- Will be populated by JavaScript -->
         </div>
     </div>
 
     <script>
-        // SCRIPT UNTUK CekKetersediaanHotel.html - REVISI LENGKAP
-        // Fungsi helper untuk mendapatkan data dari parent dengan timeout
-        function getDataFromParent(type, callback, timeout = 5000) {
-            console.log('Requesting data from parent:', type);
-            
+        // Get search data from parent window
+        function getSearchData() {
+            return new Promise((resolve) => {
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({
+                        action: 'get_data',
+                        type: 'hotel_search'
+                    }, '*');
+
+                    const listener = (event) => {
+                        if (event.data.action === 'data_response' && event.data.type === 'hotel_search') {
+                            window.removeEventListener('message', listener);
+                            resolve(event.data.data);
+                        }
+                    };
+
+                    window.addEventListener('message', listener);
+                } else {
+                    // Fallback to mockup data
+                    resolve({
+                        destination: 'Bali',
+                        checkin: '2025-05-10',
+                        checkout: '2025-05-11',
+                        guests: '2'
+                    });
+                }
+            });
+        }
+
+        // Display search details
+        function displaySearchDetails(searchData) {
+            const searchDetails = document.getElementById('searchDetails');
+            searchDetails.innerHTML = `
+                <div class="detail-item">
+                    <strong>Destinasi:</strong> ${searchData.destination}
+                </div>
+                <div class="detail-item">
+                    <strong>Check-in:</strong> ${new Date(searchData.checkin).toLocaleDateString('id-ID')}
+                </div>
+                <div class="detail-item">
+                    <strong>Check-out:</strong> ${new Date(searchData.checkout).toLocaleDateString('id-ID')}
+                </div>
+                <div class="detail-item">
+                    <strong>Tamu:</strong> ${searchData.guests} orang
+                </div>
+            `;
+        }
+
+        // Display available hotels
+        function displayHotels(hotels) {
+            const hotelList = document.getElementById('hotelList');
+            hotelList.innerHTML = hotels.map(hotel => `
+                <div class="hotel-card">
+                    <div class="hotel-image">
+                        <img src="../assets/${hotel.hotelName.toLowerCase().replace(/\s+/g, '-')}.png" alt="${hotel.hotelName}">
+                    </div>
+                    
+                    <div class="hotel-content">
+                        <div class="hotel-header">
+                            <h3 class="hotel-title">${hotel.hotelName}</h3>
+                        </div>
+                        
+                        <div class="hotel-stars">
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                        </div>
+                        
+                        <p class="hotel-location">${hotel.address}</p>
+                        
+                        <div class="hotel-amenities">
+                            <div class="amenity">🛏️ 1 King Bed</div>
+                            <div class="amenity">🚿 Private Bathroom</div>
+                            <div class="amenity">🌊 Ocean View</div>
+                            <div class="amenity">🏊‍♂️ Swimming Pool</div>
+                        </div>
+                        
+                        <div class="hotel-footer">
+                            <div class="hotel-price">
+                                <span class="price-amount">${window.mockupData.formatCurrency(hotel.harga)}</span>
+                                <span class="price-period">per malam</span>
+                            </div>
+                            <button class="book-button" onclick="bookHotel('${hotel.hotelName}')">Pesan Sekarang</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Book hotel function
+        function bookHotel(hotelName) {
             if (window.parent && window.parent !== window) {
-                let responseReceived = false;
-                
-                const responseListener = function(event) {
-                    console.log('Response received:', event.data);
-                    if (event.data.action === 'data_response' && event.data.type === type) {
-                        responseReceived = true;
-                        callback(event.data.data);
-                        window.removeEventListener('message', responseListener);
+                window.parent.postMessage({
+                    action: 'save_data',
+                    type: 'hotel_booking',
+                    data: {
+                        hotelName: hotelName,
+                        bookingType: 'hotel'
                     }
-                };
-                
-                window.addEventListener('message', responseListener);
-                
-                // Kirim request
+                }, '*');
+            }
+            // Redirect to payment page
+            window.location.href = 'Pembayaran.html';
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async () => {
+            const searchData = await getSearchData();
+            displaySearchDetails(searchData);
+            
+            // Get and display hotels
+            if (window.parent && window.parent !== window) {
                 window.parent.postMessage({
                     action: 'get_data',
-                    type: type
+                    type: 'hotel_search'
                 }, '*');
-                
-                // Timeout untuk menghindari hanging  
-                setTimeout(() => {
-                    if (!responseReceived) {
-                        console.warn('Timeout waiting for data from parent');
-                        window.removeEventListener('message', responseListener);
-                        callback(null);
+
+                const listener = (event) => {
+                    if (event.data.action === 'data_response' && event.data.type === 'hotel_search') {
+                        window.removeEventListener('message', listener);
+                        displayHotels(window.mockupData.hotels);
                     }
-                }, timeout);
+                };
+
+                window.addEventListener('message', listener);
             } else {
-                console.warn('Not in iframe, returning null');
-                callback(null);
-            }
-        }
-
-        // Fungsi untuk mengirim data ke parent
-        function sendDataToParent(action, type, data) {
-            console.log('Sending to parent:', { action, type, data });
-            if (window.parent && window.parent !== window) {
-                window.parent.postMessage({ action: action, type: type, data: data }, '*');
-            } else {
-                console.error("Tidak bisa mengirim data: Halaman tidak berada di dalam iframe parent yang benar.");
-            }
-        }
-
-        // Load data pencarian hotel saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('CekKetersediaanHotel page loaded');
-            
-            // Ambil data pencarian hotel dari parent
-            getDataFromParent('hotel_search', function(searchData) {
-                if (searchData) {
-                    console.log('Data pencarian hotel dari parent:', searchData);
-                    updateSearchSummary(searchData);
-                    window.currentSearchData = searchData;
-                } else {
-                    console.warn('No hotel search data found, using defaults');
-                    window.currentSearchData = {
-                        destination: 'Ubud, Bali',
-                        checkin: '10 Mei 2025',
-                        checkout: '11 Mei 2025',
-                        guests: '2'
-                    };
-                }
-            });
-
-            // Ambil data booking hotel jika ada (untuk highlight hotel yang dipilih)
-            getDataFromParent('hotel_booking', function(bookingData) {
-                if (bookingData && bookingData.hotelName) {
-                    console.log('Hotel booking data found:', bookingData);
-                    highlightSelectedHotel(bookingData.hotelName);
-                }
-            });
-        });
-
-        // Update ringkasan pencarian berdasarkan data dari parent
-        function updateSearchSummary(searchData) {
-            const checkinDate = searchData.checkin || '10 Mei 2025';
-            const checkoutDate = searchData.checkout || '11 Mei 2025';
-            const guests = searchData.guests || '2';
-            const destination = searchData.destination || 'Ubud, Bali';
-            
-            // Update header search input jika ada
-            const searchInput = document.querySelector('.search-input');
-            if (searchInput) {
-                searchInput.placeholder = `Pencarian: ${destination}`;
-            }
-            
-            // Update info header jika ada
-            const locationInfo = document.querySelector('.location-info');
-            if (locationInfo) {
-                locationInfo.textContent = `${destination} • ${checkinDate} - ${checkoutDate} • ${guests} tamu`;
-            }
-            
-            console.log('Search summary updated with:', { destination, checkinDate, checkoutDate, guests });
-        }
-
-        // Highlight hotel yang dipilih dari halaman sebelumnya
-        function highlightSelectedHotel(hotelName) {
-            console.log('Highlighting selected hotel:', hotelName);
-            const hotelSections = document.querySelectorAll('.hotel-section');
-            
-            hotelSections.forEach(section => {
-                const titleElement = section.querySelector('.hotel-title');
-                if (titleElement && titleElement.textContent.includes(hotelName)) {
-                    section.style.border = '3px solid #613DC1';
-                    section.style.boxShadow = '0 8px 32px rgba(97, 61, 193, 0.2)';
-                    section.style.backgroundColor = '#f8f6ff';
-                    
-                    // Scroll ke hotel yang dipilih
-                    setTimeout(() => {
-                        section.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 500);
-                }
-            });
-        }
-
-        // Fungsi utama untuk mengecek ketersediaan kamar
-        function checkRoomAvailability(hotelName, roomType, price, availableRooms) {
-            console.log('Checking room availability:', { hotelName, roomType, price, availableRooms });
-            
-            const modal = document.getElementById('modalOverlay');
-            const icon = document.getElementById('modalIcon');
-            const title = document.getElementById('modalTitle');
-            const message = document.getElementById('modalMessage');
-            const buttons = document.getElementById('modalButtons');
-            const availabilityInfo = document.getElementById('availabilityInfo');
-            const availabilityDetails = document.getElementById('availabilityDetails');
-            
-            // Gunakan data pencarian yang tersimpan
-            const searchData = window.currentSearchData || {
-                checkin: '10 Mei 2025',
-                checkout: '11 Mei 2025',
-                guests: '2',
-                destination: 'Ubud, Bali'
-            };
-            
-            modal.classList.add('active');
-            icon.className = 'modal-icon loading';
-            icon.textContent = '⏳';
-            title.textContent = 'Mengecek Ketersediaan';
-            message.textContent = 'Mohon tunggu, kami sedang mengecek ketersediaan kamar...';
-            buttons.innerHTML = '';
-            if (availabilityInfo) availabilityInfo.style.display = 'none';
-            
-            setTimeout(() => {
-                if (availableRooms > 0) {
-                    // Kamar tersedia
-                    icon.className = 'modal-icon success';
-                    icon.textContent = '✓';
-                    title.textContent = 'Kamar Tersedia!';
-                    message.textContent = `Kamar ${roomType} di ${hotelName} tersedia untuk tanggal yang Anda pilih.`;
-                    
-                    // Tampilkan detail ketersediaan
-                    if (availabilityInfo && availabilityDetails) {
-                        availabilityInfo.style.display = 'block';
-                        availabilityDetails.innerHTML = `
-                            <div><strong>Hotel:</strong></div>
-                            <div>${hotelName}</div>
-                            <div><strong>Tipe Kamar:</strong></div>
-                            <div>${roomType}</div>
-                            <div><strong>Harga per malam:</strong></div>
-                            <div>${price}</div>
-                            <div><strong>Sisa kamar:</strong></div>
-                            <div style="color: #059669; font-weight: 600;">${availableRooms} kamar tersisa</div>
-                            <div><strong>Check-in:</strong></div>
-                            <div>${searchData.checkin}</div>
-                            <div><strong>Check-out:</strong></div>
-                            <div>${searchData.checkout}</div>
-                            <div><strong>Tamu:</strong></div>
-                            <div>${searchData.guests} orang</div>
-                        `;
-                    }
-                    
-                    buttons.innerHTML = `
-                        <button class="modal-button primary" onclick="proceedToBooking('${hotelName}', '${roomType}', '${price}')">Lanjutkan Pemesanan</button>
-                        <button class="modal-button secondary" onclick="closeModal()">Tutup</button>
-                    `;
-                } else {
-                    // Kamar tidak tersedia
-                    icon.className = 'modal-icon error';
-                    icon.textContent = '✗';
-                    title.textContent = 'Kamar Tidak Tersedia';
-                    message.textContent = `Maaf, kamar ${roomType} di ${hotelName} tidak tersedia untuk tanggal yang Anda pilih.`;
-                    
-                    if (availabilityInfo) availabilityInfo.style.display = 'none';
-                    
-                    buttons.innerHTML = `
-                        <button class="modal-button primary" onclick="chooseDate()">Pilih Tanggal Lain</button>
-                        <button class="modal-button secondary" onclick="closeModal()">Tutup</button>
-                    `;
-                }
-            }, 2000);
-        }
-
-        // Fungsi untuk melanjutkan booking dengan data lengkap
-        function proceedToBooking(hotelName, roomType, price) {
-            console.log('Proceeding to booking:', { hotelName, roomType, price });
-            
-            const searchData = window.currentSearchData || {};
-            
-            // Simpan data booking lengkap ke parent
-            const completeBookingData = {
-                hotelName: hotelName,
-                roomType: roomType,
-                price: price,
-                bookingType: 'hotel',
-                checkin: searchData.checkin,
-                checkout: searchData.checkout,
-                guests: searchData.guests,
-                destination: searchData.destination,
-                bookingTimestamp: new Date().toISOString(),
-                status: 'confirmed'
-            };
-            
-            console.log('Saving complete booking data:', completeBookingData);
-            sendDataToParent('save_data', 'hotel_booking', completeBookingData);
-            
-            closeModal();
-            
-            // Redirect ke halaman pembayaran
-            setTimeout(() => {
-                window.location.href = 'Pembayaran.html';
-            }, 300);
-        }
-
-        // Fungsi utilitas lainnya
-        function closeModal() {
-            const modal = document.getElementById('modalOverlay');
-            if (modal) modal.classList.remove('active');
-        }
-
-        function chooseDate() {
-            closeModal();
-            window.location.href = 'Pemesanan.html';
-        }
-
-        function goBack() {
-            window.history.back();
-        }
-
-        // Event listener untuk modal overlay
-        document.addEventListener('DOMContentLoaded', function() {
-            const modalOverlay = document.getElementById('modalOverlay');
-            if (modalOverlay) {
-                modalOverlay.addEventListener('click', function(e) {
-                    if (e.target === this) {
-                        closeModal();
-                    }
-                });
+                // Fallback to mockup data
+                displayHotels(window.mockupData.hotels);
             }
         });
-
-        // Expose functions untuk debugging
-        window.cekKetersediaanDebug = {
-            getDataFromParent: getDataFromParent,
-            sendDataToParent: sendDataToParent,
-            currentSearchData: window.currentSearchData,
-            proceedToBooking: proceedToBooking
-        };
     </script>
 </body>
 </html>
