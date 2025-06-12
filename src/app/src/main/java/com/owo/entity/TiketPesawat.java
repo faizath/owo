@@ -52,6 +52,10 @@ public class TiketPesawat extends Tiket {
     public LocalDateTime getWaktuKeberangkatan() {
         return waktuKeberangkatan;
     }
+    
+    public void setWaktuKeberangkatan(LocalDateTime waktuKeberangkatan) {
+        this.waktuKeberangkatan = waktuKeberangkatan;
+    }
   
     public void setDestination(String destination) {
         this.destination = destination;
