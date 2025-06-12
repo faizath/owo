@@ -323,13 +323,43 @@
 
         // Book hotel function
         function bookHotel(hotelName) {
+            // Find the complete hotel data
+            const hotelData = window.mockupData.hotels.find(hotel => hotel.hotelName === hotelName);
+            
             if (window.parent && window.parent !== window) {
+                // Get search data for additional information
+                const searchDetails = document.getElementById('searchDetails');
+                const guests = searchDetails.querySelector('.detail-item:nth-child(4) strong').nextSibling.textContent.trim().split(' ')[0];
+                
+                // Get the exact price shown in the UI
+                const hotelCards = document.querySelectorAll('.hotel-card');
+                let displayedPrice = window.mockupData.formatCurrency(hotelData.harga);
+                
+                for (const card of hotelCards) {
+                    const title = card.querySelector('.hotel-title');
+                    if (title && title.textContent.trim() === hotelName) {
+                        const priceElement = card.querySelector('.price-amount');
+                        if (priceElement) {
+                            displayedPrice = priceElement.textContent.trim();
+                        }
+                        break;
+                    }
+                }
+                
                 window.parent.postMessage({
                     action: 'save_data',
                     type: 'hotel_booking',
                     data: {
-                        hotelName: hotelName,
-                        bookingType: 'hotel'
+                        ...hotelData,
+                        bookingType: 'hotel',
+                        checkin: document.querySelector('.detail-item:nth-child(2) strong').nextSibling.textContent.trim(),
+                        checkout: document.querySelector('.detail-item:nth-child(3) strong').nextSibling.textContent.trim(),
+                        guests: guests,
+                        price: displayedPrice,
+                        roomType: hotelData.roomType || 'Standard Room',
+                        bedType: hotelData.bedType || 'Standard Room',
+                        breakfast: hotelData.breakfast || false,
+                        refundable: hotelData.refundable || false
                     }
                 }, '*');
             }

@@ -974,105 +974,55 @@
             
             if (!bookingData) {
                 console.error("Tidak ada data booking untuk ditampilkan.");
-                // Set default values jika tidak ada data
                 setDefaultValues();
                 return;
             }
 
-            // Deteksi jenis booking (hotel/flight)
-            const isHotelBooking = bookingData.bookingType === 'hotel' || bookingData.hotelName;
-            const isFlightBooking = bookingData.bookingType === 'flight' || bookingData.flightName;
-
-            if (isHotelBooking) {
-                updateHotelBookingUI(bookingData);
-            } else if (isFlightBooking) {
-                updateFlightBookingUI(bookingData);
-            } else {
-                console.warn('Unknown booking type, setting defaults');
-                setDefaultValues();
+            // Update booking details container
+            const container = document.getElementById('bookingDetailsContainer');
+            if (container) {
+                container.innerHTML = createBookingDetailsHTML(bookingData);
             }
-        }
 
-        // Update UI untuk booking hotel
-        function updateHotelBookingUI(bookingData) {
-            console.log('Updating hotel booking UI with:', bookingData);
-            
-            // Update Info Hotel
-            const hotelNameEl = document.getElementById('hotel-name');
-            const roomTypeEl = document.getElementById('room-type');
+            // Update dates
             const checkinEl = document.getElementById('checkin-date');
             const checkoutEl = document.getElementById('checkout-date');
             
-            if (hotelNameEl) hotelNameEl.textContent = bookingData.hotelName || 'Nama Hotel Tidak Tersedia';
-            if (roomTypeEl) roomTypeEl.textContent = bookingData.roomType || 'Tipe Kamar Tidak Tersedia';
-            if (checkinEl) checkinEl.textContent = formatDate(bookingData.checkin) || '--';
-            if (checkoutEl) checkoutEl.textContent = formatDate(bookingData.checkout) || '--';
-            
-            // Update booking details container
-            const container = document.getElementById('bookingDetailsContainer');
-            if (container) {
-                container.innerHTML = `
-                    <div class="hotel-card">
-                        <img src="${bookingData.imageUrl || '../assets/garuda.jpg'}" alt="${bookingData.hotelName}" class="hotel-image" onerror="this.src='../assets/default-flight.jpg'">
-                        <div class="hotel-info">
-                            <h3 class="hotel-name">${bookingData.hotelName}</h3>
-                            <div class="hotel-rating">
-                                <span class="rating-badge">${bookingData.rating || '4.4'}/5</span>
-                                <span class="location-badge">${bookingData.destination || 'Location'}</span>
-                            </div>
-                            
-                            <div class="room-details">
-                                <div class="room-type">${bookingData.roomType}</div>
-                                <div class="room-features">👥 ${bookingData.guests} • ${bookingData.bedType || 'Standard Room'} • ${bookingData.breakfast ? 'Includes breakfast' : 'No breakfast'}</div>
-                                <div class="room-amenities">
-                                    <span>⭕ ${bookingData.refundable ? 'Refundable' : 'Non-Refundable'}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
+            if (bookingData.bookingType === 'flight') {
+                if (checkinEl) checkinEl.textContent = formatDate(bookingData.departure) || '--';
+                if (checkoutEl) checkoutEl.textContent = formatDate(bookingData.return) || '--';
+            } else {
+                if (checkinEl) checkinEl.textContent = formatDate(bookingData.checkin) || '--';
+                if (checkoutEl) checkoutEl.textContent = formatDate(bookingData.checkout) || '--';
             }
-            
-            // Update pricing with the base price from availability page
-            if (bookingData.basePrice) {
-                updatePricing(bookingData.basePrice);
-            } else if (bookingData.price) {
-                updatePricing(bookingData.price);
-            }
+
+            // Update pricing
+            const basePrice = bookingData.price || bookingData.harga || 0;
+            updatePriceDisplay(basePrice);
         }
 
-        // Update UI untuk booking flight
-        function updateFlightBookingUI(bookingData) {
-            console.log('Updating flight booking UI with:', bookingData);
-            
-            // Update Info Flight
-            const flightNameEl = document.getElementById('hotel-name'); // Reuse element
-            const routeEl = document.getElementById('room-type'); // Reuse element
-            const departureEl = document.getElementById('checkin-date'); // Reuse element
-            const returnEl = document.getElementById('checkout-date'); // Reuse element
-            
-            if (flightNameEl) flightNameEl.textContent = bookingData.airlineName || 'Nama Penerbangan Tidak Tersedia';
-            if (routeEl) routeEl.textContent = `${bookingData.from || 'Asal'} → ${bookingData.to || 'Tujuan'}`;
-            if (departureEl) departureEl.textContent = formatDate(bookingData.departure) || '--';
-            if (returnEl) returnEl.textContent = formatDate(bookingData.return) || '--';
-            
-            // Update booking details container
-            const container = document.getElementById('bookingDetailsContainer');
-            if (container) {
-                container.innerHTML = `
+        // Function to create booking details HTML
+        function createBookingDetailsHTML(bookingData) {
+            if (!bookingData) return '';
+
+            if (bookingData.bookingType === 'flight') {
+                return `
                     <div class="hotel-card">
-                        <img src="${bookingData.imageUrl || '../assets/garuda.jpg'}" alt="${bookingData.airlineName}" class="hotel-image" onerror="this.src='../assets/default-flight.jpg'">
+                        <img src="../assets/${getFlightImage(bookingData.airlineName)}" 
+                             alt="${bookingData.airlineName || 'Flight'}" 
+                             class="hotel-image" 
+                             onerror="this.src='../assets/default-flight.jpg'">
                         <div class="hotel-info">
-                            <h3 class="hotel-name">${bookingData.airlineName}</h3>
+                            <h3 class="hotel-name">${bookingData.airlineName || 'Flight'}</h3>
                             <div class="hotel-rating">
                                 <span class="rating-badge">${bookingData.rating || '4.4'}/5</span>
-                                <span class="location-badge">${bookingData.from} → ${bookingData.to}</span>
+                                <span class="location-badge">${bookingData.from || 'From'} → ${bookingData.to || 'To'}</span>
                             </div>
                             
                             <div class="room-details">
-                                <div class="room-type">${bookingData.flightClass}</div>
+                                <div class="room-type">${bookingData.flightClass || 'Economy'}</div>
                                 <div class="room-features">
-                                    👥 ${bookingData.passengers} penumpang • 
+                                    👥 ${bookingData.passengers || 1} penumpang • 
                                     ${bookingData.duration || '2h 30m'} • 
                                     ${bookingData.flightType || 'Direct Flight'}
                                 </div>
@@ -1083,118 +1033,246 @@
                         </div>
                     </div>
                 `;
-            }
-            
-            // Update pricing with the base price from availability page
-            if (bookingData.basePrice) {
-                updatePricing(bookingData.basePrice);
-            } else if (bookingData.price) {
-                updatePricing(bookingData.price);
+            } else {
+                return `
+                    <div class="hotel-card">
+                        <img src="../assets/${getHotelImage(bookingData.hotelName)}" 
+                             alt="${bookingData.hotelName || 'Hotel'}" 
+                             class="hotel-image" 
+                             onerror="this.src='../assets/default-hotel.jpg'">
+                        <div class="hotel-info">
+                            <h3 class="hotel-name">${bookingData.hotelName || 'Hotel'}</h3>
+                            <div class="hotel-rating">
+                                <span class="rating-badge">${bookingData.rating || '4.4'}/5</span>
+                                <span class="location-badge">${bookingData.address || 'Location'}</span>
+                            </div>
+                            
+                            <div class="room-details">
+                                <div class="room-type">${bookingData.roomType || 'Standard Room'}</div>
+                                <div class="room-features">
+                                    👥 ${bookingData.guests || 1} tamu • 
+                                    ${bookingData.bedType || 'Standard Room'} • 
+                                    ${bookingData.breakfast ? 'Includes breakfast' : 'No breakfast'}
+                                </div>
+                                <div class="room-amenities">
+                                    <span>⭕ ${bookingData.refundable ? 'Refundable' : 'Non-Refundable'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
             }
         }
 
-        // Set nilai default jika tidak ada data
-        function setDefaultValues() {
-            const hotelNameEl = document.getElementById('hotel-name');
-            const roomTypeEl = document.getElementById('room-type');
-            const checkinEl = document.getElementById('checkin-date');
-            const checkoutEl = document.getElementById('checkout-date');
+        // Function to get hotel image based on hotel name
+        function getHotelImage(hotelName) {
+            if (!hotelName) return 'default-hotel.jpg';
             
-            if (hotelNameEl) hotelNameEl.textContent = 'Booking Information';
-            if (roomTypeEl) roomTypeEl.textContent = 'Tidak ada data booking';
-            if (checkinEl) checkinEl.textContent = '--';
-            if (checkoutEl) checkoutEl.textContent = '--';
+            const hotelImages = {
+                'Nandini Jungle': 'nandini.png',
+                'Ramayana Suites and Resort': 'ramayana.png',
+                'The Garcia Ubud': 'garcia.png'
+            };
+            return hotelImages[hotelName] || 'default-hotel.jpg';
+        }
+
+        // Function to get flight image based on airline name
+        function getFlightImage(airlineName) {
+            if (!airlineName) return 'default-flight.jpg';
             
-            updatePricing('Rp 0');
+            const flightImages = {
+                'Garuda Indonesia': 'garuda.jpg',
+                'Lion Air': 'lion-air.jpg',
+                'Citilink': 'citilink.jpg'
+            };
+            return flightImages[airlineName] || 'default-flight.jpg';
         }
 
         // Update pricing dengan perhitungan pajak
         function updatePricing(priceString) {
             console.log('Updating price with:', priceString);
             
-            // Get the base price from the availability page
             const basePrice = parsePrice(priceString);
-            console.log('Base price from availability:', basePrice);
+            console.log('Base price:', basePrice);
             
-            // Get the actual amount from parent data
-            getDataFromParent('flight_booking', function(flightData) {
-                if (flightData) {
-                    console.log('Flight booking data found:', flightData);
-                    const passengers = parseInt(flightData.passengers) || 1;
-                    const actualAmount = basePrice * passengers;
-                    console.log('Calculated amount:', actualAmount, 'for', passengers, 'passengers');
-                    
-                    // Calculate additional fees based on actual amount
-                    const taxes = Math.round(actualAmount * 0.10); // 10% tax
-                    const serviceFee = Math.round(actualAmount * 0.05); // 5% service fee
-                    const totalPrice = actualAmount + taxes + serviceFee;
-                    
-                    console.log('Price breakdown:', {
+            // Get booking data to calculate total
+            getDataFromParent('hotel_booking', function(hotelData) {
+                if (hotelData) {
+                    const guests = parseInt(hotelData.guests) || 1;
+                    const nights = calculateNights(hotelData.checkin, hotelData.checkout);
+                    // For hotels, multiply by both guests and nights
+                    const actualAmount = basePrice * guests * nights;
+                    console.log('Hotel calculation:', {
                         basePrice,
-                        passengers,
-                        actualAmount,
-                        taxes,
-                        serviceFee,
-                        totalPrice
+                        guests,
+                        nights,
+                        actualAmount
                     });
-                    
-                    // Update the UI elements
-                    const basePriceEl = document.getElementById('base-price');
-                    const taxesFeesEl = document.getElementById('taxes-fees');
-                    const totalPriceEl = document.getElementById('total-price');
-                    
-                    if (basePriceEl) basePriceEl.textContent = formatPrice(actualAmount);
-                    if (taxesFeesEl) taxesFeesEl.textContent = formatPrice(taxes + serviceFee);
-                    if (totalPriceEl) totalPriceEl.textContent = formatPrice(totalPrice);
+                    updatePriceDisplay(actualAmount);
                 } else {
-                    // If no flight booking, try hotel booking
-                    getDataFromParent('hotel_booking', function(hotelData) {
-                        if (hotelData) {
-                            console.log('Hotel booking data found:', hotelData);
-                            const guests = parseInt(hotelData.guests) || 1;
-                            const actualAmount = basePrice * guests;
-                            console.log('Calculated amount:', actualAmount, 'for', guests, 'guests');
-                            
-                            // Calculate additional fees based on actual amount
-                            const taxes = Math.round(actualAmount * 0.10); // 10% tax
-                            const serviceFee = Math.round(actualAmount * 0.05); // 5% service fee
-                            const totalPrice = actualAmount + taxes + serviceFee;
-                            
-                            console.log('Price breakdown:', {
+                    getDataFromParent('flight_booking', function(flightData) {
+                        if (flightData) {
+                            // For flights, use the pre-calculated total price
+                            const actualAmount = basePrice;
+                            console.log('Flight calculation:', {
                                 basePrice,
-                                guests,
-                                actualAmount,
-                                taxes,
-                                serviceFee,
-                                totalPrice
+                                passengers: flightData.passengers,
+                                actualAmount
                             });
-                            
-                            // Update the UI elements
-                            const basePriceEl = document.getElementById('base-price');
-                            const taxesFeesEl = document.getElementById('taxes-fees');
-                            const totalPriceEl = document.getElementById('total-price');
-                            
-                            if (basePriceEl) basePriceEl.textContent = formatPrice(actualAmount);
-                            if (taxesFeesEl) taxesFeesEl.textContent = formatPrice(taxes + serviceFee);
-                            if (totalPriceEl) totalPriceEl.textContent = formatPrice(totalPrice);
+                            updatePriceDisplay(actualAmount);
                         } else {
-                            console.warn('No booking data found, using base price only');
-                            // If no booking data found, use base price only
-                            const taxes = Math.round(basePrice * 0.10);
-                            const serviceFee = Math.round(basePrice * 0.05);
-                            const totalPrice = basePrice + taxes + serviceFee;
-                            
-                            const basePriceEl = document.getElementById('base-price');
-                            const taxesFeesEl = document.getElementById('taxes-fees');
-                            const totalPriceEl = document.getElementById('total-price');
-                            
-                            if (basePriceEl) basePriceEl.textContent = formatPrice(basePrice);
-                            if (taxesFeesEl) taxesFeesEl.textContent = formatPrice(taxes + serviceFee);
-                            if (totalPriceEl) totalPriceEl.textContent = formatPrice(totalPrice);
+                            updatePriceDisplay(basePrice);
                         }
                     });
                 }
             });
+        }
+
+        function updatePriceDisplay(actualAmount) {
+            const taxes = Math.round(actualAmount * 0.10); // 10% tax
+            const serviceFee = Math.round(actualAmount * 0.05); // 5% service fee
+            const totalPrice = actualAmount + taxes + serviceFee;
+            
+            const basePriceEl = document.getElementById('base-price');
+            const taxesFeesEl = document.getElementById('taxes-fees');
+            const totalPriceEl = document.getElementById('total-price');
+            
+            if (basePriceEl) basePriceEl.textContent = formatPrice(actualAmount);
+            if (taxesFeesEl) taxesFeesEl.textContent = formatPrice(taxes + serviceFee);
+            if (totalPriceEl) totalPriceEl.textContent = formatPrice(totalPrice);
+
+            console.log('Price breakdown:', {
+                actualAmount,
+                taxes,
+                serviceFee,
+                totalPrice
+            });
+        }
+
+        // Function to calculate number of nights between check-in and check-out
+        function calculateNights(checkin, checkout) {
+            if (!checkin || !checkout) return 1;
+            
+            try {
+                const start = new Date(checkin);
+                const end = new Date(checkout);
+                
+                // Calculate the difference in milliseconds
+                const diffTime = Math.abs(end - start);
+                // Convert to days
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                console.log('Night calculation:', {
+                    checkin,
+                    checkout,
+                    diffDays
+                });
+                
+                return diffDays || 1; // Return at least 1 night
+            } catch (error) {
+                console.error('Error calculating nights:', error);
+                return 1;
+            }
+        }
+
+        // Function to parse price string to number
+        function parsePrice(priceString) {
+            if (!priceString) return 0;
+            try {
+                // Remove currency symbol, spaces, and any dots, then replace comma with dot for decimal
+                const cleanPrice = priceString.replace(/[Rp\s\.]/g, '').replace(',', '.');
+                const price = parseFloat(cleanPrice) || 0;
+                console.log('Price parsing:', {
+                    original: priceString,
+                    cleaned: cleanPrice,
+                    parsed: price
+                });
+                return price;
+            } catch (error) {
+                console.error('Error parsing price:', error);
+                return 0;
+            }
+        }
+
+        // Function to format price to IDR
+        function formatPrice(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        // Proses pembayaran
+        function processPayment() {
+            if (!validateForm()) {
+                alert('Mohon lengkapi semua field yang diperlukan');
+                return;
+            }
+            
+            const button = document.getElementById('payment-button');
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'Processing...';
+            }
+            
+            // Get current booking data
+            getDataFromParent('hotel_booking', function(hotelData) {
+                if (hotelData) {
+                    completePayment(hotelData, 'hotel');
+                } else {
+                    getDataFromParent('flight_booking', function(flightData) {
+                        if (flightData) {
+                            completePayment(flightData, 'flight');
+                        } else {
+                            alert('Data booking tidak ditemukan');
+                            if (button) {
+                                button.disabled = false;
+                                button.textContent = 'PAYMENT';
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        function completePayment(bookingData, type) {
+            // Get form data
+            const formData = {
+                firstName: document.getElementById('firstName')?.value || '',
+                lastName: document.getElementById('lastName')?.value || '',
+                email: document.getElementById('email')?.value || '',
+                phone: document.getElementById('phone')?.value || '',
+                paymentMethod: getSelectedPaymentMethod()
+            };
+
+            // Simpan data pembayaran yang berhasil
+            const paymentData = {
+                ...bookingData,
+                ...formData,
+                paymentStatus: 'completed',
+                paymentTimestamp: new Date().toISOString(),
+                transactionId: 'TXN' + Date.now()
+            };
+            
+            console.log('Payment completed:', paymentData);
+            
+            // Simpan ke parent dengan tipe yang sesuai
+            sendDataToParent('save_data', `${type}_booking_complete`, paymentData);
+            
+            // Reset button
+            const button = document.getElementById('payment-button');
+            if (button) {
+                button.disabled = false;
+                button.textContent = 'PAYMENT';
+            }
+            
+            // Tampilkan modal sukses
+            const successModal = document.getElementById('successModal');
+            if (successModal) {
+                successModal.classList.add('show');
+            }
         }
 
         // Inisialisasi halaman
@@ -1215,14 +1293,12 @@
                 if (hotelBookingData) {
                     console.log('Hotel booking data found:', hotelBookingData);
                     updateUI(hotelBookingData);
-                    window.currentBookingData = hotelBookingData;
                 } else {
                     // Jika tidak ada hotel booking, coba flight booking
                     getDataFromParent('flight_booking', function(flightBookingData) {
                         if (flightBookingData) {
                             console.log('Flight booking data found:', flightBookingData);
                             updateUI(flightBookingData);
-                            window.currentBookingData = flightBookingData;
                         } else {
                             console.warn('No booking data found');
                             setDefaultValues();
@@ -1310,50 +1386,6 @@
             return isValid;
         }
 
-        // Proses pembayaran
-        function processPayment() {
-            if (!validateForm()) {
-                alert('Mohon lengkapi semua field yang diperlukan');
-                return;
-            }
-            
-            const button = document.getElementById('payment-button');
-            if (button) {
-                button.disabled = true;
-                button.textContent = 'Processing...';
-            }
-            
-            // Simulasi proses pembayaran
-            setTimeout(() => {
-                // Simpan data pembayaran yang berhasil
-                const paymentData = {
-                    ...window.currentBookingData,
-                    paymentStatus: 'completed',
-                    paymentTimestamp: new Date().toISOString(),
-                    paymentMethod: getSelectedPaymentMethod(),
-                    transactionId: 'TXN' + Date.now()
-                };
-                
-                console.log('Payment completed:', paymentData);
-                
-                // Simpan ke parent
-                const bookingType = paymentData.bookingType || (paymentData.hotelName ? 'hotel' : 'flight');
-                sendDataToParent('save_data', `${bookingType}_booking`, paymentData);
-                
-                // Reset button
-                if (button) {
-                    button.disabled = false;
-                    button.textContent = 'PAYMENT';
-                }
-                
-                // Tampilkan modal sukses
-                const successModal = document.getElementById('successModal');
-                if (successModal) {
-                    successModal.classList.add('show');
-                }
-            }, 2000);
-        }
-
         // Get selected payment method
         function getSelectedPaymentMethod() {
             const selectedRadio = document.querySelector('input[name="paymentMethod"]:checked');
@@ -1373,128 +1405,6 @@
             }, 300);
         }
 
-        // Expose functions untuk debugging
-        window.pembayaranDebug = {
-            getDataFromParent: getDataFromParent,
-            sendDataToParent: sendDataToParent,
-            currentBookingData: window.currentBookingData,
-            processPayment: processPayment,
-            loadBookingData: loadBookingData
-        };
-
-        // Function to create booking details HTML
-        function createBookingDetailsHTML(bookingData) {
-            if (!bookingData) return '';
-
-            if (bookingData.bookingType === 'flight') {
-                return `
-                    <div class="hotel-card">
-                        <img src="${bookingData.imageUrl || '../assets/garuda.jpg'}" alt="${bookingData.airlineName}" class="hotel-image" onerror="this.src='../assets/default-flight.jpg'">
-                        <div class="hotel-info">
-                            <h3 class="hotel-name">${bookingData.airlineName}</h3>
-                            <div class="hotel-rating">
-                                <span class="rating-badge">${bookingData.rating || '4.4'}/5</span>
-                                <span class="location-badge">${bookingData.from} → ${bookingData.to}</span>
-                            </div>
-                            
-                            <div class="room-details">
-                                <div class="room-type">${bookingData.flightClass}</div>
-                                <div class="room-features">👥 ${bookingData.passengers} • ${bookingData.duration || '2h 30m'} • ${bookingData.flightType || 'Direct Flight'}</div>
-                                <div class="room-amenities">
-                                    <span>⭕ ${bookingData.refundable ? 'Refundable' : 'Non-Refundable'}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else {
-                // Handle hotel booking data
-                const imageUrl = getHotelImageUrl(bookingData.hotelName);
-                return `
-                    <div class="hotel-card">
-                        <img src="${imageUrl}" alt="${bookingData.hotelName}" class="hotel-image" onerror="this.src='../assets/default-hotel.jpg'">
-                        <div class="hotel-info">
-                            <h3 class="hotel-name">${bookingData.hotelName}</h3>
-                            <div class="hotel-rating">
-                                <span class="rating-badge">${bookingData.rating || '4.4'}/5</span>
-                                <span class="location-badge">${bookingData.destination || 'Location'}</span>
-                            </div>
-                            
-                            <div class="room-details">
-                                <div class="room-type">${bookingData.roomType}</div>
-                                <div class="room-features">👥 ${bookingData.guests} • ${bookingData.bedType || 'Standard Room'} • ${bookingData.breakfast ? 'Includes breakfast' : 'No breakfast'}</div>
-                                <div class="room-amenities">
-                                    <span>⭕ ${bookingData.refundable ? 'Refundable' : 'Non-Refundable'}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-
-        // Function to get hotel image URL based on hotel name
-        function getHotelImageUrl(hotelName) {
-            const hotelImages = {
-                'Nandini Jungle': '../assets/nandini.jpg',
-                'Ramayana Suites and Resort': '../assets/ramayana.png',
-                'The Garcia Ubud':  '../assetsgarcia.png',
-            };
-            return hotelImages[hotelName] || hotelImages.default;
-        }
-
-        // Function to parse price string to number
-        function parsePrice(priceString) {
-            if (!priceString) return 0;
-            // Remove 'Rp' and any dots, then replace comma with dot for decimal
-            const cleanPrice = priceString.replace('Rp', '').replace(/\./g, '').replace(',', '.');
-            return parseFloat(cleanPrice) || 0;
-        }
-
-        // Function to format price to IDR
-        function formatPrice(amount) {
-            return new Intl.NumberFormat('id-ID', {
-                style: 'currency',
-                currency: 'IDR',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            }).format(amount);
-        }
-
-        // Update booking details
-        function updateBookingDetails(bookingData) {
-            if (!bookingData) {
-                console.warn('No booking data provided');
-                return;
-            }
-
-            console.log('Updating booking details with:', bookingData);
-
-            const container = document.getElementById('bookingDetailsContainer');
-            if (container) {
-                container.innerHTML = createBookingDetailsHTML(bookingData);
-            }
-
-            // Update dates based on booking type
-            const checkinEl = document.getElementById('checkin-date');
-            const checkoutEl = document.getElementById('checkout-date');
-            
-            if (bookingData.bookingType === 'flight') {
-                if (checkinEl) checkinEl.textContent = formatDate(bookingData.departure) || '--';
-                if (checkoutEl) checkoutEl.textContent = formatDate(bookingData.return) || '--';
-            } else {
-                if (checkinEl) checkinEl.textContent = formatDate(bookingData.checkin) || '--';
-                if (checkoutEl) checkoutEl.textContent = formatDate(bookingData.checkout) || '--';
-            }
-
-            // Update pricing
-            if (bookingData.basePrice) {
-                updatePricing(bookingData.basePrice);
-            } else if (bookingData.price) {
-                updatePricing(bookingData.price);
-            }
-        }
-
         // Function to format date from YYYY-MM-DD to DD MMMM YYYY
         function formatDate(dateString) {
             if (!dateString) return '--';
@@ -1508,6 +1418,22 @@
                 console.error('Error formatting date:', e);
                 return '--';
             }
+        }
+
+        // Set nilai default jika tidak ada data
+        function setDefaultValues() {
+            const container = document.getElementById('bookingDetailsContainer');
+            if (container) {
+                container.innerHTML = '<p>Booking Information Not Available</p>';
+            }
+            
+            const checkinEl = document.getElementById('checkin-date');
+            const checkoutEl = document.getElementById('checkout-date');
+            
+            if (checkinEl) checkinEl.textContent = '--';
+            if (checkoutEl) checkoutEl.textContent = '--';
+            
+            updatePriceDisplay(0);
         }
     </script>
 </body>
