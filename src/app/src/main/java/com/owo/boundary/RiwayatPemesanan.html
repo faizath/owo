@@ -1088,50 +1088,228 @@
     </div>
 
     <script>
+        // GANTI SELURUH SCRIPT INI DI RiwayatPemesanan.html
+
+        // Variabel global untuk menyimpan data booking yang diambil dari parent
+        let activeFlightBooking = null;
+        let activeHotelBooking = null;
+
+        // Fungsi untuk berkomunikasi dengan parent window (App.html)
+        function getDataFromParent(type, callback, timeout = 3000) {
+            console.log('Requesting data from parent:', type);
+            if (window.parent && window.parent !== window) {
+                let responseReceived = false;
+                
+                const responseListener = function(event) {
+                    if (event.source !== window.parent) return;
+                    
+                    if (event.data && event.data.action === 'data_response' && event.data.type === type) {
+                        responseReceived = true;
+                        callback(event.data.data);
+                        window.removeEventListener('message', responseListener);
+                    }
+                };
+                
+                window.addEventListener('message', responseListener);
+                window.parent.postMessage({ action: 'get_data', type: type }, '*');
+                
+                setTimeout(() => {
+                    if (!responseReceived) {
+                        console.warn(`Timeout waiting for ${type} data from parent.`);
+                        window.removeEventListener('message', responseListener);
+                        callback(null);
+                    }
+                }, timeout);
+            } else {
+                console.error('Not in an iframe or cannot access parent.');
+                callback(null);
+            }
+        }
+
+        // Fungsi untuk memformat tanggal
+        function formatDate(dateString) {
+            if (!dateString) return 'Tanggal tidak tersedia';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'Format tanggal salah';
+                
+                // Opsi diperbarui untuk menyertakan nama hari (weekday)
+                const options = { 
+                    weekday: 'short', // <-- KUNCI PERUBAHAN
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    hour12: false 
+                };
+                
+                // Format ulang string agar sesuai dengan desain "Hari, Tanggal • Jam"
+                const formattedString = new Intl.DateTimeFormat('id-ID', options).format(date);
+
+                // Mengganti koma pertama dengan '•' dan titik pemisah jam dengan ':'
+                return formattedString.replace(',', ' •').replace(/\./g, ':');
+
+            } catch (e) {
+                console.error('Error formatting date:', e);
+                return dateString; // Fallback jika terjadi error
+            }
+}
+
+        // Fungsi untuk membuat kartu booking penerbangan
+        function createFlightBookingCard(booking, isPast) {
+            const status = isPast ? 'Selesai' : 'Aktif';
+            const cardClass = isPast ? 'history-card' : 'booking-card';
+            const headerClass = isPast ? 'history-header' : 'booking-header';
+            const routeClass = isPast ? 'history-route' : 'booking-route';
+            const detailsClass = isPast ? 'history-details' : 'booking-details';
+
+            return `
+                <div class="${cardClass}">
+                    <div class="${headerClass}">
+                        <div class="${routeClass}">
+                            <div class="route-icon airplane"></div>
+                            <span>${booking.from || 'N/A'} - ${booking.to || 'N/A'} • ${status}</span>
+                        </div>
+                        <div class="booking-code">Kode Booking: ${booking.transactionId || 'N/A'}</div>
+                    </div>
+                    <div class="${detailsClass}">
+                        <div class="booking-info">
+                            <div class="booking-date">${formatDate(booking.departure)}</div>
+                            <div class="booking-location">${booking.airlineName || 'Maskapai'} • ${booking.flightClass || 'Kelas Ekonomi'}</div>
+                        </div>
+                        ${!isPast ? `<div class="booking-status ${booking.refundable ? 'status-active' : 'status-non-refund'}">${booking.refundable ? 'Refundable' : 'Non-refundable'}</div>` : ''}
+                    </div>
+                    ${!isPast ? `
+                    <div class="booking-actions">
+                        ${booking.refundable ? `<button class="action-button btn-refund" onclick="goToRefund('${booking.transactionId}')">Ajukan Refund</button>` : ''}
+                        <button class="action-button btn-checkin" id="checkin-${booking.transactionId}" onclick="openCheckInModal('${booking.transactionId}', '${booking.from} - ${booking.to}', '${formatDate(booking.departure)}', '${booking.airlineName}')">Check In</button>
+                    </div>` : ''}
+                </div>
+            `;
+        }
+
+        // Fungsi untuk membuat kartu booking hotel
+        function createHotelBookingCard(booking, isPast) {
+            const status = isPast ? 'Selesai' : 'Aktif';
+            const cardClass = isPast ? 'history-card' : 'booking-card';
+            const headerClass = isPast ? 'history-header' : 'booking-header';
+            const routeClass = isPast ? 'history-route' : 'booking-route';
+            const detailsClass = isPast ? 'history-details' : 'booking-details';
+
+            return `
+                <div class="${cardClass}">
+                    <div class="${headerClass}">
+                        <div class="${routeClass}">
+                            <div class="route-icon hotel"></div>
+                            <span>${booking.hotelName || 'Nama Hotel'} • ${status}</span>
+                        </div>
+                        <div class="booking-code">Kode Booking: ${booking.transactionId || 'N/A'}</div>
+                    </div>
+                    <div class="${detailsClass}">
+                        <div class="booking-info">
+                            <div class="booking-date">Check-in: ${formatDate(booking.checkin)}</div>
+                            <div class="booking-location">${booking.roomType || 'Tipe Kamar'} • ${booking.guests || 1} Tamu</div>
+                        </div>
+                        ${!isPast ? `<div class="booking-status ${booking.refundable ? 'status-active' : 'status-non-refund'}">${booking.refundable ? 'Refundable' : 'Non-refundable'}</div>` : ''}
+                    </div>
+                    ${!isPast ? `
+                    <div class="booking-actions">
+                        ${booking.refundable ? `<button class="action-button btn-refund" onclick="goToRefund('${booking.transactionId}')">Ajukan Refund</button>` : ''}
+                        <button class="action-button btn-checkin" id="checkin-${booking.transactionId}" onclick="openCheckInModal('${booking.transactionId}', '${booking.hotelName}', '${formatDate(booking.checkin)}', 'Tamu: ${booking.guests}')">Check In</button>
+                    </div>` : ''}
+                </div>
+            `;
+        }
+
+        // Fungsi utama untuk memuat dan menampilkan semua data booking
+        function loadAndDisplayBookings() {
+            const currentContainer = document.querySelector('.current-bookings');
+            const historyListContainer = document.querySelector('.history-section');
+
+            currentContainer.innerHTML = '<h2 class="section-title">Pesanan Anda</h2>';
+            historyListContainer.innerHTML = `<h2 class="section-title">Histori Pemesanan</h2><div class="filter-container"><button class="filter-button"><div class="filter-icon"></div>Filter</button></div>`;
+
+            let activeBookingsFound = false;
+            let historyBookingsFound = false;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            getDataFromParent('hotel_booking_complete', (hotelBooking) => {
+                if (hotelBooking) {
+                    activeHotelBooking = hotelBooking; // Simpan data booking hotel
+                    const checkinDate = new Date(hotelBooking.checkin);
+                    const isPast = checkinDate < today;
+                    if (isPast) {
+                        historyListContainer.insertAdjacentHTML('beforeend', createHotelBookingCard(hotelBooking, true));
+                        historyBookingsFound = true;
+                    } else {
+                        currentContainer.insertAdjacentHTML('beforeend', createHotelBookingCard(hotelBooking, false));
+                        activeBookingsFound = true;
+                    }
+                }
+
+                getDataFromParent('flight_booking_complete', (flightBooking) => {
+                    if (flightBooking) {
+                        activeFlightBooking = flightBooking; // Simpan data booking pesawat
+                        const departureDate = new Date(flightBooking.departure);
+                        const isPast = departureDate < today;
+                        if (isPast) {
+                            historyListContainer.insertAdjacentHTML('beforeend', createFlightBookingCard(flightBooking, true));
+                            historyBookingsFound = true;
+                        } else {
+                            currentContainer.insertAdjacentHTML('beforeend', createFlightBookingCard(flightBooking, false));
+                            activeBookingsFound = true;
+                        }
+                    }
+
+                    if (!activeBookingsFound) currentContainer.insertAdjacentHTML('beforeend', '<p style="padding: 15px 0;">Tidak ada pesanan aktif saat ini.</p>');
+                    if (!historyBookingsFound) historyListContainer.insertAdjacentHTML('beforeend', '<p style="padding: 15px 0;">Belum ada riwayat pemesanan.</p>');
+                    updateCheckinButtons();
+                });
+            });
+        }
+
+        // FUNGSI NAVIGASI REFUND YANG DIPERBARUI
+        function goToRefund(bookingCode) {
+            let bookingData = null;
+
+            // Cari data booking yang sesuai berdasarkan bookingCode (transactionId)
+            if (activeFlightBooking && activeFlightBooking.transactionId === bookingCode) {
+                bookingData = activeFlightBooking;
+            } else if (activeHotelBooking && activeHotelBooking.transactionId === bookingCode) {
+                bookingData = activeHotelBooking;
+            }
+
+            if (bookingData) {
+                // Simpan seluruh objek data ke localStorage
+                localStorage.setItem('bookingForRefund', JSON.stringify(bookingData));
+                // Arahkan ke halaman refund
+                window.location.href = 'RefundForm.html';
+            } else {
+                console.error('Data booking tidak ditemukan untuk kode:', bookingCode);
+                alert('Gagal memuat data refund. Silakan coba lagi.');
+            }
+        }
+
+
+        // --- FUNGSI MODAL DAN LAINNYA (TETAP SAMA) ---
         let currentBookingCode = '';
 
-        function goToRefund(bookingCode) {
-            // Store booking information for the refund page
-            if (bookingCode) {
-                localStorage.setItem('selectedBooking', JSON.stringify({
-                    code: bookingCode,
-                    route: 'Jakarta - Surabaya',
-                    date: '26 Mei 2024',
-                    amount: 'IDR 850.951'
-                }));
-            }
-            
-            // Navigate to refund page
-            window.location.href = 'RefundForm.html';
-        }
-
-        function goToRefund() {
-            window.location.href = 'RefundForm.html';
-        }
-
-        // Function to open check-in modal
         function openCheckInModal(bookingCode, route, date, airline) {
             currentBookingCode = bookingCode;
-            
-            // Update modal content
             document.getElementById('modal-booking-code').textContent = bookingCode;
             document.getElementById('modal-booking-route').textContent = route;
             document.getElementById('modal-booking-date').textContent = date;
             document.getElementById('modal-booking-airline').textContent = airline;
-            
-            // Reset modal state
             resetModalState();
-            
-            // Show modal
             document.getElementById('checkinModal').style.display = 'flex';
         }
 
-        // Function to close check-in modal
         function closeCheckInModal() {
             document.getElementById('checkinModal').style.display = 'none';
         }
 
-        // Function to reset modal state
         function resetModalState() {
             document.getElementById('modal-loading').style.display = 'none';
             document.getElementById('modal-success-message').style.display = 'none';
@@ -1139,99 +1317,55 @@
             document.getElementById('modal-action-buttons').style.display = 'flex';
         }
 
-        // Function to simulate check-in process with random success/failure
         function processCheckIn() {
-            // Show loading state
             document.getElementById('modal-loading').style.display = 'block';
             document.getElementById('modal-action-buttons').style.display = 'none';
             
-            // Simulate API call with random success/failure (70% success rate)
             setTimeout(() => {
-                const isSuccess = Math.random() > 0.3; // 70% success rate
-                
+                const isSuccess = Math.random() > 0.3;
                 document.getElementById('modal-loading').style.display = 'none';
-                
                 if (isSuccess) {
-                    // Success case
                     localStorage.setItem(`checkedIn_${currentBookingCode}`, 'true');
                     document.getElementById('modal-success-message').style.display = 'block';
-                    
-                    // Auto close after 3 seconds and update button
                     setTimeout(() => {
                         closeCheckInModal();
                         updateCheckinButton(currentBookingCode);
                     }, 3000);
                 } else {
-                    // Error case
-                    const errorMessages = [
-                        'Waktu check-in belum tersedia. Check-in dapat dilakukan 24 jam sebelum keberangkatan.',
-                        'Terjadi kesalahan sistem. Silakan coba lagi dalam beberapa saat.',
-                        'Koneksi internet tidak stabil. Periksa koneksi Anda dan coba lagi.',
-                        'Data penumpang tidak valid. Hubungi customer service untuk bantuan.',
-                        'Server sedang maintenance. Silakan coba lagi nanti.'
-                    ];
-                    
-                    const randomError = errorMessages[Math.floor(Math.random() * errorMessages.length)];
-                    document.getElementById('error-detail').textContent = randomError;
+                    document.getElementById('error-detail').textContent = 'Terjadi kesalahan sistem. Silakan coba lagi.';
                     document.getElementById('modal-error-message').style.display = 'block';
-                    
-                    // Show retry button
                     document.getElementById('modal-action-buttons').style.display = 'flex';
-                    
-                    // Auto hide error message after 5 seconds
-                    setTimeout(() => {
-                        if (document.getElementById('modal-error-message').style.display === 'block') {
-                            resetModalState();
-                        }
-                    }, 5000);
                 }
-            }, 2000); // 2 second loading simulation
+            }, 2000);
         }
 
-        // Function to update specific check-in button (keep text as "Check In")
         function updateCheckinButton(bookingCode) {
             const button = document.getElementById(`checkin-${bookingCode}`);
             if (button) {
                 button.disabled = true;
-                // Keep text as "Check In" but disable the button
+                button.textContent = 'Sudah Check-in';
                 button.style.background = '#ccc';
-                button.style.color = '#999';
                 button.style.cursor = 'not-allowed';
             }
         }
 
-        // Check which bookings are already checked in and disable their buttons
         function updateCheckinButtons() {
-            const bookingCodes = ['IP1JD', 'NFT4T5', 'IDS93'];
-            
-            bookingCodes.forEach(code => {
-                const isCheckedIn = localStorage.getItem(`checkedIn_${code}`);
+            document.querySelectorAll('.btn-checkin').forEach(button => {
+                const bookingCode = button.id.replace('checkin-', '');
+                const isCheckedIn = localStorage.getItem(`checkedIn_${bookingCode}`);
                 if (isCheckedIn === 'true') {
-                    updateCheckinButton(code);
+                    updateCheckinButton(bookingCode);
                 }
             });
         }
 
-        // Close modal when clicking outside
-        document.getElementById('checkinModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeCheckInModal();
-            }
-        });
-
-        // Sidebar navigation
-        document.querySelectorAll('.menu-item').forEach(item => {
-            item.addEventListener('click', function() {
-                if (this.textContent.trim() === 'Refund') {
-                    goToRefund();
-                }
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Riwayat Pemesanan page loaded');
+            loadAndDisplayBookings();
+            document.getElementById('checkinModal').addEventListener('click', function(e) {
+                if (e.target === this) closeCheckInModal();
             });
         });
-
-        // Initialize on page load
-        window.onload = function() {
-            updateCheckinButtons();
-        };
     </script>
 </body>
 </html>

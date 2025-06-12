@@ -82,6 +82,17 @@ const mockupFlights = [
         new Date("2025-06-12T07:15:00")
     ),
     new TiketPesawat(
+        2,
+        1250000,
+        true,
+        "JT-456",
+        "Jakarta (CGK)",
+        "Bali (DPS)",
+        "Lion Air",
+        "Ekonomi",
+        new Date("2025-08-27T07:15:00")
+    ),
+    new TiketPesawat(
         3,
         1350000,
         true,

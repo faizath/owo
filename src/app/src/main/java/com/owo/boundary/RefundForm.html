@@ -932,6 +932,13 @@
             font-weight: 400;
         }
 
+        .status-tab:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
+
         /* Responsive adjustments */
         @media (max-width: 1440px) {
             .container {
@@ -1116,7 +1123,7 @@
 
                         <div class="refund-summary">
                             <span class="refund-text">Perkiraan Refund</span>
-                            <span class="refund-amount">IDR 850.951</span>
+                            <span class="refund-amount" id="refund-amount-display">IDR 0</span>
                         </div>
 
                         <button type="submit" class="confirm-button" id="confirmButton">Konfirmasi</button>
@@ -1130,29 +1137,25 @@
                             <div class="status-avatar"></div>
                             <div class="status-title">OwO</div>
                         </div>
-                        
                         <div class="status-tabs">
-                            <button class="status-tab active" onclick="showSection('refund-processing')">Sedang Diproses</button>
-                            <button class="status-tab" onclick="showSection('refund-completed')">Selesai</button>
+                            <button class="status-tab active" id="processing-tab" onclick="showSection('refund-processing')">Sedang Diproses</button>
+                            <button class="status-tab" id="completed-tab" onclick="showSection('refund-completed')" disabled>Selesai</button>
                         </div>
-
                         <div class="refund-card">
                             <div class="flight-info">
-                                <div class="flight-icon"></div>
-                                <div>
-                                    <div class="flight-route">Jakarta - Surabaya</div>
-                                    <div class="flight-details">Min, 26 Mei 2024 • 07:40</div>
+                                <div class="flight-icon" id="processing-icon"></div> <div>
+                                    <div class="flight-route" id="processing-route-info"></div>
+                                    <div class="flight-details" id="processing-date-info"></div>
                                 </div>
                                 <div class="flight-details">
-                                    Sriwijaya Nama Terminal 3
-                                    <span class="booking-code">Kode Booking: BR10</span>
+                                    <div id="processing-details-info"></div>
+                                    <span class="booking-code" id="processing-code-info"></span>
                                 </div>
                             </div>
-
                             <div class="refund-info-grid">
                                 <div class="info-item">
                                     <div class="info-label">Dalam Proses Refund</div>
-                                    <div class="info-value">IDR 850.951</div>
+                                    <div class="info-value" id="processing-refund-amount"></div>
                                 </div>
                                 <div class="info-item">
                                     <div class="info-label">Status</div>
@@ -1163,11 +1166,11 @@
                                 </div>
                                 <div class="info-item">
                                     <div class="info-label">Tanggal Pengajuan</div>
-                                    <div class="info-value">06 Juni 2025</div>
+                                    <div class="info-value" id="processing-submission-date"></div>
                                 </div>
                                 <div class="info-item">
                                     <div class="info-label">Metode Refund</div>
-                                    <div class="info-value">Credit Card (•••• 1234)</div>
+                                    <div class="info-value" id="processing-refund-method"></div>
                                 </div>
                             </div>
                         </div>
@@ -1181,29 +1184,25 @@
                             <div class="status-avatar"></div>
                             <div class="status-title">OwO</div>
                         </div>
-                        
                         <div class="status-tabs">
                             <button class="status-tab" onclick="showSection('refund-processing')">Sedang Diproses</button>
                             <button class="status-tab active" onclick="showSection('refund-completed')">Selesai</button>
                         </div>
-
                         <div class="refund-card">
                             <div class="flight-info">
-                                <div class="flight-icon"></div>
-                                <div>
-                                    <div class="flight-route">Jakarta - Surabaya</div>
-                                    <div class="flight-details">Min, 26 Mei 2024 • 07:40</div>
+                                <div class="flight-icon" id="completed-icon"></div> <div>
+                                    <div class="flight-route" id="completed-route-info"></div>
+                                    <div class="flight-details" id="completed-date-info"></div>
                                 </div>
                                 <div class="flight-details">
-                                    Sriwijaya Nama Terminal 3
-                                    <span class="booking-code">Kode Booking: BR10</span>
+                                    <div id="completed-details-info"></div>
+                                    <span class="booking-code" id="completed-code-info"></span>
                                 </div>
                             </div>
-
                             <div class="refund-info-grid">
                                 <div class="info-item">
                                     <div class="info-label">Refund Selesai</div>
-                                    <div class="info-value">IDR 850.951</div>
+                                    <div class="info-value" id="completed-refund-amount"></div>
                                 </div>
                                 <div class="info-item">
                                     <div class="info-label">Status</div>
@@ -1214,11 +1213,10 @@
                                 </div>
                                 <div class="info-item">
                                     <div class="info-label">Tanggal Selesai</div>
-                                    <div class="info-value">10 Juni 2025</div>
-                                </div>
+                                    <div class="info-value" id="completed-date"></div> </div>
                                 <div class="info-item">
                                     <div class="info-label">Metode Refund</div>
-                                    <div class="info-value">Credit Card (•••• 1234)</div>
+                                    <div class="info-value" id="completed-refund-method"></div>
                                 </div>
                             </div>
                         </div>
@@ -1275,12 +1273,8 @@
         <div class="modal">
             <div class="modal-icon success"></div>
             <h2 class="modal-title">Pengajuan Refund Berhasil</h2>
-            <p class="modal-message">Permintaan refund Anda telah berhasil diajukan. Dana akan dikembalikan dalam 3-5 hari kerja.</p>
-            <div>
-                <button class="modal-button secondary" onclick="showSection('refund-processing'); closeModal('successModal')">Lihat Status</button>
-                <button class="modal-button" onclick="closeModal('successModal')">OK</button>
+            <p class="modal-message">Permintaan Anda sedang diproses. Anda akan dialihkan ke halaman status secara otomatis...</p>
             </div>
-        </div>
     </div>
 
     <!-- Error Modal -->
@@ -1297,174 +1291,174 @@
     </div>
 
     <script>
-        // Show/Hide sections
-        function showSection(sectionId) {
-            // Hide all sections
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            
-            // Show selected section
-            document.getElementById(sectionId).classList.add('active');
-            
-            // Update status tabs if in status sections
-            if (sectionId === 'refund-processing' || sectionId === 'refund-completed') {
-                document.querySelectorAll('.status-tab').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-                
-                if (sectionId === 'refund-processing') {
-                    document.querySelectorAll('.status-tab')[0].classList.add('active');
-                } else {
-                    document.querySelectorAll('.status-tab')[1].classList.add('active');
-                }
+        let currentBookingForRefund = null;
+
+        function calculateRefundAmount(bookingData) {
+            if (!bookingData) return 0;
+            const now = new Date();
+            const departureDate = new Date(bookingData.bookingType === 'flight' ? bookingData.departure : bookingData.checkin);
+            const diffTime = departureDate.getTime() - now.getTime();
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const percentage = diffDays > 7 ? 0.90 : 0.75;
+            const adminFee = 50000;
+            const originalPrice = bookingData.price || bookingData.harga || 0;
+            const refundAmount = (originalPrice * percentage) - adminFee;
+            return Math.max(0, refundAmount);
+        }
+
+        function populateRefundForm(bookingData) {
+            if (!bookingData) {
+                alert('Data pemesanan untuk refund tidak ditemukan! Anda akan dikembalikan.');
+                window.location.href = 'RiwayatPemesanan.html';
+                return;
             }
-        }
+            currentBookingForRefund = bookingData;
 
-        // Navigate to booking history
-        function goToBookingHistory() {
-            window.location.href = 'RiwayatPemesanan.html';
-        }
+            const customerNameEl = document.getElementById('customerName');
+            if (customerNameEl) {
+                customerNameEl.value = `${bookingData.firstName || ''} ${bookingData.lastName || ''}`.trim();
+            }
 
-        // Card selection function
-        function selectCard(cardType) {
-            // Remove selected class from all cards
-            document.querySelectorAll('.card-icon').forEach(icon => {
-                icon.classList.remove('selected');
-            });
+            const refundAmountEl = document.getElementById('refund-amount-display');
+            if (refundAmountEl) {
+                refundAmountEl.textContent = formatPrice(calculateRefundAmount(bookingData));
+            }
             
-            // Add selected class to clicked card
-            document.querySelector(`.card-icon.${cardType}`).classList.add('selected');
-            
-            console.log(`Selected card: ${cardType}`);
         }
 
-        // Form submission handler
+        function updateStatusViews(bookingData, finalRefundAmount, formDetails) {
+            const submissionDate = new Date();
+            const completionDate = new Date(submissionDate);
+            completionDate.setDate(submissionDate.getDate() + 5);
+
+            const lastFourDigits = formDetails.cardNumber.replace(/\s/g, '').slice(-4);
+            const maskedCard = `Credit Card (•••• ${lastFourDigits})`;
+
+            const isFlight = bookingData.bookingType === 'flight';
+            const route = isFlight ? `${bookingData.from} - ${bookingData.to}` : bookingData.hotelName;
+            const date = isFlight ? formatDate(bookingData.departure, true) : `Check-in: ${formatDate(bookingData.checkin, true)}`;
+            const details = isFlight ? `${bookingData.airlineName} • ${bookingData.flightClass}` : `${bookingData.roomType} • ${bookingData.guests} Tamu`;
+            const code = `Kode Booking: ${bookingData.transactionId || 'N/A'}`;
+            const iconClass = isFlight ? 'flight-icon' : 'hotel-icon';
+
+            document.getElementById('processing-icon').className = iconClass;
+            document.getElementById('processing-route-info').textContent = route;
+            document.getElementById('processing-date-info').textContent = date;
+            document.getElementById('processing-details-info').textContent = details;
+            document.getElementById('processing-code-info').textContent = code;
+            document.getElementById('processing-refund-amount').textContent = formatPrice(finalRefundAmount);
+            document.getElementById('processing-submission-date').textContent = formatDate(submissionDate);
+            document.getElementById('processing-refund-method').textContent = maskedCard;
+
+            document.getElementById('completed-icon').className = iconClass;
+            document.getElementById('completed-route-info').textContent = route;
+            document.getElementById('completed-date-info').textContent = date;
+            document.getElementById('completed-details-info').textContent = details;
+            document.getElementById('completed-code-info').textContent = code;
+            document.getElementById('completed-refund-amount').textContent = formatPrice(finalRefundAmount);
+            document.getElementById('completed-date').textContent = formatDate(completionDate);
+            document.getElementById('completed-refund-method').textContent = maskedCard;
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            const bookingDataString = localStorage.getItem('bookingForRefund');
+            populateRefundForm(bookingDataString ? JSON.parse(bookingDataString) : null);
+            if (bookingDataString) localStorage.removeItem('bookingForRefund');
+
             const refundForm = document.getElementById('refundForm');
-            
             if (refundForm) {
                 refundForm.addEventListener('submit', function(e) {
                     e.preventDefault();
-                    
-                    // Validate form
-                    if (!validateForm()) {
+                    if (!validateForm() || !currentBookingForRefund) {
+                        if(!currentBookingForRefund) alert('Data pemesanan tidak ditemukan. Silakan coba lagi.');
                         return;
                     }
-                    
-                    // Show success modal
+
+                    const formDetails = { cardNumber: document.getElementById('cardNumber').value };
+                    const finalRefundAmount = calculateRefundAmount(currentBookingForRefund);
+
+                    updateStatusViews(currentBookingForRefund, finalRefundAmount, formDetails);
                     showSuccessModal();
+
+                    setTimeout(() => {
+                        closeModal('successModal');
+                        showSection('refund-processing');
+                    }, 2500); 
                 });
             }
 
-            // Card number formatting
-            const cardNumber = document.getElementById('cardNumber');
-            if (cardNumber) {
-                cardNumber.addEventListener('input', function(e) {
-                    let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
-                    let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
-                    if (formattedValue.length > 19) formattedValue = formattedValue.substr(0, 19);
-                    e.target.value = formattedValue;
-                });
-            }
-
-            // CVV validation
-            const cvv = document.getElementById('cvv');
-            if (cvv) {
-                cvv.addEventListener('input', function(e) {
-                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
-                });
-            }
-
-            // Custom checkbox and radio click handlers
-            document.querySelectorAll('.checkbox-container').forEach(container => {
-                container.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const checkbox = this.querySelector('.checkbox');
-                    checkbox.checked = !checkbox.checked;
-                    checkbox.dispatchEvent(new Event('change'));
-                });
-            });
-
-            document.querySelectorAll('.radio-container').forEach(container => {
-                container.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const radio = this.querySelector('.radio-input');
-                    radio.checked = true;
-                    radio.dispatchEvent(new Event('change'));
-                });
-            });
-
-            document.querySelectorAll('.terms-text').forEach(text => {
-                text.addEventListener('click', function() {
-                    const checkbox = document.getElementById('termsCheckbox');
-                    checkbox.checked = !checkbox.checked;
-                    checkbox.dispatchEvent(new Event('change'));
-                });
-            });
-
-            // Close modal when clicking outside
-            document.querySelectorAll('.modal-overlay').forEach(overlay => {
-                overlay.addEventListener('click', function(e) {
-                    if (e.target === this) {
-                        this.classList.remove('active');
-                    }
-                });
-            });
+            setupEventListeners();
         });
 
-        function validateForm() {
-            const requiredFields = [
-                'refundReason',
-                'customerName', 
-                'cardName',
-                'cardNumber',
-                'expiryMonth',
-                'expiryYear',
-                'cvv'
-            ];
+        function setupEventListeners() {
+            const cardNumberInput = document.getElementById('cardNumber');
+            if (cardNumberInput) {
+                cardNumberInput.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
+                    e.target.value = (value.match(/.{1,4}/g) || []).join(' ').substring(0, 19);
+                });
+            }
+            const cvvInput = document.getElementById('cvv');
+            if(cvvInput) cvvInput.addEventListener('input', (e) => e.target.value = e.target.value.replace(/[^0-9]/g, ''));
             
-            for (let field of requiredFields) {
-                const element = document.getElementById(field);
-                if (!element || !element.value.trim()) {
-                    alert(`Mohon lengkapi field ${element ? element.previousElementSibling.textContent : field}`);
-                    if (element) element.focus();
-                    return false;
+            document.querySelectorAll('.checkbox-container, .terms-text').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const cb = document.getElementById('termsCheckbox');
+                    cb.checked = !cb.checked;
+                });
+            });
+            document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', function(e) {
+                if (e.target === this) this.classList.remove('active');
+            }));
+        }
+
+        function validateForm() {
+            const fields = ['refundReason', 'customerName', 'cardName', 'cardNumber', 'expiryMonth', 'expiryYear', 'cvv'];
+            for (let id of fields) {
+                const el = document.getElementById(id);
+                if (!el || !el.value.trim()) {
+                    alert(`Mohon lengkapi field: ${el.labels[0].textContent}`);
+                    el.focus(); return false;
                 }
             }
-            
-            const termsCheckbox = document.getElementById('termsCheckbox');
-            if (termsCheckbox && !termsCheckbox.checked) {
-                alert('Mohon setujui syarat dan ketentuan');
-                return false;
+            if (!document.getElementById('termsCheckbox').checked) {
+                alert('Mohon setujui syarat dan ketentuan refund.'); return false;
             }
-            
             return true;
         }
-
-        function showSuccessModal() {
-            const successModal = document.getElementById('successModal');
-            if (successModal) {
-                successModal.classList.add('active');
+        function formatPrice(amount) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+        }
+        function formatDate(dateString, withTime = false) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            if (withTime) {
+                options.hour = '2-digit'; options.minute = '2-digit'; options.hour12 = false;
+            }
+            return new Intl.DateTimeFormat('id-ID', options).format(date).replace('.',':');
+        }
+        function showSection(sectionId) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId)?.classList.add('active');
+            
+            // Mengatur status aktif pada tab yang benar
+            if (sectionId.startsWith('refund-')) {
+                document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+                const tabId = sectionId.replace('refund-', '') + '-tab';
+                document.getElementById(tabId)?.classList.add('active');
             }
         }
-
-        function showErrorModal() {
-            const errorModal = document.getElementById('errorModal');
-            if (errorModal) {
-                errorModal.classList.add('active');
-            }
+        function goToBookingHistory() { window.location.href = 'RiwayatPemesanan.html'; }
+        function selectCard(cardType) {
+            document.querySelectorAll('.card-icon').forEach(i => i.classList.remove('selected'));
+            document.querySelector(`.card-icon.${cardType}`)?.classList.add('selected');
         }
-
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.remove('active');
-            }
-        }
-
+        function showSuccessModal() { document.getElementById('successModal').classList.add('active'); }
+        function closeModal(modalId) { document.getElementById(modalId)?.classList.remove('active'); }
         function contactSupport() {
-            window.open('mailto:support@owo.com?subject=Refund Issue', '_blank');
+            window.open('mailto:support@owo.com?subject=Refund Issue');
             closeModal('errorModal');
         }
     </script>
