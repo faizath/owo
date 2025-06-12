@@ -10,12 +10,18 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import netscape.javascript.JSObject;
+import com.owo.utils.NotificationBridge;
+import com.owo.utils.NotifikasiHelper;
 
 public class App extends Application {
 
     public static class JavaBridge {
         public void handleClick(String message) {
             System.out.println("Java received message from JavaScript: " + message);
+        }
+        
+        public void testNotification() {
+            NotificationBridge.getInstance().sendNotification("Test notification from JavaBridge!");
         }
     }
 
@@ -46,6 +52,13 @@ public class App extends Application {
                 JSObject window = (JSObject) webEngine.executeScript("window");
                 window.setMember("javaBridge", new JavaBridge());
 
+                // Connect the NotificationBridge to the WebEngine
+                NotificationBridge notificationBridge = NotificationBridge.getInstance();
+                notificationBridge.setWebEngine(webEngine);
+
+                // Initialize notification system for user ID 1 (you can change this as needed)
+                NotifikasiHelper.initialize(1);
+
                 // Override JS function to call JavaBridge
                 // webEngine.executeScript(
                 //     "window.onButtonClicked = function() {" +
@@ -61,6 +74,13 @@ public class App extends Application {
         Scene scene = new Scene(root, 800, 600);
         primaryStage.setTitle("JavaFX WebView + JS Bridge");
         primaryStage.setScene(scene);
+        
+        // Add cleanup when the application closes
+        primaryStage.setOnCloseRequest(e -> {
+            NotifikasiHelper.stop();
+            NotificationBridge.getInstance().shutdown();
+        });
+        
         primaryStage.show();
     }
 
