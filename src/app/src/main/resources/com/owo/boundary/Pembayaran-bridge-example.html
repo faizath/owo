@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran - OwO (Bridge Example)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="mockup.js"></script>
+    <script src="owo-bridge.js"></script>
+    <style>
+        /* Same styles as original Pembayaran.html - truncated for brevity */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #4E148C9E;
+            min-height: 100vh;
+            padding-top: 70px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .payment-section, .booking-details {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1F2937;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-input {
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            border-color: #613DC1;
+        }
+
+        .payment-button {
+            width: 100%;
+            padding: 16px;
+            background: #613DC1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-top: 24px;
+        }
+
+        .payment-button:hover {
+            background: #4E148C;
+        }
+
+        .payment-button:disabled {
+            background: #D1D5DB;
+            cursor: not-allowed;
+        }
+
+        .success-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .success-modal.show {
+            display: flex;
+        }
+
+        .success-content {
+            background: white;
+            border-radius: 16px;
+            padding: 48px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .success-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1F2937;
+            margin-bottom: 12px;
+        }
+
+        .success-message {
+            font-size: 16px;
+            color: #6B7280;
+            margin-bottom: 32px;
+        }
+
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="color: white; text-align: center; margin-bottom: 20px;">Payment Page - Bridge Integration Example</h1>
+        
+        <div class="main-content">
+            <!-- Payment Section -->
+            <div class="payment-section">
+                <h2 class="section-title">Guest Information</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">First Name *</label>
+                    <input type="text" class="form-input" placeholder="First Name" id="firstName" value="John">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Last Name *</label>
+                    <input type="text" class="form-input" placeholder="Last Name" id="lastName" value="Doe">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email *</label>
+                    <input type="email" class="form-input" placeholder="Email" id="email" value="john@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Phone *</label>
+                    <input type="tel" class="form-input" placeholder="Phone" id="phone" value="+62123456789">
+                </div>
+
+                <h2 class="section-title" style="margin-top: 32px;">Payment Method</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Card Holder Name</label>
+                    <input type="text" class="form-input" placeholder="Card Holder Name" id="cardName" value="John Doe">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Card Number</label>
+                    <input type="text" class="form-input" placeholder="1234 5678 9012 3456" id="cardNumber" value="1234 5678 9012 3456">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label class="form-label">Expiry Month</label>
+                        <select class="form-input" id="expiryMonth">
+                            <option value="12">12</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Expiry Year</label>
+                        <select class="form-input" id="expiryYear">
+                            <option value="2026">2026</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">CVV</label>
+                        <input type="text" class="form-input" placeholder="123" id="cvv" value="123" maxlength="3">
+                    </div>
+                </div>
+
+                <button class="payment-button" id="payment-button" onclick="processPayment()">PROCESS PAYMENT</button>
+            </div>
+
+            <!-- Booking Details -->
+            <div class="booking-details">
+                <h2 class="section-title">Booking Summary</h2>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600;">Booking Type:</label>
+                    <select id="bookingType" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" onchange="updateBookingForm()">
+                        <option value="hotel">Hotel Booking</option>
+                        <option value="flight">Flight Booking</option>
+                    </select>
+                </div>
+
+                <!-- Hotel Booking Form -->
+                <div id="hotelBookingForm">
+                    <div class="form-group">
+                        <label class="form-label">Hotel Name</label>
+                        <input type="text" class="form-input" id="hotelName" value="Nandini Jungle Resort">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label class="form-label">Check-in</label>
+                            <input type="date" class="form-input" id="checkin" value="2025-06-15">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Check-out</label>
+                            <input type="date" class="form-input" id="checkout" value="2025-06-18">
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label class="form-label">Guests</label>
+                            <input type="number" class="form-input" id="guests" value="2" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Rooms</label>
+                            <input type="number" class="form-input" id="rooms" value="1" min="1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Price (IDR)</label>
+                        <input type="number" class="form-input" id="hotelPrice" value="1500000" step="1000">
+                    </div>
+                </div>
+
+                <!-- Flight Booking Form -->
+                <div id="flightBookingForm" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Flight Number</label>
+                        <input type="text" class="form-input" id="flightNumber" value="GA-123">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label class="form-label">Origin</label>
+                            <input type="text" class="form-input" id="origin" value="Jakarta (CGK)">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Destination</label>
+                            <input type="text" class="form-input" id="destination" value="Bali (DPS)">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Airline</label>
+                        <input type="text" class="form-input" id="airline" value="Garuda Indonesia">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label class="form-label">Class</label>
+                            <select class="form-input" id="flightClass">
+                                <option value="Ekonomi">Economy</option>
+                                <option value="Bisnis">Business</option>
+                                <option value="First Class">First Class</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Passengers</label>
+                            <input type="number" class="form-input" id="passengers" value="2" min="1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Departure</label>
+                        <input type="datetime-local" class="form-input" id="departure" value="2025-06-15T06:00">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Price (IDR)</label>
+                        <input type="number" class="form-input" id="flightPrice" value="1850000" step="1000">
+                    </div>
+                </div>
+
+                <!-- Debug Information -->
+                <div class="debug-info" id="debugInfo">
+                    <strong>Bridge Status:</strong> <span id="bridgeStatus">Checking...</span><br>
+                    <strong>Current User:</strong> <span id="currentUser">None</span><br>
+                    <strong>Last Operation:</strong> <span id="lastOperation">None</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="success-modal" id="successModal">
+        <div class="success-content">
+            <div style="font-size: 48px; color: #10B981; margin-bottom: 24px;">✓</div>
+            <h2 class="success-title">Payment Successful!</h2>
+            <p class="success-message">Your booking has been confirmed. You will receive a confirmation email shortly.</p>
+            <div class="debug-info" id="successDebugInfo" style="text-align: left;">
+                <!-- Success details will be shown here -->
+            </div>
+            <button class="payment-button" onclick="closeSuccessModal()" style="margin-top: 20px;">Continue</button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize bridge status
+        document.addEventListener('DOMContentLoaded', function() {
+            updateBridgeStatus();
+            
+            // Auto-login for demo purposes
+            window.OwOAPI.auth.login('john@example.com', 'password123', function(response) {
+                console.log('Auto-login attempt:', response);
+                updateCurrentUser();
+            });
+        });
+
+        function updateBridgeStatus() {
+            const isJavaFX = typeof window.owoBridge !== 'undefined';
+            document.getElementById('bridgeStatus').textContent = isJavaFX ? 'JavaFX Mode' : 'Browser Mode';
+            document.getElementById('bridgeStatus').style.color = isJavaFX ? '#10B981' : '#F59E0B';
+        }
+
+        function updateCurrentUser() {
+            const user = window.OwOAPI.auth.getCurrentUser();
+            document.getElementById('currentUser').textContent = user ? `${user.nama} (${user.email})` : 'None';
+        }
+
+        function updateBookingForm() {
+            const bookingType = document.getElementById('bookingType').value;
+            const hotelForm = document.getElementById('hotelBookingForm');
+            const flightForm = document.getElementById('flightBookingForm');
+            
+            if (bookingType === 'hotel') {
+                hotelForm.style.display = 'block';
+                flightForm.style.display = 'none';
+            } else {
+                hotelForm.style.display = 'none';
+                flightForm.style.display = 'block';
+            }
+        }
+
+        function processPayment() {
+            const button = document.getElementById('payment-button');
+            button.disabled = true;
+            button.textContent = 'Processing...';
+            
+            // Get guest information
+            const guestInfo = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value
+            };
+            
+            // Get payment information
+            const paymentInfo = {
+                cardName: document.getElementById('cardName').value,
+                cardNumber: document.getElementById('cardNumber').value,
+                expiryMonth: document.getElementById('expiryMonth').value,
+                expiryYear: document.getElementById('expiryYear').value,
+                cvv: document.getElementById('cvv').value
+            };
+            
+            // Validate form
+            if (!validateForm(guestInfo, paymentInfo)) {
+                button.disabled = false;
+                button.textContent = 'PROCESS PAYMENT';
+                return;
+            }
+            
+            const bookingType = document.getElementById('bookingType').value;
+            
+            if (bookingType === 'hotel') {
+                processHotelBooking(guestInfo, paymentInfo);
+            } else {
+                processFlightBooking(guestInfo, paymentInfo);
+            }
+        }
+
+        function processHotelBooking(guestInfo, paymentInfo) {
+            const bookingData = {
+                customerId: 1, // Will be auto-set by bridge if user is logged in
+                hotelName: document.getElementById('hotelName').value,
+                checkin: document.getElementById('checkin').value,
+                checkout: document.getElementById('checkout').value,
+                guests: parseInt(document.getElementById('guests').value),
+                rooms: parseInt(document.getElementById('rooms').value),
+                price: parseFloat(document.getElementById('hotelPrice').value),
+                roomType: 'Standard Room',
+                address: 'Ubud, Bali, Indonesia',
+                // Add guest and payment info
+                ...guestInfo,
+                ...paymentInfo
+            };
+            
+            document.getElementById('lastOperation').textContent = 'Creating hotel booking...';
+            
+            window.OwOAPI.booking.createHotelBooking(bookingData, function(response) {
+                handleBookingResponse(response, 'Hotel');
+            });
+        }
+
+        function processFlightBooking(guestInfo, paymentInfo) {
+            const bookingData = {
+                customerId: 1,
+                flightNumber: document.getElementById('flightNumber').value,
+                origin: document.getElementById('origin').value,
+                destination: document.getElementById('destination').value,
+                maskapai: document.getElementById('airline').value,
+                kelas: document.getElementById('flightClass').value,
+                departure: document.getElementById('departure').value + ':00',
+                passengers: parseInt(document.getElementById('passengers').value),
+                price: parseFloat(document.getElementById('flightPrice').value),
+                // Add guest and payment info
+                ...guestInfo,
+                ...paymentInfo
+            };
+            
+            document.getElementById('lastOperation').textContent = 'Creating flight booking...';
+            
+            window.OwOAPI.booking.createFlightBooking(bookingData, function(response) {
+                handleBookingResponse(response, 'Flight');
+            });
+        }
+
+        function handleBookingResponse(response, bookingType) {
+            const button = document.getElementById('payment-button');
+            
+            window.OwOAPI.handleResponse(response,
+                function(data, message) {
+                    // Success
+                    document.getElementById('lastOperation').textContent = `${bookingType} booking successful!`;
+                    document.getElementById('successDebugInfo').innerHTML = 
+                        `<strong>Booking Type:</strong> ${bookingType}<br>` +
+                        `<strong>Transaction ID:</strong> ${data.transactionId || 'N/A'}<br>` +
+                        `<strong>Booking ID:</strong> ${data.id || 'N/A'}<br>` +
+                        `<strong>Customer ID:</strong> ${data.customerId || 'N/A'}<br>` +
+                        `<strong>Message:</strong> ${message}<br>` +
+                        `<strong>Response:</strong><br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    
+                    document.getElementById('successModal').classList.add('show');
+                    
+                    // Send notification
+                    window.OwOAPI.utils.showNotification(`${bookingType} booking confirmed!`);
+                },
+                function(error) {
+                    // Error
+                    document.getElementById('lastOperation').textContent = `${bookingType} booking failed: ${error}`;
+                    alert(`Booking failed: ${error}`);
+                }
+            );
+            
+            button.disabled = false;
+            button.textContent = 'PROCESS PAYMENT';
+        }
+
+        function validateForm(guestInfo, paymentInfo) {
+            // Basic validation
+            if (!guestInfo.firstName || !guestInfo.lastName || !guestInfo.email || !guestInfo.phone) {
+                alert('Please fill in all guest information fields.');
+                return false;
+            }
+            
+            if (!paymentInfo.cardName || !paymentInfo.cardNumber || !paymentInfo.cvv) {
+                alert('Please fill in all payment information fields.');
+                return false;
+            }
+            
+            return true;
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.remove('show');
+        }
+
+        // Test functions for debugging
+        function testBridge() {
+            console.log('Testing bridge...');
+            console.log('Bridge version:', window.OwOAPI.utils.getVersion());
+            window.OwOAPI.utils.showNotification('Bridge test notification');
+        }
+
+        function testUserBookings() {
+            window.OwOAPI.booking.getUserBookings(null, function(response) {
+                console.log('User bookings response:', response);
+                window.OwOAPI.handleResponse(response,
+                    function(data, message) {
+                        alert(`Found ${data.length} bookings`);
+                        console.log('Bookings:', data);
+                    },
+                    function(error) {
+                        alert('Error getting bookings: ' + error);
+                    }
+                );
+            });
+        }
+
+        // Expose test functions to console
+        window.testBridge = testBridge;
+        window.testUserBookings = testUserBookings;
+        
+        console.log('Bridge Example loaded. Available test functions: testBridge(), testUserBookings()');
+    </script>
+</body>
+</html> 
