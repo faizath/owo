@@ -182,6 +182,13 @@ This project is part of the Software Engineering Fundamentals course (IF2050) at
 - **Course**: IF2050 - Dasar Rekayasa Perangkat Lunak
 - **Institution**: Institut Teknologi Bandung
 
+| NIM | Nama Lengkap | Tugas |
+|---|---|---|
+| 18223061 | Naura Ayurachmani | PemesananViewer, LoginForm, notulensi asistensi, laporan HIUPL (bab 1, bab 2, bab 3, bab 4, bab 5) |
+| 18222051 | Firsa Athaya Raissa Alifah | RiwayatPemesananViewer, PembayaranViewer, laporan HIUPL (bab 3, bab 4, bab 5) |
+| 18222060 | Taufiq Ramadhan Ahmad | PemesananController, Pemesanan, Tiket, laporan HIUPL (bab 3, bab 5) |
+| 18222063 | Muhammad Faiz A | AuthController, Akun, Notifikasi, Integrasi |
+| 18222072 | Muhammad Kevinza Faiz | RefundController, CheckInController, Refund, laporan HIUPL (bab 3) |
 ---
 
 <div align="center">
