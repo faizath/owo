@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OwO Bridge Demo</title>
+    <script src="mockup.js"></script>
+    <script src="owo-bridge.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section-title {
+            color: #613DC1;
+            font-size: 24px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #613DC1;
+            padding-bottom: 5px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .button {
+            background: #613DC1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .button:hover {
+            background: #4E148C;
+        }
+        .button.secondary {
+            background: #6c757d;
+        }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #17a2b8; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; color: #613DC1;">OwO Bridge API Demo</h1>
+    
+    <!-- Authentication Section -->
+    <div class="container">
+        <h2 class="section-title">Authentication</h2>
+        <div class="grid">
+            <div>
+                <h3>Register</h3>
+                <div class="form-group">
+                    <label>Name:</label>
+                    <input type="text" id="regName" placeholder="Enter your name" value="John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="regEmail" placeholder="Enter your email" value="john@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="regPassword" placeholder="Enter your password" value="password123">
+                </div>
+                <button class="button" onclick="registerUser()">Register</button>
+                <div class="result" id="registerResult"></div>
+            </div>
+            
+            <div>
+                <h3>Login</h3>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="loginEmail" placeholder="Enter your email" value="john@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" value="password123">
+                </div>
+                <button class="button" onclick="loginUser()">Login</button>
+                <button class="button secondary" onclick="logout()">Logout</button>
+                <div class="result" id="loginResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Section -->
+    <div class="container">
+        <h2 class="section-title">Create Bookings</h2>
+        <div class="grid">
+            <div>
+                <h3>Hotel Booking</h3>
+                <div class="form-group">
+                    <label>Hotel Name:</label>
+                    <input type="text" id="hotelName" value="Nandini Jungle Resort">
+                </div>
+                <div class="form-group">
+                    <label>Check-in:</label>
+                    <input type="date" id="hotelCheckin" value="2025-06-15">
+                </div>
+                <div class="form-group">
+                    <label>Check-out:</label>
+                    <input type="date" id="hotelCheckout" value="2025-06-18">
+                </div>
+                <div class="form-group">
+                    <label>Guests:</label>
+                    <input type="number" id="hotelGuests" value="2" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Rooms:</label>
+                    <input type="number" id="hotelRooms" value="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Price:</label>
+                    <input type="number" id="hotelPrice" value="1500000" step="1000">
+                </div>
+                <button class="button" onclick="createHotelBooking()">Book Hotel</button>
+                <div class="result" id="hotelBookingResult"></div>
+            </div>
+            
+            <div>
+                <h3>Flight Booking</h3>
+                <div class="form-group">
+                    <label>Flight Number:</label>
+                    <input type="text" id="flightNumber" value="GA-123">
+                </div>
+                <div class="form-group">
+                    <label>Origin:</label>
+                    <input type="text" id="flightOrigin" value="Jakarta (CGK)">
+                </div>
+                <div class="form-group">
+                    <label>Destination:</label>
+                    <input type="text" id="flightDestination" value="Bali (DPS)">
+                </div>
+                <div class="form-group">
+                    <label>Airline:</label>
+                    <input type="text" id="flightAirline" value="Garuda Indonesia">
+                </div>
+                <div class="form-group">
+                    <label>Class:</label>
+                    <select id="flightClass">
+                        <option value="Ekonomi">Economy</option>
+                        <option value="Bisnis">Business</option>
+                        <option value="First Class">First Class</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Departure:</label>
+                    <input type="datetime-local" id="flightDeparture" value="2025-06-15T06:00">
+                </div>
+                <div class="form-group">
+                    <label>Passengers:</label>
+                    <input type="number" id="flightPassengers" value="2" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Price:</label>
+                    <input type="number" id="flightPrice" value="1850000" step="1000">
+                </div>
+                <button class="button" onclick="createFlightBooking()">Book Flight</button>
+                <div class="result" id="flightBookingResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="container">
+        <h2 class="section-title">Search</h2>
+        <div class="grid">
+            <div>
+                <h3>Search Flights</h3>
+                <div class="form-group">
+                    <label>Origin:</label>
+                    <input type="text" id="searchFlightOrigin" value="CGK">
+                </div>
+                <div class="form-group">
+                    <label>Destination:</label>
+                    <input type="text" id="searchFlightDestination" value="DPS">
+                </div>
+                <div class="form-group">
+                    <label>Class:</label>
+                    <input type="text" id="searchFlightClass" value="Ekonomi">
+                </div>
+                <div class="form-group">
+                    <label>Passengers:</label>
+                    <input type="number" id="searchFlightPassengers" value="2">
+                </div>
+                <button class="button" onclick="searchFlights()">Search Flights</button>
+                <div class="result" id="searchFlightResult"></div>
+            </div>
+            
+            <div>
+                <h3>Search Hotels</h3>
+                <div class="form-group">
+                    <label>Location:</label>
+                    <input type="text" id="searchHotelLocation" value="Bali">
+                </div>
+                <div class="form-group">
+                    <label>Check-in:</label>
+                    <input type="date" id="searchHotelCheckin" value="2025-06-15">
+                </div>
+                <div class="form-group">
+                    <label>Check-out:</label>
+                    <input type="date" id="searchHotelCheckout" value="2025-06-18">
+                </div>
+                <div class="form-group">
+                    <label>Hotel Name:</label>
+                    <input type="text" id="searchHotelName" placeholder="Optional">
+                </div>
+                <div class="form-group">
+                    <label>Guests:</label>
+                    <input type="number" id="searchHotelGuests" value="2">
+                </div>
+                <button class="button" onclick="searchHotels()">Search Hotels</button>
+                <div class="result" id="searchHotelResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Other Operations -->
+    <div class="container">
+        <h2 class="section-title">Other Operations</h2>
+        <div class="grid">
+            <div>
+                <h3>User Bookings</h3>
+                <button class="button" onclick="getUserBookings()">Get My Bookings</button>
+                <div class="result" id="userBookingsResult"></div>
+            </div>
+            
+            <div>
+                <h3>Refund</h3>
+                <div class="form-group">
+                    <label>Booking ID:</label>
+                    <input type="number" id="refundBookingId" value="1">
+                </div>
+                <div class="form-group">
+                    <label>Reason:</label>
+                    <input type="text" id="refundReason" value="Change of plans">
+                </div>
+                <div class="form-group">
+                    <label>Amount:</label>
+                    <input type="number" id="refundAmount" value="1000000">
+                </div>
+                <button class="button" onclick="createRefund()">Create Refund</button>
+                <div class="result" id="refundResult"></div>
+            </div>
+            
+            <div>
+                <h3>Check-in</h3>
+                <div class="form-group">
+                    <label>Booking ID:</label>
+                    <input type="number" id="checkinBookingId" value="1">
+                </div>
+                <button class="button" onclick="performCheckIn()">Check In</button>
+                <div class="result" id="checkinResult"></div>
+            </div>
+            
+            <div>
+                <h3>Utilities</h3>
+                <button class="button" onclick="showVersion()">Get Version</button>
+                <button class="button" onclick="testNotification()">Test Notification</button>
+                <div class="result" id="utilityResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Authentication functions
+        function registerUser() {
+            const userData = {
+                nama: document.getElementById('regName').value,
+                email: document.getElementById('regEmail').value,
+                password: document.getElementById('regPassword').value
+            };
+            
+            window.OwOAPI.auth.register(userData, function(response) {
+                document.getElementById('registerResult').textContent = response;
+                window.OwOAPI.handleResponse(response, 
+                    function(data, message) {
+                        document.getElementById('registerResult').innerHTML = 
+                            `<span class="success">${message}</span>\nUser: ${JSON.stringify(data, null, 2)}`;
+                    },
+                    function(error) {
+                        document.getElementById('registerResult').innerHTML = 
+                            `<span class="error">${error}</span>`;
+                    }
+                );
+            });
+        }
+
+        function loginUser() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            window.OwOAPI.auth.login(email, password, function(response) {
+                document.getElementById('loginResult').textContent = response;
+                window.OwOAPI.handleResponse(response, 
+                    function(data, message) {
+                        document.getElementById('loginResult').innerHTML = 
+                            `<span class="success">${message}</span>\nUser: ${JSON.stringify(data, null, 2)}`;
+                    },
+                    function(error) {
+                        document.getElementById('loginResult').innerHTML = 
+                            `<span class="error">${error}</span>`;
+                    }
+                );
+            });
+        }
+
+        function logout() {
+            window.OwOAPI.auth.logout();
+            document.getElementById('loginResult').innerHTML = '<span class="info">Logged out successfully</span>';
+        }
+
+        // Booking functions
+        function createHotelBooking() {
+            const bookingData = {
+                customerId: 1,
+                hotelName: document.getElementById('hotelName').value,
+                checkin: document.getElementById('hotelCheckin').value,
+                checkout: document.getElementById('hotelCheckout').value,
+                guests: parseInt(document.getElementById('hotelGuests').value),
+                rooms: parseInt(document.getElementById('hotelRooms').value),
+                price: parseFloat(document.getElementById('hotelPrice').value),
+                roomType: 'Standard Room',
+                address: 'Ubud, Bali, Indonesia'
+            };
+            
+            window.OwOAPI.booking.createHotelBooking(bookingData, function(response) {
+                document.getElementById('hotelBookingResult').textContent = response;
+                window.OwOAPI.handleResponse(response, 
+                    function(data, message) {
+                        document.getElementById('hotelBookingResult').innerHTML = 
+                            `<span class="success">${message}</span>\nBooking: ${JSON.stringify(data, null, 2)}`;
+                    },
+                    function(error) {
+                        document.getElementById('hotelBookingResult').innerHTML = 
+                            `<span class="error">${error}</span>`;
+                    }
+                );
+            });
+        }
+
+        function createFlightBooking() {
+            const bookingData = {
+                customerId: 1,
+                flightNumber: document.getElementById('flightNumber').value,
+                origin: document.getElementById('flightOrigin').value,
+                destination: document.getElementById('flightDestination').value,
+                maskapai: document.getElementById('flightAirline').value,
+                kelas: document.getElementById('flightClass').value,
+                departure: document.getElementById('flightDeparture').value + ':00',
+                passengers: parseInt(document.getElementById('flightPassengers').value),
+                price: parseFloat(document.getElementById('flightPrice').value)
+            };
+            
+            window.OwOAPI.booking.createFlightBooking(bookingData, function(response) {
+                document.getElementById('flightBookingResult').textContent = response;
+                window.OwOAPI.handleResponse(response, 
+                    function(data, message) {
+                        document.getElementById('flightBookingResult').innerHTML = 
+                            `<span class="success">${message}</span>\nBooking: ${JSON.stringify(data, null, 2)}`;
+                    },
+                    function(error) {
+                        document.getElementById('flightBookingResult').innerHTML = 
+                            `<span class="error">${error}</span>`;
+                    }
+                );
+            });
+        }
+
+        // Search functions
+        function searchFlights() {
+            const searchData = {
+                origin: document.getElementById('searchFlightOrigin').value,
+                destination: document.getElementById('searchFlightDestination').value,
+                kelas: document.getElementById('searchFlightClass').value,
+                passengers: parseInt(document.getElementById('searchFlightPassengers').value)
+            };
+            
+            window.OwOAPI.search.flights(searchData, function(response) {
+                document.getElementById('searchFlightResult').textContent = response;
+                window.OwOAPI.handleResponse(response, 
+                    function(data, message) {
+                        document.getElementById('searchFlightResult').innerHTML = 
+                            `<span class="success">${message}</span>\nFlights found: ${data.length}\n${JSON.stringify(data, null, 2)}`;
+                    },
+                    function(error) {
+                        document.getElementById('searchFlightResult').innerHTML = 
+                            `<span class="error">${error}</span>`;
+                    }
+                );
+            });
+        }
+
+        function searchHotels() {
+            const searchData = {
+                location: document.getElementById('searchHotelLocation').value,
+                checkin: document.getElementById('searchHotelCheckin').value,
+                checkout: document.getElementById('searchHotelCheckout').value,
+                hotelName: document.getElementById('searchHotelName').value,
+                guests: parseInt(document.getElementById('searchHotelGuests').value)
+            };
+            
+            window.OwOAPI.search.hotels(searchData, function(response) {
+                document.getElementById('searchHotelResult').textContent = response;
+                window.OwOAPI.handleResponse(response, 
+                    function(data, message) {
+                        document.getElementById('searchHotelResult').innerHTML = 
+                            `<span class="success">${message}</span>\nHotels found: ${data.length}\n${JSON.stringify(data, null, 2)}`;
+                    },
+                    function(error) {
+                        document.getElementById('searchHotelResult').innerHTML = 
+                            `<span class="error">${error}</span>`;
+                    }
+                );
+            });
+        }
+
+        // Other functions
+        function getUserBookings() {
+            window.OwOAPI.booking.getUserBookings(null, function(response) {
+                document.getElementById('userBookingsResult').textContent = response;
+                window.OwOAPI.handleResponse(response, 
+                    function(data, message) {
+                        document.getElementById('userBookingsResult').innerHTML = 
+                            `<span class="success">${message}</span>\nBookings: ${data.length}\n${JSON.stringify(data, null, 2)}`;
+                    },
+                    function(error) {
+                        document.getElementById('userBookingsResult').innerHTML = 
+                            `<span class="error">${error}</span>`;
+                    }
+                );
+            });
+        }
+
+        function createRefund() {
+            const refundData = {
+                refundId: 'REF' + Date.now(),
+                pemesananId: parseInt(document.getElementById('refundBookingId').value),
+                alasan: document.getElementById('refundReason').value,
+                jumlahRefund: parseFloat(document.getElementById('refundAmount').value)
+            };
+            
+            window.OwOAPI.refund.create(refundData, function(response) {
+                document.getElementById('refundResult').textContent = response;
+                window.OwOAPI.handleResponse(response, 
+                    function(data, message) {
+                        document.getElementById('refundResult').innerHTML = 
+                            `<span class="success">${message}</span>\nRefund: ${JSON.stringify(data, null, 2)}`;
+                    },
+                    function(error) {
+                        document.getElementById('refundResult').innerHTML = 
+                            `<span class="error">${error}</span>`;
+                    }
+                );
+            });
+        }
+
+        function performCheckIn() {
+            const checkInData = {
+                pemesananId: parseInt(document.getElementById('checkinBookingId').value)
+            };
+            
+            window.OwOAPI.checkin.perform(checkInData, function(response) {
+                document.getElementById('checkinResult').textContent = response;
+                window.OwOAPI.handleResponse(response, 
+                    function(data, message) {
+                        document.getElementById('checkinResult').innerHTML = 
+                            `<span class="success">${message}</span>\nCheck-in: ${JSON.stringify(data, null, 2)}`;
+                    },
+                    function(error) {
+                        document.getElementById('checkinResult').innerHTML = 
+                            `<span class="error">${error}</span>`;
+                    }
+                );
+            });
+        }
+
+        function showVersion() {
+            const version = window.OwOAPI.utils.getVersion();
+            document.getElementById('utilityResult').innerHTML = `<span class="info">Version: ${version}</span>`;
+        }
+
+        function testNotification() {
+            window.OwOAPI.utils.showNotification('This is a test notification from OwO Bridge!');
+            document.getElementById('utilityResult').innerHTML = '<span class="info">Notification sent!</span>';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Bridge Demo loaded');
+            console.log('Current user:', window.OwOAPI.auth.getCurrentUser());
+        });
+    </script>
+</body>
+</html> 
