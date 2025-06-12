@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Booking App</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        .data-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 300px;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .data-panel h3 {
+            color: #667eea;
+            margin-top: 0;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+        
+        .data-item {
+            margin: 10px 0;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        
+        .data-item strong {
+            color: #495057;
+        }
+        
+        .clear-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        
+        .clear-btn:hover {
+            background: #c82333;
+        }
+        
+        .toggle-btn {
+            position: fixed;
+            top: 10px;
+            right: 320px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+        
+        .data-panel.hidden {
+            display: none;
+        }
+
+        /* Notification styles */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notification {
+            background: white;
+            border-radius: 8px;
+            padding: 15px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 300px;
+            max-width: 400px;
+            transform: translateX(120%);
+            transition: transform 0.3s ease-in-out;
+            border-left: 4px solid #667eea;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification-content {
+            font-size: 14px;
+            color: #333;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Notification container -->
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <!-- Data Panel untuk menampilkan data yang tersimpan
+    <button class="toggle-btn" onclick="toggleDataPanel()">Toggle Data Panel</button>
+    <div class="data-panel" id="dataPanel">
+        <h3>Data Tersimpan</h3>
+        <div id="dataContent">
+            <p>Belum ada data tersimpan.</p>
+        </div>
+        <button class="clear-btn" onclick="clearAllData()">Hapus Semua Data</button>
+    </div> -->
+
+    <!-- Iframe untuk Pemesanan.html -->
+    <iframe 
+        id="pemesananIframe"
+        src="RegisterForm.html" 
+        style="height: 100vh; width: 100vw; border: none; overflow-x:hidden"
+        onload="setupIframeListener()">
+    </iframe>
+
+    <script>
+        // PARENT WINDOW SCRIPT - PERBAIKAN UTAMA
+        // Object untuk menyimpan semua data aplikasi
+        window.travelAppData = {
+            hotelBooking: null,
+            flightBooking: null,
+            searchHistory: {
+                hotel: null,
+                flight: null
+            },
+            userPreferences: {},
+            favorites: {
+                hotel: null,
+                flight: null
+            }
+        };
+
+        // Notification handling
+        function showNotification(message) {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.innerHTML = `<p class="notification-content">${message}</p>`;
+            
+            container.appendChild(notification);
+            
+            // Trigger animation
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            // Remove notification after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
+        }
+
+        // Listen for messages from Java
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.action === 'show_notification') {
+                showNotification(event.data.message);
+            }
+        });
+
+        // Fungsi untuk menyimpan data
+        function saveData(type, data) {
+            const timestamp = new Date().toISOString();
+            const dataWithTimestamp = {
+                ...data,
+                timestamp: timestamp,
+                id: Date.now() + Math.random()
+            };
+
+            // Pastikan objek utama ada
+            if (!window.travelAppData) {
+                window.travelAppData = { 
+                    hotelBooking: null, 
+                    flightBooking: null, 
+                    searchHistory: { hotel: null, flight: null }, 
+                    userPreferences: {}, 
+                    favorites: { hotel: null, flight: null } 
+                };
+            }
+
+            switch(type) {
+                case 'hotel_search':
+                    if (!window.travelAppData.searchHistory) {
+                        window.travelAppData.searchHistory = { hotel: null, flight: null };
+                    }
+                    window.travelAppData.searchHistory.hotel = dataWithTimestamp;
+                    break;
+
+                case 'flight_search':
+                    if (!window.travelAppData.searchHistory) {
+                        window.travelAppData.searchHistory = { hotel: null, flight: null };
+                    }
+                    window.travelAppData.searchHistory.flight = dataWithTimestamp;
+                    break;
+
+                case 'hotel_booking':
+                case 'hotel_booking_complete': // Support untuk kedua tipe
+                    window.travelAppData.hotelBooking = dataWithTimestamp;
+                    break;
+
+                case 'flight_booking':
+                case 'flight_booking_complete':
+                    window.travelAppData.flightBooking = dataWithTimestamp;
+                    break;
+
+                case 'hotel_favorite':
+                    if (!window.travelAppData.favorites) {
+                        window.travelAppData.favorites = { hotel: null, flight: null };
+                    }
+                    window.travelAppData.favorites.hotel = dataWithTimestamp;
+                    break;
+
+                case 'flight_favorite':
+                    if (!window.travelAppData.favorites) {
+                        window.travelAppData.favorites = { hotel: null, flight: null };
+                    }
+                    window.travelAppData.favorites.flight = dataWithTimestamp;
+                    break;
+
+                case 'user_preference':
+                    if (!window.travelAppData.userPreferences) {
+                        window.travelAppData.userPreferences = {};
+                    }
+                    window.travelAppData.userPreferences = {
+                        ...window.travelAppData.userPreferences,
+                        ...dataWithTimestamp
+                    };
+                    break;
+            }
+            
+            // Update tampilan data panel
+            updateDataPanel();
+            
+            // Log untuk debugging
+            console.log('Data saved:', type, dataWithTimestamp);
+            console.log('Current app data:', window.travelAppData);
+        }
+
+        // Fungsi untuk mengambil data
+        function getData(type) {
+            console.log('Getting data for type:', type);
+            switch(type) {
+                case 'all':
+                    return window.travelAppData;
+                case 'hotel_booking':
+                case 'hotel_booking_complete':
+                    return window.travelAppData.hotelBooking;
+                case 'flight_booking':
+                case 'flight_booking_complete':
+                    return window.travelAppData.flightBooking;
+                case 'hotel_search':
+                    return window.travelAppData.searchHistory ? window.travelAppData.searchHistory.hotel : null;
+                case 'flight_search':
+                    return window.travelAppData.searchHistory ? window.travelAppData.searchHistory.flight : null;
+                case 'search_history':
+                    return window.travelAppData.searchHistory;
+                case 'favorites':
+                    return window.travelAppData.favorites;
+                case 'user_preferences':
+                    return window.travelAppData.userPreferences;
+                default:
+                    return null;
+            }
+        }
+
+        // Fungsi untuk menghapus data
+        function clearData(type) {
+            switch(type) {
+                case 'all':
+                    window.travelAppData = {
+                        hotelBooking: null,
+                        flightBooking: null,
+                        searchHistory: { hotel: null, flight: null },
+                        userPreferences: {},
+                        favorites: { hotel: null, flight: null }
+                    };
+                    break;
+                case 'hotel_bookings':
+                    window.travelAppData.hotelBooking = null;
+                    break;
+                case 'flight_bookings':
+                    window.travelAppData.flightBooking = null;
+                    break;
+                case 'search_history':
+                    window.travelAppData.searchHistory = { hotel: null, flight: null };
+                    break;
+                case 'favorites':
+                    window.travelAppData.favorites = { hotel: null, flight: null };
+                    break;
+            }
+            updateDataPanel();
+        }
+
+        // SETUP LISTENER YANG DIPERBAIKI
+        function setupIframeListener() {
+            window.addEventListener('message', function(event) {
+                // PERBAIKAN: Cek apakah ada iframe dengan id 'pemesananIframe'
+                const iframe = document.getElementById('pemesananIframe');
+                
+                // PERBAIKAN: Terima message dari semua iframe yang valid
+                if (!iframe || (event.source !== iframe.contentWindow && event.origin !== window.location.origin)) {
+                    console.log('Message rejected - not from valid iframe');
+                    return;
+                }
+
+                // console.log('Message received from iframe:', event.data);
+                const { action, type, data } = event.data;
+
+                switch(action) {
+                    case 'save_data':
+                        console.log('Saving data:', type, data);
+                        saveData(type, data);
+                        break;
+                    case 'get_data':
+                        console.log('Getting data for:', type);
+                        const responseData = getData(type);
+                        console.log('Responding with data:', responseData);
+                        
+                        // PERBAIKAN: Gunakan event.source untuk memastikan response dikirim ke iframe yang benar
+                        event.source.postMessage({
+                            action: 'data_response',
+                            type: type,
+                            data: responseData
+                        }, '*');
+                        break;
+                    case 'clear_data':
+                        console.log('Clearing data:', type);
+                        clearData(type);
+                        break;
+                }
+            });
+            console.log('Parent listener is now active.');
+        }
+
+        // Fungsi untuk mengupdate tampilan data panel
+        function updateDataPanel() {
+            const dataContent = document.getElementById('dataContent');
+            if (!dataContent) return; // Skip jika element tidak ada
+            
+            const data = window.travelAppData;
+            
+            if (isDataEmpty(data)) {
+                dataContent.innerHTML = '<p>Belum ada data tersimpan.</p>';
+                return;
+            }
+
+            let html = '';
+
+            if (data.searchHistory && (data.searchHistory.hotel || data.searchHistory.flight)) {
+                html += '<h4>Riwayat Pencarian Terakhir:</h4>';
+                if(data.searchHistory.hotel) {
+                    const search = data.searchHistory.hotel;
+                    html += `
+                        <div class="data-item">
+                            <strong>Hotel:</strong><br>
+                            ${search.destination || 'N/A'} - ${search.checkin || 'N/A'}<br>
+                            <small>${new Date(search.timestamp).toLocaleString()}</small>
+                        </div>
+                    `;
+                }
+                if(data.searchHistory.flight) {
+                    const search = data.searchHistory.flight;
+                    html += `
+                        <div class="data-item">
+                            <strong>Pesawat:</strong><br>
+                            ${search.from || 'N/A'} → ${search.to || 'N/A'}<br>
+                            <small>${new Date(search.timestamp).toLocaleString()}</small>
+                        </div>
+                    `;
+                }
+            }
+
+            if (data.hotelBooking) {
+                html += '<h4>Booking Hotel Terakhir:</h4>';
+                const booking = data.hotelBooking;
+                html += `
+                    <div class="data-item">
+                        <strong>${booking.hotelName || 'Hotel'}</strong><br>
+                        ${booking.roomType || booking.destination || 'N/A'}<br>
+                        <small>${new Date(booking.timestamp).toLocaleString()}</small>
+                    </div>
+                `;
+            }
+
+            if (data.flightBooking) {
+                html += '<h4>Booking Pesawat Terakhir:</h4>';
+                const booking = data.flightBooking;
+                html += `
+                    <div class="data-item">
+                        <strong>${booking.flightName || 'Flight'}</strong><br>
+                        ${booking.from || 'N/A'} → ${booking.to || 'N/A'}<br>
+                        <small>${new Date(booking.timestamp).toLocaleString()}</small>
+                    </div>
+                `;
+            }
+
+            if (data.favorites && (data.favorites.hotel || data.favorites.flight)) {
+                html += '<h4>Favorit Terakhir:</h4>';
+                if(data.favorites.hotel) {
+                    const fav = data.favorites.hotel;
+                    html += `
+                        <div class="data-item">
+                            <strong>♥ ${fav.name || 'Favorit Hotel'}</strong><br>
+                            <small>${new Date(fav.timestamp).toLocaleString()}</small>
+                        </div>
+                    `;
+                }
+                if(data.favorites.flight) {
+                    const fav = data.favorites.flight;
+                    html += `
+                        <div class="data-item">
+                            <strong>♥ ${fav.name || 'Favorit Pesawat'}</strong><br>
+                            <small>${new Date(fav.timestamp).toLocaleString()}</small>
+                        </div>
+                    `;
+                }
+            }
+
+            dataContent.innerHTML = html;
+        }
+
+        // Fungsi helper untuk mengecek apakah data kosong
+        function isDataEmpty(data) {
+            return data.hotelBooking === null && 
+                data.flightBooking === null && 
+                (!data.searchHistory || (data.searchHistory.hotel === null && data.searchHistory.flight === null)) &&
+                (!data.favorites || (data.favorites.hotel === null && data.favorites.flight === null)) &&
+                Object.keys(data.userPreferences).length === 0;
+        }
+
+        // Fungsi utilitas lainnya
+        function toggleDataPanel() {
+            const panel = document.getElementById('dataPanel');
+            if (panel) panel.classList.toggle('hidden');
+        }
+
+        function clearAllData() {
+            if (confirm('Apakah Anda yakin ingin menghapus semua data?')) {
+                clearData('all');
+            }
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(window.travelAppData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'travel_app_data.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        window.travelAppData = importedData;
+                        updateDataPanel();
+                        alert('Data berhasil diimport!');
+                    } catch (error) {
+                        alert('Error importing data: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        // Expose functions to global scope
+        window.travelApp = {
+            saveData: saveData,
+            getData: getData,
+            clearData: clearData,
+            exportData: exportData,
+            importData: importData,
+            data: window.travelAppData
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDataPanel();
+            setupIframeListener();
+            console.log('Travel App initialized with data structure:', window.travelAppData);
+        });
+    </script>
+</body>
+</html>

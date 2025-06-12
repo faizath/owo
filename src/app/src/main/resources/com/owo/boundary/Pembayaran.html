@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran - OWO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #4E148C9E;
+            min-height: 100vh;
+            padding-top: 70px; /* Add padding for fixed header */
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header  */
+
+        .header {
+            width: 100%;
+            height: 59px;
+            background: white;
+            padding: 0 100px;
+            display: flex;
+            align-items: center;
+            gap: 23px;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            width: 148px;
+            height: 48px;
+            background-image: url('../assets/logo_owo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 8px;
+        }
+
+        .search-container {
+            width: 426px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #D9D9D9;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #000000;
+            outline: none;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background-image: url('../assets/Search.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 40px;
+            margin-left: auto;
+        }
+
+        .nav-item {
+            color: #613DC1;
+            font-size: 20px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .notification-icon {
+            width: 45px;
+            height: 45px;
+            background-image: url('../assets/notification.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            background-image: url('../assets/profile_1.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        .user-greeting {
+            color: #613DC1;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .payment-section, .booking-details {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Guest Info Section */
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1F2937;
+            margin-bottom: 20px;
+        }
+
+        .section-subtitle {
+            font-size: 14px;
+            color: #6B7280;
+            margin-bottom: 24px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .required {
+            color: #EF4444;
+        }
+
+        .form-input {
+            padding: 12px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            border-color: #613DC1;
+        }
+
+        .form-input::placeholder {
+            color: #9CA3AF;
+        }
+
+        /* Payment Method Section */
+        .payment-method {
+            margin: 32px 0;
+        }
+
+        .payment-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .payment-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-option.selected {
+            border-color: #613DC1;
+            background: #F3F4F6;
+        }
+
+        .payment-option input[type="radio"] {
+            margin: 0;
+        }
+
+        .payment-option-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .card-icons {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        /* Card Icons */
+        .card-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .card-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .card-icon.selected {
+            border-color: #613DC1;
+            box-shadow: 0 0 0 2px rgba(97, 61, 193, 0.2);
+        }
+
+        .card-icon.mastercard {
+            background-image: url('../assets/mastercard_logo.png');
+        }
+
+        .card-icon.visa {
+            background-image: url('../assets/visa_logo.png');
+        }
+
+        .card-icon.discover {
+            background-image: url('../assets/discover_logo.png');
+        }
+
+        .card-icon.amex {
+            background-image: url('../assets/ae_logo.png');
+        }
+
+        /* Card Details */
+        .card-details {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #F9FAFB;
+            border-radius: 8px;
+        }
+
+        .card-details.show {
+            display: block;
+        }
+
+        .card-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* Hotel Details Section */
+        .hotel-card {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .hotel-image {
+            width: 200px;
+            height: 150px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .hotel-info {
+            flex: 1;
+        }
+
+        .hotel-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1F2937;
+            margin-bottom: 8px;
+        }
+
+        .hotel-rating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .rating-badge {
+            background: #613DC1;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .location-badge {
+            background: #F3F4F6;
+            color: #6B7280;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .room-details {
+            margin-bottom: 16px;
+        }
+
+        .room-type {
+            font-weight: 600;
+            color: #1F2937;
+            margin-bottom: 4px;
+        }
+
+        .room-features {
+            font-size: 14px;
+            color: #6B7280;
+            margin-bottom: 8px;
+        }
+
+        .room-amenities {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #6B7280;
+        }
+
+        .amenity-icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Booking Summary */
+        .booking-dates {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding: 16px;
+            background: #F9FAFB;
+            border-radius: 8px;
+        }
+
+        .date-info {
+            text-align: center;
+        }
+
+        .date-label {
+            font-size: 12px;
+            color: #6B7280;
+            margin-bottom: 4px;
+        }
+
+        .date-value {
+            font-weight: 600;
+            color: #1F2937;
+        }
+
+        .booking-options {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .option-select {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            background: white;
+            outline: none;
+        }
+
+        /* Price Breakdown */
+        .price-breakdown {
+            border-top: 2px solid #E5E7EB;
+            padding-top: 20px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .price-label {
+            color: #6B7280;
+        }
+
+        .price-value {
+            color: #1F2937;
+            font-weight: 500;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 16px;
+            border-top: 2px solid #E5E7EB;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1F2937;
+        }
+
+        /* Payment Button */
+        .payment-button {
+            width: 100%;
+            padding: 16px;
+            background: #613DC1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-top: 24px;
+        }
+
+        .payment-button:hover {
+            background: #4E148C;
+        }
+
+        .payment-button:disabled {
+            background: #D1D5DB;
+            cursor: not-allowed;
+        }
+
+        /* Success Modal */
+        .success-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .success-modal.show {
+            display: flex;
+        }
+
+        .success-content {
+            background: white;
+            border-radius: 16px;
+            padding: 48px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #10B981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            color: white;
+            font-size: 40px;
+        }
+
+        .success-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1F2937;
+            margin-bottom: 12px;
+        }
+
+        .success-message {
+            font-size: 16px;
+            color: #6B7280;
+            margin-bottom: 32px;
+        }
+
+        .success-button {
+            padding: 12px 24px;
+            background: #613DC1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .footer {
+            background: white;
+            border-top: 1px solid black;
+            padding: 55px 0;
+            margin-top: 50px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 60px;
+            padding: 10 146px;
+        }
+
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .footer-logo {
+            width: 171px;
+            height: 59px;
+            background-image: url('../assets/logo_owo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 5px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .contact-icon {
+            width: 51px;
+            height: 51px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        .contact-icon.phone {
+            background-image: url('../assets/Phone.png');
+        }
+
+        .contact-icon.email {
+            background-image: url('../assets/Email.png');
+        }
+
+        .contact-text {
+            color: #2C0735;
+            font-size: 20px;
+            font-weight: 400;
+        }
+
+        .contact-link {
+            color: #2C0735;
+            text-decoration: underline;
+        }
+
+        .footer-section {
+            flex: 1;
+        }
+
+        .footer-title {
+            color: #2C0735;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .footer-link {
+            color: #2C0735;
+            font-size: 18px;
+            font-weight: 500;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid black;
+            color: black;
+            font-size: 20px;
+            font-weight: 400;
+        }
+
+        .success-button:hover {
+            background: #4E148C;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row, .card-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .hotel-card {
+                flex-direction: column;
+            }
+            
+            .hotel-image {
+                width: 100%;
+                height: 200px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 20px;
+                flex-wrap: wrap;
+                height: auto;
+                padding-top: 16px;
+                padding-bottom: 16px;
+            }
+            
+            .header-center {
+                order: 3;
+                width: 100%;
+                margin: 16px 0 0 0;
+            }
+            
+            .nav-menu {
+                gap: 20px;
+            }
+            
+            .nav-item {
+                font-size: 16px;
+            }
+            
+            .search-container {
+                margin: 0;
+                max-width: none;
+            }
+            
+            .nav-menu {
+                gap: 16px;
+            }
+            
+            .user-section {
+                margin-left: 0;
+            }
+            
+            .payment-section, .booking-details {
+                padding: 20px;
+            }
+
+            body {
+                padding-top: 120px; /* Adjust for mobile header height */
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo"></div>
+        
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search ticket">
+            <div class="search-icon"></div>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="#" class="nav-item">Pesawat</a>
+            <a href="#" class="nav-item">Hotel</a>
+            <a href="#" class="nav-item">Tentang Kami</a>
+        </nav>
+        
+        <div class="user-section">
+            <div class="notification-icon"></div>
+            <div class="user-avatar"></div>
+            <span class="user-greeting">Hi, Owo!</span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="main-content">
+            <!-- Payment Section -->
+            <div class="payment-section">
+                <!-- Guest Information -->
+                <div class="guest-info">
+                    <h2 class="section-title">Info Tamu</h2>
+                    <p class="section-subtitle">Nama harus sesuai dengan valid ID yang digunakan saat check-in</p>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Nama Depan <span class="required">*</span></label>
+                            <input type="text" class="form-input" placeholder="Nama Depan" id="firstName">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nama Belakang <span class="required">*</span></label>
+                            <input type="text" class="form-input" placeholder="Nama Belakang" id="lastName">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Email <span class="required">*</span></label>
+                            <input type="email" class="form-input" placeholder="Email" id="email">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">No Telp <span class="required">*</span></label>
+                            <input type="tel" class="form-input" placeholder="No Telp" id="phone">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="payment-method">
+                    <h2 class="section-title">Bagaimana Anda ingin membayar?</h2>
+                    
+                    <div class="payment-options">
+                        <label class="payment-option selected" for="creditCard">
+                            <input type="radio" name="paymentMethod" id="creditCard" value="credit" checked>
+                            <div class="payment-option-content">
+                                <span>Credit/Debit Card</span>
+                                <div class="card-icons">
+                                    <div class="card-icon visa" data-card="visa" title="Visa"></div>
+                                    <div class="card-icon mastercard" data-card="mastercard" title="Mastercard"></div>
+                                    <div class="card-icon amex" data-card="amex" title="American Express"></div>
+                                    <div class="card-icon discover" data-card="discover" title="Discover"></div>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Card Details -->
+                    <div class="card-details show" id="cardDetails">
+                        <div class="form-group full-width">
+                            <label class="form-label">Nama di Card</label>
+                            <input type="text" class="form-input" placeholder="Nama Pemilik" id="cardName">
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label class="form-label">Card number</label>
+                            <input type="text" class="form-input" placeholder="1234 1234 1234 1234" id="cardNumber" maxlength="19">
+                        </div>
+                        
+                        <div class="card-row">
+                            <div class="form-group">
+                                <label class="form-label">Cita expiration</label>
+                                <select class="form-input" id="expiryMonth">
+                                    <option value="">Bulan</option>
+                                    <option value="01">01</option>
+                                    <option value="02">02</option>
+                                    <option value="03">03</option>
+                                    <option value="04">04</option>
+                                    <option value="05">05</option>
+                                    <option value="06">06</option>
+                                    <option value="07">07</option>
+                                    <option value="08">08</option>
+                                    <option value="09">09</option>
+                                    <option value="10">10</option>
+                                    <option value="11">11</option>
+                                    <option value="12">12</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">&nbsp;</label>
+                                <select class="form-input" id="expiryYear">
+                                    <option value="">Tahun</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2026">2026</option>
+                                    <option value="2027">2027</option>
+                                    <option value="2028">2028</option>
+                                    <option value="2029">2029</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label class="form-label">Card Security Code</label>
+                            <input type="text" class="form-input" placeholder="123" id="cvv" maxlength="4">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Details -->
+            <div class="booking-details">
+                <div id="bookingDetailsContainer">
+                    <!-- Booking details will be dynamically inserted here -->
+                </div>
+
+                <div class="booking-dates">
+                    <div class="date-info">
+                        <div class="date-label">CHECK-IN</div>
+                        <div class="date-value" id="checkin-date">--</div>
+                    </div>
+                    <div class="date-info">
+                        <div class="date-label">CHECK-OUT</div>
+                        <div class="date-value" id="checkout-date">--</div>
+                    </div>
+                </div>
+
+                <div class="price-breakdown">
+                    <div class="price-row">
+                        <span class="price-label">Base Price</span>
+                        <span class="price-value" id="base-price">IDR 0</span>
+                    </div>
+                    <div class="price-row">
+                        <span class="price-label">Taxes & Fees</span>
+                        <span class="price-value" id="taxes-fees">IDR 0</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Total</span>
+                        <span id="total-price">IDR 0</span>
+                    </div>
+                </div>
+
+                <button class="payment-button" id="payment-button">PAYMENT</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo"></div>
+                <div class="contact-item">
+                    <div class="contact-icon email"></div>
+                    <a href="mailto:support@owo.com" class="contact-text contact-link">support@owo.com</a>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon phone"></div>
+                    <span class="contact-text">+62 1234567890</span>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3 class="footer-title">Tentang Kami</h3>
+                <a href="#" class="footer-link">Profil Perusahaan</a>
+                <a href="#" class="footer-link">Kontak</a>
+            </div>
+
+            <div class="footer-section">
+                <h3 class="footer-title">Layanan</h3>
+                <a href="#" class="footer-link">Pesawat</a>
+                <a href="#" class="footer-link">Hotel</a>
+                <a href="#" class="footer-link">Bantuan dan Keluhan</a>
+            </div>
+
+            <div class="footer-section">
+                <h3 class="footer-title">Informasi</h3>
+                <a href="#" class="footer-link">Syarat & Ketentuan</a>
+                <a href="#" class="footer-link">Kebijakan Privasi</a>
+                <a href="#" class="footer-link">Kebijakan Pembatalan</a>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            © 2025 OwO . All Rights Reserved
+        </div>
+    </footer>
+
+    <!-- Success Modal -->
+    <div class="success-modal" id="successModal">
+        <div class="success-content">
+            <div class="success-icon">✓</div>
+            <h2 class="success-title">Pembayaran Berhasil</h2>
+            <p class="success-message">Terima kasih! Pembayaran Anda telah berhasil diproses. Anda akan menerima konfirmasi booking melalui email.</p>
+            <button class="success-button" onclick="returnToHome()">Kembali ke beranda</button>
+        </div>
+    </div>
+
+    <script>
+        // SCRIPT UNTUK Pembayaran.html - REVISI LENGKAP
+        // Fungsi helper untuk mendapatkan data dari parent dengan timeout
+        function getDataFromParent(type, callback, timeout = 5000) {
+            console.log('Requesting data from parent:', type);
+            
+            if (window.parent && window.parent !== window) {
+                let responseReceived = false;
+                
+                const responseListener = function(event) {
+                    console.log('Response received:', event.data);
+                    if (event.data.action === 'data_response' && event.data.type === type) {
+                        responseReceived = true;
+                        callback(event.data.data);
+                        window.removeEventListener('message', responseListener);
+                    }
+                };
+                
+                window.addEventListener('message', responseListener);
+                
+                // Kirim request
+                window.parent.postMessage({
+                    action: 'get_data',
+                    type: type
+                }, '*');
+                
+                // Timeout untuk menghindari hanging
+                setTimeout(() => {
+                    if (!responseReceived) {
+                        console.warn('Timeout waiting for data from parent');
+                        window.removeEventListener('message', responseListener);
+                        callback(null);
+                    }
+                }, timeout);
+            } else {
+                console.warn('Not in iframe, returning null');
+                callback(null);
+            }
+        }
+
+        // Fungsi untuk mengirim data ke parent
+        function sendDataToParent(action, type, data) {
+            console.log('Sending to parent:', { action, type, data });
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ action: action, type: type, data: data }, '*');
+            } else {
+                console.error("Tidak bisa mengirim data: Halaman tidak berada di dalam iframe parent yang benar.");
+            }
+        }
+
+        // Fungsi untuk mengupdate UI berdasarkan data booking
+        function updateUI(bookingData) {
+            console.log('Updating UI with booking data:', bookingData);
+            
+            if (!bookingData) {
+                console.error("Tidak ada data booking untuk ditampilkan.");
+                setDefaultValues();
+                return;
+            }
+
+            // Update booking details container
+            const container = document.getElementById('bookingDetailsContainer');
+            if (container) {
+                container.innerHTML = createBookingDetailsHTML(bookingData);
+            }
+
+            // Update dates
+            const checkinEl = document.getElementById('checkin-date');
+            const checkoutEl = document.getElementById('checkout-date');
+            
+            if (bookingData.bookingType === 'flight') {
+                if (checkinEl) checkinEl.textContent = formatDate(bookingData.departure) || '--';
+                if (checkoutEl) checkoutEl.textContent = formatDate(bookingData.return) || '--';
+            } else {
+                if (checkinEl) checkinEl.textContent = formatDate(bookingData.checkin) || '--';
+                if (checkoutEl) checkoutEl.textContent = formatDate(bookingData.checkout) || '--';
+            }
+
+            // Update pricing
+            const basePrice = bookingData.price || bookingData.harga || 0;
+            updatePriceDisplay(basePrice);
+        }
+
+        // Function to create booking details HTML
+        function createBookingDetailsHTML(bookingData) {
+            if (!bookingData) return '';
+
+            if (bookingData.bookingType === 'flight') {
+                return `
+                    <div class="hotel-card">
+                        <img src="../assets/${getFlightImage(bookingData.airlineName)}" 
+                             alt="${bookingData.airlineName || 'Flight'}" 
+                             class="hotel-image" 
+                             onerror="this.src='../assets/default-flight.jpg'">
+                        <div class="hotel-info">
+                            <h3 class="hotel-name">${bookingData.airlineName || 'Flight'}</h3>
+                            <div class="hotel-rating">
+                                <span class="rating-badge">${bookingData.rating || '4.4'}/5</span>
+                                <span class="location-badge">${bookingData.from || 'From'} → ${bookingData.to || 'To'}</span>
+                            </div>
+                            
+                            <div class="room-details">
+                                <div class="room-type">${bookingData.flightClass || 'Economy'}</div>
+                                <div class="room-features">
+                                    👥 ${bookingData.passengers || 1} penumpang • 
+                                    ${bookingData.duration || '2h 30m'} • 
+                                    ${bookingData.flightType || 'Direct Flight'}
+                                </div>
+                                <div class="room-amenities">
+                                    <span>⭕ ${bookingData.refundable ? 'Refundable' : 'Non-Refundable'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="hotel-card">
+                        <img src="../assets/${getHotelImage(bookingData.hotelName)}" 
+                             alt="${bookingData.hotelName || 'Hotel'}" 
+                             class="hotel-image" 
+                             onerror="this.src='../assets/default-hotel.jpg'">
+                        <div class="hotel-info">
+                            <h3 class="hotel-name">${bookingData.hotelName || 'Hotel'}</h3>
+                            <div class="hotel-rating">
+                                <span class="rating-badge">${bookingData.rating || '4.4'}/5</span>
+                                <span class="location-badge">${bookingData.address || 'Location'}</span>
+                            </div>
+                            
+                            <div class="room-details">
+                                <div class="room-type">${bookingData.roomType || 'Standard Room'}</div>
+                                <div class="room-features">
+                                    👥 ${bookingData.guests || 1} tamu • 
+                                    🏠 ${bookingData.rooms || bookingData.roomCount || 1} kamar • 
+                                    ${bookingData.bedType || 'Standard Room'} • 
+                                    ${bookingData.breakfast ? 'Includes breakfast' : 'No breakfast'}
+                                </div>
+                                <div class="room-amenities">
+                                    <span>⭕ ${bookingData.refundable ? 'Refundable' : 'Non-Refundable'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Function to get hotel image based on hotel name
+        function getHotelImage(hotelName) {
+            if (!hotelName) return 'default-hotel.jpg';
+            
+            const hotelImages = {
+                'Nandini Jungle': 'nandini.png',
+                'Ramayana Suites and Resort': 'ramayana.png',
+                'The Garcia Ubud': 'garcia.png'
+            };
+            return hotelImages[hotelName] || 'default-hotel.jpg';
+        }
+
+        // Function to get flight image based on airline name
+        function getFlightImage(airlineName) {
+            if (!airlineName) return 'default-flight.jpg';
+            
+            const flightImages = {
+                'Garuda Indonesia': 'garuda.jpg',
+                'Lion Air': 'lion-air.jpg',
+                'Citilink': 'citilink.jpg'
+            };
+            return flightImages[airlineName] || 'default-flight.jpg';
+        }
+
+        // Update pricing dengan perhitungan pajak
+        function updatePricing(priceString) {
+            console.log('Updating price with:', priceString);
+            
+            const basePrice = parsePrice(priceString);
+            console.log('Base price:', basePrice);
+            
+            // Get booking data to calculate total
+            getDataFromParent('hotel_booking', function(hotelData) {
+                if (hotelData) {
+                    const guests = parseInt(hotelData.guests) || 1;
+                    const rooms = parseInt(hotelData.rooms) || 1;
+                    const nights = calculateNights(hotelData.checkin, hotelData.checkout);
+                    // For hotels, multiply by rooms and nights
+                    const actualAmount = basePrice * rooms * nights;
+                    console.log('Hotel calculation:', {
+                        basePrice,
+                        guests,
+                        rooms,
+                        nights,
+                        actualAmount
+                    });
+                    updatePriceDisplay(actualAmount);
+                } else {
+                    getDataFromParent('flight_booking', function(flightData) {
+                        if (flightData) {
+                            // For flights, use the pre-calculated total price
+                            const actualAmount = basePrice;
+                            console.log('Flight calculation:', {
+                                basePrice,
+                                passengers: flightData.passengers,
+                                actualAmount
+                            });
+                            updatePriceDisplay(actualAmount);
+                        } else {
+                            updatePriceDisplay(basePrice);
+                        }
+                    });
+                }
+            });
+        }
+
+        function updatePriceDisplay(actualAmount) {
+            const taxes = Math.round(actualAmount * 0.10); // 10% tax
+            const serviceFee = Math.round(actualAmount * 0.05); // 5% service fee
+            const totalPrice = actualAmount + taxes + serviceFee;
+            
+            const basePriceEl = document.getElementById('base-price');
+            const taxesFeesEl = document.getElementById('taxes-fees');
+            const totalPriceEl = document.getElementById('total-price');
+            
+            if (basePriceEl) basePriceEl.textContent = formatPrice(actualAmount);
+            if (taxesFeesEl) taxesFeesEl.textContent = formatPrice(taxes + serviceFee);
+            if (totalPriceEl) totalPriceEl.textContent = formatPrice(totalPrice);
+
+            console.log('Price breakdown:', {
+                actualAmount,
+                taxes,
+                serviceFee,
+                totalPrice
+            });
+        }
+
+        // Function to calculate number of nights between check-in and check-out
+        function calculateNights(checkin, checkout) {
+            if (!checkin || !checkout) return 1;
+            
+            try {
+                const start = new Date(checkin);
+                const end = new Date(checkout);
+                
+                // Calculate the difference in milliseconds
+                const diffTime = Math.abs(end - start);
+                // Convert to days
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                console.log('Night calculation:', {
+                    checkin,
+                    checkout,
+                    diffDays
+                });
+                
+                return diffDays || 1; // Return at least 1 night
+            } catch (error) {
+                console.error('Error calculating nights:', error);
+                return 1;
+            }
+        }
+
+        // Function to parse price string to number
+        function parsePrice(priceString) {
+            if (!priceString) return 0;
+            try {
+                // Remove currency symbol, spaces, and any dots, then replace comma with dot for decimal
+                const cleanPrice = priceString.replace(/[Rp\s\.]/g, '').replace(',', '.');
+                const price = parseFloat(cleanPrice) || 0;
+                console.log('Price parsing:', {
+                    original: priceString,
+                    cleaned: cleanPrice,
+                    parsed: price
+                });
+                return price;
+            } catch (error) {
+                console.error('Error parsing price:', error);
+                return 0;
+            }
+        }
+
+        // Function to format price to IDR
+        function formatPrice(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        // Proses pembayaran
+        function processPayment() {
+            if (!validateForm()) {
+                alert('Mohon lengkapi semua field yang diperlukan');
+                return;
+            }
+            
+            const button = document.getElementById('payment-button');
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'Processing...';
+            }
+            
+            // Get current booking data
+            getDataFromParent('hotel_booking', function(hotelData) {
+                if (hotelData) {
+                    completePayment(hotelData, 'hotel');
+                } else {
+                    getDataFromParent('flight_booking', function(flightData) {
+                        if (flightData) {
+                            completePayment(flightData, 'flight');
+                        } else {
+                            alert('Data booking tidak ditemukan');
+                            if (button) {
+                                button.disabled = false;
+                                button.textContent = 'PAYMENT';
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        function completePayment(bookingData, type) {
+            // Get form data
+            const formData = {
+                firstName: document.getElementById('firstName')?.value || '',
+                lastName: document.getElementById('lastName')?.value || '',
+                email: document.getElementById('email')?.value || '',
+                phone: document.getElementById('phone')?.value || '',
+                paymentMethod: getSelectedPaymentMethod()
+            };
+
+            // Simpan data pembayaran yang berhasil
+            const paymentData = {
+                ...bookingData,
+                ...formData,
+                paymentStatus: 'completed',
+                paymentTimestamp: new Date().toISOString(),
+                transactionId: 'TXN' + Date.now()
+            };
+            
+            console.log('Payment completed:', paymentData);
+            
+            // Simpan ke parent dengan tipe yang sesuai
+            sendDataToParent('save_data', `${type}_booking_complete`, paymentData);
+            
+            // Reset button
+            const button = document.getElementById('payment-button');
+            if (button) {
+                button.disabled = false;
+                button.textContent = 'PAYMENT';
+            }
+            
+            // Tampilkan modal sukses
+            const successModal = document.getElementById('successModal');
+            if (successModal) {
+                successModal.classList.add('show');
+            }
+        }
+
+        // Inisialisasi halaman
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Pembayaran page loaded');
+            
+            // Setup event listeners
+            setupPaymentEventListeners();
+            
+            // Load data booking
+            loadBookingData();
+        });
+
+        // Load data booking dari parent
+        function loadBookingData() {
+            // Coba ambil hotel booking dulu
+            getDataFromParent('hotel_booking', function(hotelBookingData) {
+                if (hotelBookingData) {
+                    console.log('Hotel booking data found:', hotelBookingData);
+                    updateUI(hotelBookingData);
+                } else {
+                    // Jika tidak ada hotel booking, coba flight booking
+                    getDataFromParent('flight_booking', function(flightBookingData) {
+                        if (flightBookingData) {
+                            console.log('Flight booking data found:', flightBookingData);
+                            updateUI(flightBookingData);
+                        } else {
+                            console.warn('No booking data found');
+                            setDefaultValues();
+                        }
+                    });
+                }
+            });
+        }
+
+        // Setup semua event listeners
+        function setupPaymentEventListeners() {
+            // Payment method selection
+            document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    document.querySelectorAll('.payment-option').forEach(option => 
+                        option.classList.remove('selected')
+                    );
+                    this.closest('.payment-option').classList.add('selected');
+                    
+                    const cardDetails = document.getElementById('cardDetails');
+                    if (cardDetails) {
+                        if (this.value === 'credit') {
+                            cardDetails.classList.add('show');
+                        } else {
+                            cardDetails.classList.remove('show');
+                        }
+                    }
+                });
+            });
+
+            // Payment button
+            const paymentButton = document.getElementById('payment-button');
+            if (paymentButton) {
+                paymentButton.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    processPayment();
+                });
+            }
+
+            // Success modal close
+            const successModal = document.getElementById('successModal');
+            if (successModal) {
+                successModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.classList.remove('show');
+                    }
+                });
+            }
+        }
+
+        // Validasi form
+        function validateForm() {
+            const requiredFields = ['firstName', 'lastName', 'email', 'phone'];
+            let isValid = true;
+            
+            requiredFields.forEach(id => {
+                const field = document.getElementById(id);
+                if (field) {
+                    if (!field.value.trim()) {
+                        field.style.borderColor = '#EF4444';
+                        isValid = false;
+                    } else {
+                        field.style.borderColor = '#E5E7EB';
+                    }
+                }
+            });
+            
+            // Validasi kartu kredit jika dipilih
+            const creditCardRadio = document.getElementById('creditCard');
+            if (creditCardRadio && creditCardRadio.checked) {
+                const cardFields = ['cardName', 'cardNumber', 'expiryMonth', 'expiryYear', 'cvv'];
+                cardFields.forEach(id => {
+                    const field = document.getElementById(id);
+                    if (field) {
+                        if (!field.value.trim()) {
+                            field.style.borderColor = '#EF4444';
+                            isValid = false;
+                        } else {
+                            field.style.borderColor = '#E5E7EB';
+                        }
+                    }
+                });
+            }
+            
+            return isValid;
+        }
+
+        // Get selected payment method
+        function getSelectedPaymentMethod() {
+            const selectedRadio = document.querySelector('input[name="paymentMethod"]:checked');
+            return selectedRadio ? selectedRadio.value : 'unknown';
+        }
+
+        // Return to home
+        function returnToHome() {
+            const successModal = document.getElementById('successModal');
+            if (successModal) {
+                successModal.classList.remove('show');
+            }
+            
+            // Redirect ke halaman riwayat pemesanan
+            setTimeout(() => {
+                window.location.href = 'RiwayatPemesanan.html';
+            }, 300);
+        }
+
+        // Function to format date from YYYY-MM-DD to DD MMMM YYYY
+        function formatDate(dateString) {
+            if (!dateString) return '--';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return '--';
+                
+                const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+            } catch (e) {
+                console.error('Error formatting date:', e);
+                return '--';
+            }
+        }
+
+        // Set nilai default jika tidak ada data
+        function setDefaultValues() {
+            const container = document.getElementById('bookingDetailsContainer');
+            if (container) {
+                container.innerHTML = '<p>Booking Information Not Available</p>';
+            }
+            
+            const checkinEl = document.getElementById('checkin-date');
+            const checkoutEl = document.getElementById('checkout-date');
+            
+            if (checkinEl) checkinEl.textContent = '--';
+            if (checkoutEl) checkoutEl.textContent = '--';
+            
+            updatePriceDisplay(0);
+        }
+    </script>
+</body>
+</html>

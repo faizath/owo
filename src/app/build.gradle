@@ -18,12 +18,13 @@ repositories {
 
 dependencies {
     // Use JUnit Jupiter for testing.
-    testImplementation libs.junit.jupiter
-
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // This dependency is used by the application.
-    implementation libs.guava
+    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'org.mindrot:jbcrypt:0.4'
+    implementation 'org.xerial:sqlite-jdbc:3.45.1.0'
 }
 
 javafx {
@@ -48,14 +49,39 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+tasks.withType(JavaExec) {
+    jvmArgs += ['--add-opens', 'java.base/java.lang=ALL-UNNAMED']
+}
+
+tasks.withType(Test) {
+    jvmArgs += ['--add-opens', 'java.base/java.lang=ALL-UNNAMED']
+}
+
+// Disable configuration cache for JavaFX tasks
+tasks.withType(JavaExec).configureEach {
+    notCompatibleWithConfigurationCache("JavaFX tasks are not compatible with configuration cache")
+}
+
+// Disable configuration cache for test tasks
+tasks.withType(Test).configureEach {
+    notCompatibleWithConfigurationCache("Test tasks are not compatible with configuration cache")
+}
+
 sourceSets {
     main {
         java {
             srcDirs = ['src/main/java']
         }
         resources {
-            srcDirs = ['src/main/java']
-            includes = ['**/*.html']
+            srcDirs = ['src/main/resources']
+        }
+    }
+    test {
+        java {
+            srcDirs = ['src/test/java']
+        }
+        resources {
+            srcDirs = ['src/test/resources']
         }
     }
 }

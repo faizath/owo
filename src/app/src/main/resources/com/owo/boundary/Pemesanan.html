@@ -1,0 +1,1806 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OWO - Travel Booking Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="mockup.js"></script>
+    <script src="pemesanan.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            width: 100%;
+            height: 59px;
+            background: white;
+            padding: 0 100px;
+            display: flex;
+            align-items: center;
+            gap: 23px;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            width: 148px;
+            height: 48px;
+            background-image: url('../assets/logo_owo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 8px;
+        }
+
+        .search-container {
+            width: 426px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #D9D9D9;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #000000;
+            outline: none;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background-image: url('../assets/Search.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 40px;
+            margin-left: auto;
+        }
+
+        .nav-item {
+            color: #613DC1;
+            font-size: 20px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .notification-icon {
+            width: 45px;
+            height: 45px;
+            background-image: url('../assets/notification.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            background-image: url('../assets/profile_1.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        .user-greeting {
+            color: #613DC1;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('../assets/background.png');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            padding: 0 2rem;
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 3rem;
+            line-height: 1.2;
+        }
+
+        .booking-form-container {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            text-align: left;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .booking-tabs {
+            display: flex;
+            margin-bottom: 2rem;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            border: none;
+            background: #f3f4f6;
+            color: #6b7280;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .tab.active {
+            background: #613DC1;
+            color: white;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+
+        .form-input, .form-select {
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            border-color: #613DC1;
+        }
+
+        .form-bottom {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            align-items: end;
+        }
+
+        .search-btn {
+            background: #613DC1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            height: fit-content;
+        }
+
+        .search-btn:hover {
+            background: #4E148C;
+        }
+
+        /* Destinations Section */
+        .destinations {
+            padding: 5rem 2rem;
+            background: #f9fafb;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #613DC1;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .destinations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .destination-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .destination-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+
+        .destination-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #613DC1, #4E148C);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .destination-badge {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: white;
+            color: #333;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .more-destinations-btn {
+            display: block;
+            margin: 0 auto;
+            background: transparent;
+            color: #613DC1;
+            border: 2px solid #613DC1;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .more-destinations-btn:hover {
+            background: #613DC1;
+            color: white;
+        }
+
+        /* Planning Steps */
+        .planning-steps {
+            padding: 5rem 2rem;
+            background: #f9fafb;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .step-item {
+            text-align: center;
+        }
+
+        .step-icon {
+            width: 80px;
+            height: 80px;
+            background: #e0e7ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            color: #613DC1;
+        }
+
+        .step-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #613DC1;
+            margin-bottom: 1rem;
+        }
+
+        .step-description {
+            color: #6b7280;
+        }
+
+        /* Footer */
+        .footer {
+            background: white;
+            border-top: 1px solid black;
+            padding: 55px 0;
+            margin-top: 50px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 60px;
+            padding: 10 146px;
+        }
+
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .footer-logo {
+            width: 171px;
+            height: 59px;
+            background-image: url('../assets/logo_owo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 5px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .contact-icon {
+            width: 51px;
+            height: 51px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        .contact-icon.phone {
+            background-image: url('../assets/Phone.png');
+        }
+
+        .contact-icon.email {
+            background-image: url('../assets/Email.png');
+        }
+
+        .contact-text {
+            color: #2C0735;
+            font-size: 20px;
+            font-weight: 400;
+        }
+
+        .contact-link {
+            color: #2C0735;
+            text-decoration: underline;
+        }
+
+        .footer-section {
+            flex: 1;
+        }
+
+        .footer-title {
+            color: #2C0735;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .footer-link {
+            color: #2C0735;
+            font-size: 18px;
+            font-weight: 500;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid black;
+            color: black;
+            font-size: 20px;
+            font-weight: 400;
+        }
+
+        /* Hotel Listings */
+        .hotel-listings {
+            padding: 60px;
+            background: #f5f3ff;
+            display: none;
+        }
+
+        .hotel-listings.show {
+            display: block;
+        }
+
+        .flight-listings {
+            padding: 60px;
+            background: #f5f3ff;
+            display: none;
+        }
+        
+        .flight-listings.show {
+            display: block;
+        }
+
+        .hotel-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: stretch;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            min-height: 240px;
+            border: 1px solid rgba(97, 61, 193, 0.1);
+        }
+
+        .hotel-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(97, 61, 193, 0.15);
+        }
+
+        .hotel-image {
+            flex: 0 0 320px;
+            width: 320px;
+            height: 240px;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .hotel-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .hotel-content {
+            flex: 1;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-width: 0;
+            background: linear-gradient(to right, #ffffff, #faf9ff);
+        }
+
+        .hotel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .hotel-title {
+            color: #613DC1;
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .heart-icon {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            color: #D1D5DB;
+            transition: color 0.3s ease;
+        }
+
+        .heart-icon:hover,
+        .heart-icon.liked {
+            color: #EF4444;
+        }
+
+        .hotel-stars {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .star {
+            width: 20px;
+            height: 20px;
+            color: #FBBF24;
+        }
+
+        .hotel-location {
+            color: #613DC1;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hotel-location::before {
+            content: "📍";
+            font-size: 18px;
+        }
+
+        .hotel-rating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: auto;
+        }
+
+        .rating-score {
+            font-size: 16px;
+            font-weight: 700;
+            color: #111827;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .rating-badge {
+            background: #F3F4F6;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .hotel-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 24px;
+        }
+
+        .hotel-price {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .price-amount {
+            color: #111827;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .price-period {
+            color: #6B7280;
+            font-size: 14px;
+        }
+
+        .book-button {
+            padding: 12px 24px;
+            background: #613DC1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .book-button:hover {
+            background: #4E148C;
+        }
+
+        /* Flight specific styles */
+        .flight-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: stretch;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(97, 61, 193, 0.1);
+            min-height: 200px;
+        }
+
+        .flight-image {
+            flex: 0 0 240px;
+            width: 240px;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flight-image img {
+            width: 100%;
+            height: 135px;
+            object-fit: contain;
+            object-position: center;
+        }
+
+        .flight-content {
+            flex: 1;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-width: 0;
+            background: linear-gradient(to right, #ffffff, #faf9ff);
+        }
+
+        .flight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .flight-title {
+            color: #613DC1;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .flight-details {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 16px 0;
+            border-top: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .flight-time {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .flight-duration {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .flight-path {
+            height: 2px;
+            width: 100px;
+            background: #e5e7eb;
+            position: relative;
+        }
+
+        .flight-path::before,
+        .flight-path::after {
+            content: "";
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #613dc1;
+            top: -2px;
+        }
+
+        .flight-path::before {
+            left: 0;
+        }
+
+        .flight-path::after {
+            right: 0;
+        }
+
+        .flight-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            padding: 16px 0;
+        }
+
+        .flight-info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .flight-info-label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .flight-info-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .flight-rating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .flight-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .flight-price {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .price-amount {
+            color: #111827;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .price-period {
+            color: #6B7280;
+            font-size: 14px;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .modal-icon.success {
+            background: #D1FAE5;
+            color: #059669;
+        }
+
+        .modal-icon.error {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .modal-icon.loading {
+            background: #DBEAFE;
+            color: #2563EB;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #111827;
+        }
+
+        .modal-message {
+            font-size: 16px;
+            color: #6B7280;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .modal-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .modal-button.primary {
+            background: #613DC1;
+            color: white;
+        }
+
+        .modal-button.primary:hover {
+            background: #4E148C;
+        }
+
+        .modal-button.secondary {
+            background: #F3F4F6;
+            color: #374151;
+        }
+
+        .modal-button.secondary:hover {
+            background: #E5E7EB;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 1rem;
+            }
+
+            .search-container {
+                display: none;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .booking-form-container {
+                padding: 1.5rem;
+            }
+
+            .form-grid, .form-bottom {
+                grid-template-columns: 1fr;
+            }
+
+            .why-choose-grid, .support-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .steps-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .hotel-card, .flight-card {
+                flex-direction: column;
+            }
+
+            .flight-image {
+                width: 100%;
+                height: 200px;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo"></div>
+        
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search ticket">
+            <div class="search-icon"></div>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="#" class="nav-item">Pesawat</a>
+            <a href="#" class="nav-item">Hotel</a>
+            <a href="#" class="nav-item">Tentang Kami</a>
+        </nav>
+        
+        <div class="user-section">
+            <div class="notification-icon"></div>
+            <div class="user-avatar"></div>
+            <span class="user-greeting">Hi, Owo!</span>
+        </div>
+    </header>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title fade-in-up">
+                Mulai Perjalanan Impianmu<br>
+                di Sini.
+            </h1>
+
+            <div class="booking-form-container fade-in-up">
+                <div class="booking-tabs">
+                    <button class="tab active" data-tab="flight">✈️ Pesawat</button>
+                    <button class="tab" data-tab="hotel">🏨 Hotel</button>
+                </div>
+
+                <!-- Flight Form -->
+                <form id="flightForm" class="booking-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Dari</label>
+                            <select class="form-input" id="departure">
+                                <option value="">Pilih Bandara Keberangkatan</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ke</label>
+                            <select class="form-input" id="arrival">
+                                <option value="">Pilih Bandara Tujuan</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Pergi</label>
+                            <input type="date" class="form-input" value="2025-06-12" id="departureDate">
+                        </div>
+                    </div>
+
+                    <div class="form-bottom">
+                        <div class="form-group">
+                            <label class="form-label">Penumpang</label>
+                            <select class="form-select" id="passengers">
+                                <option value="1">1 Dewasa</option>
+                                <option value="2" selected>2 Dewasa</option>
+                                <option value="3">3 Dewasa</option>
+                                <option value="4">4 Dewasa</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Kelas</label>
+                            <select class="form-select" id="flightClass">
+                                <option value="">Pilih Kelas</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="search-btn" id="search-flight-button">Cek Ketersediaan</button>
+                    </div>
+                </form>
+
+                <!-- Hotel Form -->
+                <form id="hotelForm" class="booking-form" style="display: none;">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Di mana Anda ingin menginap?</label>
+                            <select class="form-input" id="destination-input">
+                                <option value="">Pilih Kota Tujuan</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Check-in</label>
+                            <input type="date" class="form-input" value="2025-06-12" id="checkin-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Check-out</label>
+                            <input type="date" class="form-input" value="2025-06-12" id="checkout-input">
+                        </div>
+                    </div>
+
+                    <div class="form-bottom">
+                        <div class="form-group">
+                            <label class="form-label">Jumlah Tamu</label>
+                            <select class="form-select" id="guests-input">
+                                <option value="1">1</option>
+                                <option value="2" selected>2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Jumlah Kamar</label>
+                            <select class="form-select" id="rooms">
+                                <option value="1" selected>1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="search-btn" id="search-hotel-button">Cek Ketersediaan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Planning Steps Section -->
+    <section class="planning-steps">
+        <div class="container">
+            <h2 class="section-title">Rencanakan liburan dalam 3 langkah praktis!</h2>
+
+            <div class="steps-grid">
+                <div class="step-item">
+                    <div class="step-icon">📍</div>
+                    <h3 class="step-title">Pilih destinasi</h3>
+                    <p class="step-description">
+                        Telusuri lokasi favorit dan temukan tempat yang paling cocok untuk Anda
+                    </p>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-icon">💳</div>
+                    <h3 class="step-title">Pesan Akomodasi & Transportasi</h3>
+                    <p class="step-description">
+                        Booking hotel & tiket pesawat dalam satu platform yang mudah dan praktis
+                    </p>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-icon">🏖️</div>
+                    <h3 class="step-title">Nikmati Perjalanan</h3>
+                    <p class="step-description">
+                        Siap jalan tanpa repot, waktunya menikmati liburan tanpa khawatir
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hotel Listings Section -->
+    <section class="hotel-listings">
+        <!-- Hotel listings will be dynamically populated -->
+    </section>
+
+    <!-- Flight Listings Section -->
+    <section class="flight-listings" id="flightListings">
+        <!-- Flight listings will be dynamically populated -->
+    </section>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-icon" id="modalIcon">
+                ⏳
+            </div>
+            <h3 class="modal-title" id="modalTitle">Mencari Hotel...</h3>
+            <p class="modal-message" id="modalMessage">Mohon tunggu sebentar, kami sedang mencari hotel yang tersedia...</p>
+            <div class="modal-buttons" id="modalButtons">
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo"></div>
+                <div class="contact-item">
+                    <div class="contact-icon email"></div>
+                    <a href="mailto:support@owo.com" class="contact-text contact-link">support@owo.com</a>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon phone"></div>
+                    <span class="contact-text">+62 1234567890</span>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3 class="footer-title">Tentang Kami</h3>
+                <a href="#" class="footer-link">Profil Perusahaan</a>
+                <a href="#" class="footer-link">Kontak</a>
+            </div>
+
+            <div class="footer-section">
+                <h3 class="footer-title">Layanan</h3>
+                <a href="#" class="footer-link">Pesawat</a>
+                <a href="#" class="footer-link">Hotel</a>
+                <a href="#" class="footer-link">Bantuan dan Keluhan</a>
+            </div>
+
+            <div class="footer-section">
+                <h3 class="footer-title">Informasi</h3>
+                <a href="#" class="footer-link">Syarat & Ketentuan</a>
+                <a href="#" class="footer-link">Kebijakan Privasi</a>
+                <a href="#" class="footer-link">Kebijakan Pembatalan</a>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            © 2025 OwO . All Rights Reserved
+        </div>
+    </footer>
+
+    <script>
+        // SCRIPT UNTUK PEMESANAN.HTML - PERBAIKAN UTAMA
+        // Fungsi helper untuk mengirim data ke parent window
+        function sendDataToParent(action, type, data) {
+            console.log('Sending to parent:', { action, type, data });
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ action: action, type: type, data: data }, '*');
+            } else {
+                console.error("Tidak bisa mengirim data: Halaman tidak berada di dalam iframe parent yang benar.");
+            }
+        }
+
+        // Fungsi untuk mendapatkan data dari parent dengan timeout
+        function getDataFromParent(type, callback, timeout = 5000) {
+            console.log('Requesting data from parent:', type);
+            
+            if (window.parent && window.parent !== window) {
+                let responseReceived = false;
+                
+                const responseListener = function(event) {
+                    console.log('Response received:', event.data);
+                    if (event.data.action === 'data_response' && event.data.type === type) {
+                        responseReceived = true;
+                        const searchData = event.data.data;
+                        console.log('Search data received:', searchData);
+                        
+                        if (type === 'flight_search') {
+                            // Filter flights based on search criteria
+                            const filteredFlights = window.mockupData.flights.filter(flight => {
+                                // Format flight date to match search date format (YYYY-MM-DD)
+                                const flightDate = new Date(flight.waktuKeberangkatan);
+                                const formattedFlightDate = flightDate.toISOString().split('T')[0];
+                                
+                                // Extract airport codes from the flight data
+                                const originCode = flight.origin.match(/\(([^)]+)\)/)?.[1];
+                                const destCode = flight.destination.match(/\(([^)]+)\)/)?.[1];
+                                
+                                // Compare with search criteria
+                                const matchesRoute = originCode === searchData.from && destCode === searchData.to;
+                                const matchesDate = formattedFlightDate === searchData.departure;
+                                const matchesClass = !searchData.flightClass || flight.kelas.toLowerCase() === searchData.flightClass.toLowerCase();
+
+                                console.log('Flight check:', {
+                                    flight: flight.origin + ' -> ' + flight.destination,
+                                    originCode,
+                                    destCode,
+                                    from: searchData.from,
+                                    to: searchData.to,
+                                    matchesRoute,
+                                    matchesDate,
+                                    matchesClass,
+                                    flightDate: formattedFlightDate,
+                                    searchDate: searchData.departure,
+                                    flightClass: flight.kelas,
+                                    searchClass: searchData.flightClass
+                                });
+
+                                return matchesRoute && matchesDate && matchesClass;
+                            });
+
+                            console.log('Filtered flights:', filteredFlights);
+                            callback(filteredFlights);
+                        } else {
+                            callback(event.data.data);
+                        }
+                        
+                        window.removeEventListener('message', responseListener);
+                    }
+                };
+                
+                window.addEventListener('message', responseListener);
+                
+                window.parent.postMessage({
+                    action: 'get_data',
+                    type: type
+                }, '*');
+                
+                setTimeout(() => {
+                    if (!responseReceived) {
+                        console.warn('Timeout waiting for data from parent');
+                        window.removeEventListener('message', responseListener);
+                        callback(null);
+                    }
+                }, timeout);
+            } else {
+                console.warn('Not in iframe, using mockup data');
+                if (type === 'flight_search') {
+                    // Get the search parameters from the form
+                    const from = document.querySelector('#flightForm #departure')?.value;
+                    const to = document.querySelector('#flightForm #arrival')?.value;
+                    const departure = document.querySelector('#flightForm #departureDate')?.value;
+                    const flightClass = document.querySelector('#flightForm #flightClass')?.value;
+
+                    console.log('Filtering flights with criteria:', { from, to, departure, flightClass });
+
+                    // Filter flights based on search criteria
+                    const filteredFlights = window.mockupData.flights.filter(flight => {
+                        // Format flight date to match search date format (YYYY-MM-DD)
+                        const flightDate = new Date(flight.waktuKeberangkatan);
+                        const formattedFlightDate = flightDate.toISOString().split('T')[0];
+                        
+                        // Extract airport codes from the flight data
+                        const originCode = flight.origin.match(/\(([^)]+)\)/)?.[1];
+                        const destCode = flight.destination.match(/\(([^)]+)\)/)?.[1];
+                        
+                        // Compare with search criteria
+                        const matchesRoute = originCode === from && destCode === to;
+                        const matchesDate = formattedFlightDate === departure;
+                        const matchesClass = !flightClass || flight.kelas.toLowerCase() === flightClass.toLowerCase();
+
+                        console.log('Flight check:', {
+                            flight: flight.origin + ' -> ' + flight.destination,
+                            originCode,
+                            destCode,
+                            from,
+                            to,
+                            matchesRoute,
+                            matchesDate,
+                            matchesClass,
+                            flightDate: formattedFlightDate,
+                            searchDate: departure,
+                            flightClass: flight.kelas,
+                            searchClass: flightClass
+                        });
+
+                        return matchesRoute && matchesDate && matchesClass;
+                    });
+
+                    console.log('Filtered flights:', filteredFlights);
+                    callback(filteredFlights);
+                } else {
+                    callback(window.mockupData.hotels);
+                }
+            }
+        }
+
+        // Tab switching functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Populate destinations when the page loads
+            populateDestinations();
+
+            // Add event listeners for form submissions
+            const flightForm = document.getElementById('flightForm');
+            const hotelForm = document.getElementById('hotelForm');
+
+            if (flightForm) {
+                flightForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    
+                    const fromSelect = document.querySelector('#flightForm #departure');
+                    const toSelect = document.querySelector('#flightForm #arrival');
+                    const departure = document.querySelector('#flightForm #departureDate')?.value;
+                    const passengers = document.querySelector('#flightForm #passengers')?.value;
+                    const flightClass = document.querySelector('#flightForm #flightClass')?.value;
+
+                    if (!fromSelect?.value || !toSelect?.value || !departure) {
+                        alert('Mohon lengkapi semua field untuk pencarian pesawat.');
+                        return;
+                    }
+
+                    // Extract airport codes from the selected values
+                    const fromCode = fromSelect.value.match(/\(([^)]+)\)/)?.[1];
+                    const toCode = toSelect.value.match(/\(([^)]+)\)/)?.[1];
+
+                    if (!fromCode || !toCode) {
+                        alert('Format bandara tidak valid.');
+                        return;
+                    }
+
+                    const searchData = { 
+                        from: fromCode,
+                        to: toCode,
+                        departure, 
+                        passengers, 
+                        flightClass
+                    };
+                    
+                    console.log('Saving flight search data:', searchData);
+                    sendDataToParent('save_data', 'flight_search', searchData);
+
+                    // Get available flights
+                    getDataFromParent('flight_search', (flights) => {
+                        if (flights && flights.length > 0) {
+                            showModal('flight', () => {
+                                displayFlights(flights);
+                                const flightListings = document.querySelector('.flight-listings');
+                                if (flightListings) {
+                                    flightListings.classList.add('show');
+                                    flightListings.scrollIntoView({ behavior: 'smooth' });
+                                }
+                            });
+                        } else {
+                            showModal('flight_not_found', () => {
+                                // Stay on the same page if no flights found
+                            });
+                        }
+                    });
+                });
+            }
+
+            if (hotelForm) {
+                hotelForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    
+                    const destination = document.querySelector('#hotelForm #destination-input')?.value;
+                    const checkin = document.querySelector('#hotelForm #checkin-input')?.value;
+                    const checkout = document.querySelector('#hotelForm #checkout-input')?.value;
+                    const guests = document.querySelector('#hotelForm #guests-input')?.value;
+                    const rooms = document.querySelector('#hotelForm #rooms')?.value;
+
+                    if (!destination || !checkin || !checkout) {
+                        alert('Mohon lengkapi tujuan dan tanggal untuk pencarian hotel.');
+                        return;
+                    }
+
+                    const searchData = { 
+                        destination, 
+                        checkin, 
+                        checkout, 
+                        guests,
+                        rooms: parseInt(rooms) || 1
+                    };
+                    
+                    console.log('Saving hotel search data:', searchData);
+                    sendDataToParent('save_data', 'hotel_search', searchData);
+
+                    // Show loading modal first
+                    showModal('hotel', () => {
+                        // Get available hotels from mockup data
+                        const hotels = window.mockupData.hotels;
+                        console.log('Available hotels:', hotels);
+
+                        if (hotels && hotels.length > 0) {
+                            // Filter hotels based on search criteria
+                            const filteredHotels = hotels.filter(hotel => {
+                                // Format hotel dates to match search date format (YYYY-MM-DD)
+                                const hotelCheckIn = new Date(hotel.checkIn);
+                                const hotelCheckOut = new Date(hotel.checkOut);
+                                const searchCheckIn = new Date(checkin);
+                                const searchCheckOut = new Date(checkout);
+                                
+                                // Check if hotel location matches destination
+                                const hotelLocation = hotel.address.toLowerCase();
+                                const searchLocation = destination.toLowerCase();
+                                const matchesLocation = hotelLocation.includes(searchLocation);
+                                
+                                // Check if dates are available
+                                const matchesDates = hotelCheckIn <= searchCheckIn && hotelCheckOut >= searchCheckOut;
+                                
+                                console.log('Hotel check:', {
+                                    hotel: hotel.hotelName,
+                                    location: hotel.address,
+                                    searchLocation: destination,
+                                    matchesLocation,
+                                    hotelCheckIn: hotelCheckIn.toISOString().split('T')[0],
+                                    hotelCheckOut: hotelCheckOut.toISOString().split('T')[0],
+                                    searchCheckIn: searchCheckIn.toISOString().split('T')[0],
+                                    searchCheckOut: searchCheckOut.toISOString().split('T')[0],
+                                    matchesDates
+                                });
+
+                                return matchesLocation && matchesDates;
+                            });
+
+                            console.log('Filtered hotels:', filteredHotels);
+
+                            if (filteredHotels.length > 0) {
+                                displayHotels(filteredHotels);
+                                const hotelListings = document.querySelector('.hotel-listings');
+                                if (hotelListings) {
+                                    hotelListings.classList.add('show');
+                                    hotelListings.scrollIntoView({ behavior: 'smooth' });
+                                }
+                            } else {
+                                showModal('hotel_not_found', () => {
+                                    // Stay on the same page if no hotels found
+                                });
+                            }
+                        } else {
+                            showModal('hotel_not_found', () => {
+                                // Stay on the same page if no hotels found
+                            });
+                        }
+                    });
+                });
+            }
+
+            // Add event listeners for tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+
+                    // Show/hide forms based on selected tab
+                    if (this.dataset.tab === 'flight') {
+                        flightForm.style.display = 'block';
+                        hotelForm.style.display = 'none';
+                    } else {
+                        flightForm.style.display = 'none';
+                        hotelForm.style.display = 'block';
+                    }
+                });
+            });
+        });
+
+        // Function to populate destinations
+        function populateDestinations() {
+            const departureSelect = document.getElementById('departure');
+            const arrivalSelect = document.getElementById('arrival');
+            const destinationSelect = document.getElementById('destination-input');
+            const flightClassSelect = document.getElementById('flightClass');
+
+            // Clear existing options
+            departureSelect.innerHTML = '<option value="">Pilih Bandara Keberangkatan</option>';
+            arrivalSelect.innerHTML = '<option value="">Pilih Bandara Tujuan</option>';
+            destinationSelect.innerHTML = '<option value="">Pilih Kota Tujuan</option>';
+            flightClassSelect.innerHTML = '<option value="">Pilih Kelas</option>';
+
+            // Add airports to departure and arrival selects
+            window.mockupData.destinations.airports.forEach(airport => {
+                const option = document.createElement('option');
+                option.value = `${airport.city} (${airport.code})`;
+                option.textContent = `${airport.city} (${airport.code})`;
+                departureSelect.appendChild(option.cloneNode(true));
+                arrivalSelect.appendChild(option);
+            });
+
+            // Add cities to hotel destination select
+            window.mockupData.destinations.cities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city.name;
+                option.textContent = `${city.name}, ${city.country}`;
+                destinationSelect.appendChild(option);
+            });
+
+            // Add flight classes
+            window.mockupData.destinations.flightClasses.forEach(flightClass => {
+                const option = document.createElement('option');
+                option.value = flightClass.name.toLowerCase();
+                option.textContent = flightClass.name;
+                flightClassSelect.appendChild(option);
+            });
+        }
+
+        // Fungsi untuk menangani BOOKING hotel
+        function bookHotel(hotelName) {
+            console.log('Booking hotel:', hotelName);
+            
+            // Get room count from the form
+            const rooms = document.querySelector('#hotelForm #rooms')?.value || '1';
+            console.log('Room count from form:', rooms);
+            
+            getDataFromParent('hotel_search', function(searchData) {
+                const bookingData = {
+                    hotelName: hotelName,
+                    bookingType: 'hotel',
+                    rooms: parseInt(rooms), // Add room count to booking data
+                    ...(searchData || {})
+                };
+                
+                console.log('Saving hotel booking:', bookingData);
+                sendDataToParent('save_data', 'hotel_booking', bookingData);
+                
+                // Redirect to hotel availability page
+                window.location.href = 'CekKetersediaanHotel.html';
+            });
+        }
+
+        // Fungsi untuk menangani BOOKING pesawat
+        function bookFlight(flightName) {
+            console.log('Booking flight:', flightName);
+            
+            getDataFromParent('flight_search', function(searchData) {
+                const bookingData = {
+                    flightName: flightName,
+                    bookingType: 'flight',
+                    ...(searchData || {})
+                };
+                
+                console.log('Saving flight booking:', bookingData);
+                sendDataToParent('save_data', 'flight_booking', bookingData);
+                
+                // Redirect to flight availability page
+                window.location.href = 'CekKetersediaanPesawat.html';
+            });
+        }
+
+        // Fungsi untuk menampilkan modal
+        function showModal(type, callbackOnSuccess) {
+            const modal = document.getElementById('modalOverlay');
+            const title = document.getElementById('modalTitle');
+            const message = document.getElementById('modalMessage');
+            const buttons = document.getElementById('modalButtons');
+
+            if (!modal || !title || !message || !buttons) {
+                console.warn('Modal elements not found, skipping modal');
+                if (callbackOnSuccess) callbackOnSuccess();
+                return;
+            }
+
+            modal.classList.add('active');
+
+            switch(type) {
+                case 'hotel':
+                    title.textContent = 'Mencari Hotel...';
+                    message.textContent = 'Mohon tunggu sebentar, kami sedang mencari hotel yang tersedia...';
+                    break;
+                case 'hotel_not_found':
+                    title.textContent = 'Kamar Tidak Tersedia';
+                    message.textContent = 'Maaf, tidak ada kamar yang tersedia untuk kriteria pencarian Anda. Silakan coba dengan tanggal atau lokasi yang berbeda.';
+                    break;
+                case 'flight':
+                    title.textContent = 'Mencari Penerbangan...';
+                    message.textContent = 'Mohon tunggu sebentar, kami sedang mencari penerbangan yang tersedia...';
+                    break;
+                case 'flight_not_found':
+                    title.textContent = 'Penerbangan Tidak Tersedia';
+                    message.textContent = 'Maaf, tidak ada penerbangan yang tersedia untuk kriteria pencarian Anda. Silakan coba dengan tanggal atau rute yang berbeda.';
+                    break;
+            }
+
+            buttons.innerHTML = '';
+
+            if (type === 'hotel' || type === 'flight') {
+                setTimeout(() => {
+                    if (callbackOnSuccess) {
+                        callbackOnSuccess();
+                    }
+                    closeModal();
+                }, 1500);
+            } else if (type === 'hotel_not_found' || type === 'flight_not_found') {
+                buttons.innerHTML = `
+                    <button class="modal-button primary" onclick="closeModal()">OK</button>
+                `;
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modalOverlay');
+            if (modal) modal.classList.remove('active');
+        }
+
+        // Fungsi untuk menampilkan daftar hotel
+        function displayHotels(hotels) {
+            const hotelListings = document.querySelector('.hotel-listings');
+            if (!hotelListings) return;
+
+            hotelListings.innerHTML = hotels.map(hotel => {
+                // Map hotel names to their corresponding image files
+                let imageName = '';
+                switch(hotel.hotelName) {
+                    case 'Nandini Jungle':
+                        imageName = 'nandini.png';
+                        break;
+                    case 'Ramayana Suites':
+                        imageName = 'ramayana.png';
+                        break;
+                    case 'The Garcia Ubud':
+                        imageName = 'garcia.png';
+                        break;
+                    default:
+                        imageName = 'ramayana.png';
+                }
+
+                return `
+                    <div class="hotel-card">
+                        <div class="hotel-image">
+                            <img src="../assets/${imageName}" 
+                                 alt="${hotel.hotelName}"
+                                 onerror="this.src='../assets/ramayana.png'"
+                                 style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        
+                        <div class="hotel-content">
+                            <div class="hotel-header">
+                                <h3 class="hotel-title">${hotel.hotelName}</h3>
+                                <div class="heart-icon">♡</div>
+                            </div>
+                            
+                            <div class="hotel-stars">
+                                ${Array(5).fill('★').join('')}
+                            </div>
+                            
+                            <p class="hotel-location">${hotel.address}</p>
+                            
+                            <div class="hotel-rating">
+                                <span class="rating-score">4.8/5</span>
+                                <span class="rating-badge">Location 4.7/5</span>
+                            </div>
+                            
+                            <div class="hotel-footer">
+                                <div class="hotel-price">
+                                    <span class="price-amount">${window.mockupData.formatCurrency(hotel.harga)}</span>
+                                    <span class="price-period">per malam</span>
+                                </div>
+                                <button class="book-button" onclick="bookHotel('${hotel.hotelName}')">Pesan Sekarang</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Fungsi untuk menampilkan daftar penerbangan
+        function displayFlights(flights) {
+            const flightListings = document.querySelector('.flight-listings');
+            if (!flightListings) return;
+
+            flightListings.innerHTML = flights.map(flight => {
+                // Map airline names to their corresponding image files
+                let logoPath = '';
+                switch(flight.maskapai) {
+                    case 'Garuda Indonesia':
+                        logoPath = 'garuda.jpg';
+                        break;
+                    case 'Lion Air':
+                        logoPath = 'lion-air.jpg';
+                        break;
+                    case 'Citilink':
+                        logoPath = 'citilink.jpg';
+                        break;
+                    default:
+                        logoPath = 'garuda.jpg';
+                }
+
+                return `
+                    <div class="flight-card">
+                        <div class="flight-image">
+                            <img src="../assets/${logoPath}" 
+                                 alt="${flight.maskapai}"
+                                 onerror="this.src='../assets/garuda.jpg'">
+                        </div>
+                        <div class="flight-content">
+                            <div class="flight-header">
+                                <h3 class="flight-title">${flight.maskapai}</h3>
+                                <div class="heart-icon">♡</div>
+                            </div>
+                            <div class="flight-details">
+                                <div class="flight-time">${window.mockupData.formatTime(flight.waktuKeberangkatan)}</div>
+                                <div class="flight-duration">
+                                    <div class="flight-path"></div>
+                                    <span>2h 30m</span>
+                                </div>
+                                <div class="flight-time">${window.mockupData.formatTime(new Date(flight.waktuKeberangkatan.getTime() + 150 * 60000))}</div>
+                            </div>
+                            <div class="flight-info">
+                                <div class="flight-info-item">
+                                    <span class="flight-info-label">Dari</span>
+                                    <span class="flight-info-value">${flight.origin}</span>
+                                </div>
+                                <div class="flight-info-item">
+                                    <span class="flight-info-label">Ke</span>
+                                    <span class="flight-info-value">${flight.destination}</span>
+                                </div>
+                                <div class="flight-info-item">
+                                    <span class="flight-info-label">Tanggal</span>
+                                    <span class="flight-info-value">${window.mockupData.formatDate(flight.waktuKeberangkatan)}</span>
+                                </div>
+                                <div class="flight-info-item">
+                                    <span class="flight-info-label">Kelas</span>
+                                    <span class="flight-info-value">${flight.kelas}</span>
+                                </div>
+                            </div>
+                            <div class="flight-rating">
+                                <span class="rating-score">4.8/5</span>
+                                <span class="rating-badge">Direct Flight</span>
+                            </div>
+                            <div class="flight-footer">
+                                <div class="flight-price">
+                                    <span class="price-amount">${window.mockupData.formatCurrency(flight.harga)}</span>
+                                    <span class="price-period">per orang</span>
+                                </div>
+                                <button class="book-button" onclick="bookFlight('${flight.maskapai}')">Pesan Sekarang</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // PERBAIKAN: Expose functions untuk debugging
+        window.bookingDebug = {
+            sendDataToParent: sendDataToParent,
+            getDataFromParent: getDataFromParent,
+            bookHotel: bookHotel,
+            bookFlight: bookFlight
+        };
+    </script>
+</body>
+</html>
