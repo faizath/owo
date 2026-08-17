@@ -10,7 +10,6 @@ import com.owo.entity.Refund;
 import com.owo.entity.PemesananStatus;
 import com.owo.utils.BridgeInstaller;
 import com.owo.utils.Json;
-import com.owo.utils.NotifikasiHelper;
 import com.owo.utils.JavaScriptBridge;
 import com.owotest.support.Fixtures;
 import com.owotest.support.TempDatabase;
@@ -128,11 +127,8 @@ class BridgeLiveTest {
         if (bridge != null) {
             BridgeInstaller.shutdown(bridge);
         }
-        // These tests sign in and never sign out, and the notification poller is a static
-        // singleton that only logout stops. Left running, it polls the database this line
-        // is about to delete, once a second, for the rest of the suite — which showed up
-        // as a later test timing out waiting for the shell rather than as a failure here.
-        NotifikasiHelper.stop();
+        // db.close() stops the notification poller: these tests sign in and never sign
+        // out, and one left running polls the database that close() deletes.
         db.close();
     }
 
@@ -455,22 +451,82 @@ class BridgeLiveTest {
                 "Perubahan rencana", "Salah Nama", "0000000000");
 
         signIn("wira@example.com", "password123");
+        runOnFxThread(() -> engine.executeScript("window.App.navigate('RefundForm')"));
+        await("document.querySelectorAll('#refundStatusList .refund-card').length === 1");
 
-        // Driven through the bridge rather than the prompt-based button, because a modal
-        // prompt cannot be dismissed from a headless script.
+        // Driven through the control a user actually has, not through the bridge. An
+        // earlier version of this test called updateRefundPayee directly and passed while
+        // the button was inert: the page used window.prompt, and WebView answers that with
+        // an empty string when no prompt handler is installed — which nothing installs.
         runOnFxThread(() -> engine.executeScript(
-                "window.__done = false;"
-                        + "window.OwOAPI.updateRefundPayee(" + Json.quote(refund.getId())
-                        + ", 'Wira Benar', '9876543210')"
-                        + "  .then(function () { window.__done = true; })"
-                        + "  .catch(function (e) { window.__done = 'error: ' + e.message; });"));
-        await("window.__done");
+                "document.querySelector('[data-edit-payee]').click()"));
+        await("document.getElementById('payeeNama')");
+
+        runOnFxThread(() -> engine.executeScript(
+                "document.getElementById('payeeNama').value = 'Wira Benar';"
+                        + "document.getElementById('payeeRekening').value = '9876543210';"
+                        + "document.getElementById('payeeSave').click();"));
 
         // The DAO update behind this had no caller at all, so a wrong account number was
         // permanent once submitted.
-        Refund stored = RefundDAO.getRefundById(refund.getId());
-        assertEquals("Wira Benar", stored.getNamaPenerima());
-        assertEquals("9876543210", stored.getRekeningTujuan());
+        awaitStored(refund.getId(), "Wira Benar", "9876543210");
+    }
+
+    /** Polls the stored refund until the payee matches, so the assertion is on the row. */
+    private void awaitStored(String refundId, String nama, String rekening) throws Exception {
+        long deadline = System.currentTimeMillis() + TIMEOUT_SECONDS * 1000;
+        Refund stored = null;
+        while (System.currentTimeMillis() < deadline) {
+            stored = RefundDAO.getRefundById(refundId);
+            if (nama.equals(stored.getNamaPenerima())) {
+                break;
+            }
+            Thread.sleep(100);
+        }
+        assertEquals(nama, stored.getNamaPenerima());
+        assertEquals(rekening, stored.getRekeningTujuan());
+    }
+
+    @Test
+    void cancellingACheckInThenConfirmingAnotherChecksInOnlyTheSecond() throws Exception {
+        Akun customer = AuthController.register("Gita", "gita@example.com", "password123");
+        // Two bookings whose check-in window is today, so both offer the button.
+        Pemesanan first = Fixtures.booking(customer, Fixtures.flight(0),
+                PemesananStatus.CONFIRMED);
+        Pemesanan second = Fixtures.booking(customer, Fixtures.flight(0),
+                PemesananStatus.CONFIRMED);
+
+        signIn("gita@example.com", "password123");
+        runOnFxThread(() -> engine.executeScript("window.App.navigate('RiwayatPemesanan')"));
+        await("document.querySelectorAll('[data-action=\"checkin\"]').length === 2");
+
+        // Open for the first booking and back out.
+        runOnFxThread(() -> engine.executeScript(
+                "document.querySelectorAll('[data-action=\"checkin\"]')[0].click()"));
+        await("document.getElementById('checkinModal').style.display === 'flex'");
+        runOnFxThread(() -> engine.executeScript(
+                "document.querySelector('#checkinModal .modal-btn-secondary').click()"));
+
+        // Then open for the second and confirm.
+        runOnFxThread(() -> engine.executeScript(
+                "document.querySelectorAll('[data-action=\"checkin\"]')[1].click()"));
+        await("document.getElementById('checkinModal').style.display === 'flex'");
+        runOnFxThread(() -> engine.executeScript(
+                "document.querySelector('#checkinModal .modal-btn-primary').click()"));
+
+        // Wait on the page rather than polling the database: reading it from this thread
+        // while the bridge is mid-write contends for the file and fails with SQLITE_BUSY.
+        await("document.getElementById('modal-success-message').style.display === 'block'");
+        await("document.getElementById('bookingList')");
+
+        assertEquals(PemesananStatus.CHECKED_IN, PemesananStatus.fromDb(
+                PemesananDAO.getPemesananById(second.getId()).getStatus()));
+
+        // The modal is a single element that is never re-rendered. Attaching its handlers
+        // on every open left the cancelled booking's handler in place, so confirming the
+        // second checked in the first as well.
+        assertEquals(PemesananStatus.CONFIRMED, PemesananStatus.fromDb(
+                PemesananDAO.getPemesananById(first.getId()).getStatus()));
     }
 
     @Test
