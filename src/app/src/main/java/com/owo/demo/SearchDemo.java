@@ -27,14 +27,15 @@ public class SearchDemo {
             demonstrateHotelSearch();
             
         } catch (ClassNotFoundException e) {
-            System.err.println("Error: SQLite JDBC driver not found");
-            e.printStackTrace();
+            System.err.println("Error: SQLite JDBC driver not found (" + e.getClass().getSimpleName()
+                    + "): " + e.getMessage());
+            System.exit(1);
         } catch (SQLException e) {
-            System.err.println("Database error: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Database error (" + e.getClass().getSimpleName() + "): " + e.getMessage());
+            System.exit(1);
         } catch (Exception e) {
-            System.err.println("Unexpected error: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Unexpected error (" + e.getClass().getSimpleName() + "): " + e.getMessage());
+            System.exit(1);
         }
     }
     
