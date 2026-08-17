@@ -84,10 +84,9 @@ class AkunAdminTest {
     }
 
     @Test
-    void fromHashedPassword_withoutTheFlag_buildsANonAdministrator() {
-        // The four-argument factory predates the flag; it must not default to true, and
-        // callers that have not been updated must produce ordinary accounts.
-        assertFalse(Akun.fromHashedPassword(1, "Budi", "budi@example.com", "hash").isAdmin());
+    void fromHashedPassword_carriesTheFlagItIsGiven() {
+        // Authority has to be stated. The overload that omitted it defaulted to false, so
+        // hydrating an administrator through the shorter form demoted them silently.
         assertTrue(Akun.fromHashedPassword(1, "Admin", "admin@example.com", "hash", true).isAdmin());
         assertFalse(Akun.fromHashedPassword(1, "Budi", "budi@example.com", "hash", false).isAdmin());
     }

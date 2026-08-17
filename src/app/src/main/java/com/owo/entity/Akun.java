@@ -37,12 +37,11 @@ public class Akun {
      * <p>Passing a stored hash to the public constructor produces
      * {@code bcrypt(bcrypt(password))}, against which {@link #checkPassword} can never
      * succeed. DAO hydration must use this factory.
+     *
+     * <p>Authority is not optional here. The overload that omitted it silently produced an
+     * ordinary account, so hydrating an administrator through the shorter form demoted
+     * them with nothing to notice — a caller must say what the row said.
      */
-    public static Akun fromHashedPassword(int ID, String nama, String email, String hashedPassword) {
-        return new Akun(ID, nama, email, hashedPassword, false, true);
-    }
-
-    /** As {@link #fromHashedPassword}, carrying the stored administrator flag. */
     public static Akun fromHashedPassword(int ID, String nama, String email, String hashedPassword,
             boolean admin) {
         return new Akun(ID, nama, email, hashedPassword, admin, true);
