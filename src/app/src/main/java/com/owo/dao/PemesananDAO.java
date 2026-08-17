@@ -3,19 +3,17 @@ package com.owo.dao;
 import com.owo.entity.Pemesanan;
 import com.owo.entity.Tiket;
 import com.owo.utils.DBHelper;
+import com.owo.utils.SqlDates;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PemesananDAO {
-    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-
     public static Pemesanan createPemesanan(int customerId, Tiket tiket) throws SQLException {
         String sql = "INSERT INTO pemesanan (customer_id, tiket_id, tanggal_pesan, status) VALUES (?, ?, ?, 'PENDING')";
         try (Connection conn = DBHelper.getConnection();
@@ -23,7 +21,7 @@ public class PemesananDAO {
             
             pstmt.setInt(1, customerId);
             pstmt.setInt(2, tiket.getId());
-            pstmt.setString(3, LocalDateTime.now().format(DATETIME_FORMATTER));
+            pstmt.setString(3, SqlDates.format(LocalDateTime.now()));
             
             int affectedRows = pstmt.executeUpdate();
             if (affectedRows == 0) {
@@ -42,9 +40,12 @@ public class PemesananDAO {
     }
 
     public static Pemesanan getPemesananById(int id) throws SQLException {
-        String sql = "SELECT p.*, t.* FROM pemesanan p " +
-                    "JOIN tiket t ON p.tiket_id = t.id " +
-                    "WHERE p.id = ?";
+        // Both tables have an id column; alias explicitly rather than relying on
+        // findColumn picking the "first" match, which is driver-dependent.
+        String sql = "SELECT p.id AS pemesanan_id, p.customer_id, p.tiket_id, "
+                + "p.tanggal_pesan, p.status FROM pemesanan p "
+                + "JOIN tiket t ON p.tiket_id = t.id "
+                + "WHERE p.id = ?";
         try (Connection conn = DBHelper.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
@@ -53,7 +54,7 @@ public class PemesananDAO {
                 if (rs.next()) {
                     String customerId = rs.getString("customer_id");
                     int tiketId = rs.getInt("tiket_id");
-                    LocalDateTime tanggalPesan = LocalDateTime.parse(rs.getString("tanggal_pesan"), DATETIME_FORMATTER);
+                    LocalDateTime tanggalPesan = SqlDates.parseDateTime(rs.getString("tanggal_pesan"), "tanggal_pesan");
                     String status = rs.getString("status");
                     
                     Tiket tiket = TiketDAO.getTiketById(tiketId);
@@ -68,9 +69,10 @@ public class PemesananDAO {
     }
 
     public static List<Pemesanan> getPemesananByCustomerId(int customerId) throws SQLException {
-        String sql = "SELECT p.*, t.* FROM pemesanan p " +
-                    "JOIN tiket t ON p.tiket_id = t.id " +
-                    "WHERE p.customer_id = ?";
+        String sql = "SELECT p.id AS pemesanan_id, p.customer_id, p.tiket_id, "
+                + "p.tanggal_pesan, p.status FROM pemesanan p "
+                + "JOIN tiket t ON p.tiket_id = t.id "
+                + "WHERE p.customer_id = ?";
         List<Pemesanan> pemesananList = new ArrayList<>();
         
         try (Connection conn = DBHelper.getConnection();
@@ -79,9 +81,9 @@ public class PemesananDAO {
             pstmt.setInt(1, customerId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    int id = rs.getInt("id");
+                    int id = rs.getInt("pemesanan_id");
                     int tiketId = rs.getInt("tiket_id");
-                    LocalDateTime tanggalPesan = LocalDateTime.parse(rs.getString("tanggal_pesan"), DATETIME_FORMATTER);
+                    LocalDateTime tanggalPesan = SqlDates.parseDateTime(rs.getString("tanggal_pesan"), "tanggal_pesan");
                     String status = rs.getString("status");
                     
                     Tiket tiket = TiketDAO.getTiketById(tiketId);

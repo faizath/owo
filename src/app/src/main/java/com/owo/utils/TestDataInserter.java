@@ -172,8 +172,6 @@ public class TestDataInserter {
         } catch (SQLException e) {
             System.err.println("Error inserting sample data: " + e.getMessage());
             e.printStackTrace();
-        } finally {
-            DBHelper.closeConnection();
         }
     }
 }

@@ -1,19 +1,76 @@
 package com.owo.utils;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * Owns the database location and hands out connections.
+ *
+ * <p>Every call to {@link #getConnection()} returns a <em>new</em> connection. Callers
+ * are expected to close it, which the DAOs already do via try-with-resources. Sharing
+ * one static connection meant a nested DAO call closed the caller's result set out from
+ * under it, and made {@code setAutoCommit(false)} a process-wide transaction.
+ *
+ * <p>The database path is resolved once, in this order:
+ * <ol>
+ *   <li>the {@code owo.db.path} system property,</li>
+ *   <li>the {@code OWO_DB_PATH} environment variable,</li>
+ *   <li>{@code ~/.owo/owo.db}.</li>
+ * </ol>
+ * The Gradle {@code run}, {@code seed} and {@code searchDemo} tasks set the system
+ * property to the project's own {@code owo.db}, so development keeps using the checked-in
+ * database. Any other launch method gets a stable per-user location rather than creating
+ * an empty database wherever it happened to be started from.
+ */
 public class DBHelper {
-    private static final String DB_URL = "jdbc:sqlite:owo.db";
-    private static Connection connection;
+    private static final String DB_PATH_PROPERTY = "owo.db.path";
+    private static final String DB_PATH_ENV = "OWO_DB_PATH";
+
+    private static Path databasePath;
+
+    private DBHelper() {
+    }
+
+    /** Overrides the database location. Intended for tests; must be called before first use. */
+    public static synchronized void setDatabasePath(Path path) {
+        databasePath = path;
+    }
+
+    public static synchronized Path getDatabasePath() {
+        if (databasePath == null) {
+            databasePath = resolveDefaultPath();
+        }
+        return databasePath;
+    }
+
+    private static Path resolveDefaultPath() {
+        String configured = System.getProperty(DB_PATH_PROPERTY);
+        if (configured == null || configured.isBlank()) {
+            configured = System.getenv(DB_PATH_ENV);
+        }
+        if (configured != null && !configured.isBlank()) {
+            return Paths.get(configured).toAbsolutePath();
+        }
+        return Paths.get(System.getProperty("user.home"), ".owo", "owo.db").toAbsolutePath();
+    }
 
     public static Connection getConnection() throws SQLException {
-        if (connection == null || connection.isClosed()) {
-            connection = DriverManager.getConnection(DB_URL);
+        Path path = getDatabasePath();
+        Path parent = path.getParent();
+        if (parent != null) {
+            try {
+                Files.createDirectories(parent);
+            } catch (IOException e) {
+                throw new SQLException("Cannot create database directory: " + parent, e);
+            }
         }
-        return connection;
+        return DriverManager.getConnection("jdbc:sqlite:" + path);
     }
 
     public static void initializeDatabase() throws SQLException {
@@ -109,14 +166,4 @@ public class DBHelper {
             """);
         }
     }
-
-    public static void closeConnection() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-} 
+}

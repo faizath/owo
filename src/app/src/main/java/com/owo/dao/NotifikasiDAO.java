@@ -2,19 +2,17 @@ package com.owo.dao;
 
 import com.owo.entity.Notifikasi;
 import com.owo.utils.DBHelper;
+import com.owo.utils.SqlDates;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class NotifikasiDAO {
-    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-
     public static Notifikasi createNotifikasi(int userID, String pesan) throws SQLException {
         String sql = "INSERT INTO notifikasi (user_id, pesan, waktu, terkirm) VALUES (?, ?, ?, 0)";
         try (Connection conn = DBHelper.getConnection();
@@ -22,7 +20,7 @@ public class NotifikasiDAO {
             
             pstmt.setInt(1, userID);
             pstmt.setString(2, pesan);
-            pstmt.setString(3, LocalDateTime.now().format(DATETIME_FORMATTER));
+            pstmt.setString(3, SqlDates.format(LocalDateTime.now()));
             
             int affectedRows = pstmt.executeUpdate();
             if (affectedRows == 0) {
@@ -50,7 +48,7 @@ public class NotifikasiDAO {
                 if (rs.next()) {
                     int userID = rs.getInt("user_id");
                     String pesan = rs.getString("pesan");
-                    LocalDateTime waktu = LocalDateTime.parse(rs.getString("waktu"), DATETIME_FORMATTER);
+                    LocalDateTime waktu = SqlDates.parseDateTime(rs.getString("waktu"), "waktu");
                     boolean terkirm = rs.getInt("terkirm") == 1;
                     
                     Notifikasi notifikasi = new Notifikasi(id, userID, pesan, waktu);
@@ -76,7 +74,7 @@ public class NotifikasiDAO {
                 while (rs.next()) {
                     int id = rs.getInt("id");
                     String pesan = rs.getString("pesan");
-                    LocalDateTime waktu = LocalDateTime.parse(rs.getString("waktu"), DATETIME_FORMATTER);
+                    LocalDateTime waktu = SqlDates.parseDateTime(rs.getString("waktu"), "waktu");
                     boolean terkirm = rs.getInt("terkirm") == 1;
                     
                     Notifikasi notifikasi = new Notifikasi(id, userID, pesan, waktu);

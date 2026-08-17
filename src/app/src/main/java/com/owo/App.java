@@ -9,7 +9,10 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import java.sql.SQLException;
+
 import netscape.javascript.JSObject;
+import com.owo.utils.DBHelper;
 import com.owo.utils.NotificationBridge;
 import com.owo.utils.NotifikasiHelper;
 import com.owo.utils.JavaScriptBridge;
@@ -20,6 +23,16 @@ public class App extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        // Create the schema before anything can query it. Nothing used to call this,
+        // so the first database action on a clean machine threw "no such table: akun".
+        try {
+            DBHelper.initializeDatabase();
+        } catch (SQLException e) {
+            System.err.println("Cannot initialise the database at " + DBHelper.getDatabasePath()
+                    + ": " + e.getMessage());
+            throw new IllegalStateException("Database initialisation failed", e);
+        }
+
         WebView webView = new WebView();
         WebEngine webEngine = webView.getEngine();
 

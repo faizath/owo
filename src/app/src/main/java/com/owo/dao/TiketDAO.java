@@ -4,6 +4,7 @@ import com.owo.entity.Tiket;
 import com.owo.entity.TiketPesawat;
 import com.owo.entity.TiketHotel;
 import com.owo.utils.DBHelper;
+import com.owo.utils.SqlDates;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,112 +12,93 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ArrayList;
 
 public class TiketDAO {
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
-    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    public static TiketPesawat createTiketPesawat(float harga, boolean tersedia, String flightNumber,
+            String origin, String destination, String maskapai, String kelas, LocalDateTime waktuKeberangkatan)
+            throws SQLException {
+        String tiketSql = "INSERT INTO tiket (harga, tersedia, tipe) VALUES (?, ?, 'PESAWAT')";
+        String pesawatSql = "INSERT INTO tiket_pesawat (tiket_id, flight_number, maskapai, origin, "
+                + "destination, kelas, waktu_keberangkatan) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-    public static TiketPesawat createTiketPesawat(float harga, boolean tersedia, String flightNumber, 
-            String origin, String destination, String maskapai, String kelas, LocalDateTime waktuKeberangkatan) throws SQLException {
-        Connection conn = DBHelper.getConnection();
-        try {
+        try (Connection conn = DBHelper.getConnection()) {
             conn.setAutoCommit(false);
-            
-            // Insert into base tiket table
-            String tiketSql = "INSERT INTO tiket (harga, tersedia, tipe) VALUES (?, ?, 'PESAWAT')";
-            try (PreparedStatement pstmt = conn.prepareStatement(tiketSql, Statement.RETURN_GENERATED_KEYS)) {
-                pstmt.setFloat(1, harga);
-                pstmt.setInt(2, tersedia ? 1 : 0);
-                
-                int affectedRows = pstmt.executeUpdate();
-                if (affectedRows == 0) {
-                    throw new SQLException("Creating tiket failed, no rows affected.");
+            try {
+                int tiketId = insertTiket(conn, tiketSql, harga, tersedia);
+
+                try (PreparedStatement pesawatStmt = conn.prepareStatement(pesawatSql)) {
+                    pesawatStmt.setInt(1, tiketId);
+                    pesawatStmt.setString(2, flightNumber);
+                    pesawatStmt.setString(3, maskapai);
+                    pesawatStmt.setString(4, origin);
+                    pesawatStmt.setString(5, destination);
+                    pesawatStmt.setString(6, kelas);
+                    pesawatStmt.setString(7, SqlDates.format(waktuKeberangkatan));
+
+                    pesawatStmt.executeUpdate();
                 }
 
-                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        int tiketId = generatedKeys.getInt(1);
-                        
-                        // Insert into tiket_pesawat table
-                        String pesawatSql = "INSERT INTO tiket_pesawat (tiket_id, flight_number, maskapai, origin, destination, kelas, waktu_keberangkatan) VALUES (?, ?, ?, ?, ?, ?, ?)";
-                        try (PreparedStatement pesawatStmt = conn.prepareStatement(pesawatSql)) {
-                            pesawatStmt.setInt(1, tiketId);
-                            pesawatStmt.setString(2, flightNumber);
-                            pesawatStmt.setString(3, maskapai);
-                            pesawatStmt.setString(4, origin);
-                            pesawatStmt.setString(5, destination);
-                            pesawatStmt.setString(6, kelas);
-                            pesawatStmt.setString(7, waktuKeberangkatan.format(DATETIME_FORMATTER));
-                            
-                            pesawatStmt.executeUpdate();
-                        }
-                        
-                        conn.commit();
-                        return new TiketPesawat(tiketId, harga, tersedia, flightNumber, origin, destination, 
-                                maskapai, kelas, waktuKeberangkatan);
-                    } else {
-                        throw new SQLException("Creating tiket failed, no ID obtained.");
-                    }
-                }
+                conn.commit();
+                return new TiketPesawat(tiketId, harga, tersedia, flightNumber, origin, destination,
+                        maskapai, kelas, waktuKeberangkatan);
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
             }
-        } catch (SQLException e) {
-            conn.rollback();
-            throw e;
-        } finally {
-            conn.setAutoCommit(true);
         }
     }
 
-    public static TiketHotel createTiketHotel(float harga, boolean tersedia, LocalDate checkIn, 
+    public static TiketHotel createTiketHotel(float harga, boolean tersedia, LocalDate checkIn,
             LocalDate checkOut, String hotelName, String roomNumber, String address) throws SQLException {
-        Connection conn = DBHelper.getConnection();
-        try {
+        String tiketSql = "INSERT INTO tiket (harga, tersedia, tipe) VALUES (?, ?, 'HOTEL')";
+        String hotelSql = "INSERT INTO tiket_hotel (tiket_id, check_in, check_out, hotel_name, "
+                + "room_number, address) VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DBHelper.getConnection()) {
             conn.setAutoCommit(false);
-            
-            // Insert into base tiket table
-            String tiketSql = "INSERT INTO tiket (harga, tersedia, tipe) VALUES (?, ?, 'HOTEL')";
-            try (PreparedStatement pstmt = conn.prepareStatement(tiketSql, Statement.RETURN_GENERATED_KEYS)) {
-                pstmt.setFloat(1, harga);
-                pstmt.setInt(2, tersedia ? 1 : 0);
-                
-                int affectedRows = pstmt.executeUpdate();
-                if (affectedRows == 0) {
-                    throw new SQLException("Creating tiket failed, no rows affected.");
+            try {
+                int tiketId = insertTiket(conn, tiketSql, harga, tersedia);
+
+                try (PreparedStatement hotelStmt = conn.prepareStatement(hotelSql)) {
+                    hotelStmt.setInt(1, tiketId);
+                    hotelStmt.setString(2, SqlDates.format(checkIn));
+                    hotelStmt.setString(3, SqlDates.format(checkOut));
+                    hotelStmt.setString(4, hotelName);
+                    hotelStmt.setString(5, roomNumber);
+                    hotelStmt.setString(6, address);
+
+                    hotelStmt.executeUpdate();
                 }
 
-                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        int tiketId = generatedKeys.getInt(1);
-                        
-                        // Insert into tiket_hotel table
-                        String hotelSql = "INSERT INTO tiket_hotel (tiket_id, check_in, check_out, hotel_name, room_number, address) VALUES (?, ?, ?, ?, ?, ?)";
-                        try (PreparedStatement hotelStmt = conn.prepareStatement(hotelSql)) {
-                            hotelStmt.setInt(1, tiketId);
-                            hotelStmt.setString(2, checkIn.format(DATE_FORMATTER));
-                            hotelStmt.setString(3, checkOut.format(DATE_FORMATTER));
-                            hotelStmt.setString(4, hotelName);
-                            hotelStmt.setString(5, roomNumber);
-                            hotelStmt.setString(6, address);
-                            
-                            hotelStmt.executeUpdate();
-                        }
-                        
-                        conn.commit();
-                        return new TiketHotel(tiketId, harga, tersedia, checkIn, checkOut, 
-                                hotelName, roomNumber, address);
-                    } else {
-                        throw new SQLException("Creating tiket failed, no ID obtained.");
-                    }
-                }
+                conn.commit();
+                return new TiketHotel(tiketId, harga, tersedia, checkIn, checkOut,
+                        hotelName, roomNumber, address);
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
             }
-        } catch (SQLException e) {
-            conn.rollback();
-            throw e;
-        } finally {
-            conn.setAutoCommit(true);
+        }
+    }
+
+    /** Inserts the base row and returns its generated id. Runs inside the caller's transaction. */
+    private static int insertTiket(Connection conn, String sql, float harga, boolean tersedia)
+            throws SQLException {
+        try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            pstmt.setFloat(1, harga);
+            pstmt.setInt(2, tersedia ? 1 : 0);
+
+            if (pstmt.executeUpdate() == 0) {
+                throw new SQLException("Creating tiket failed, no rows affected.");
+            }
+
+            try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                if (!generatedKeys.next()) {
+                    throw new SQLException("Creating tiket failed, no ID obtained.");
+                }
+                return generatedKeys.getInt(1);
+            }
         }
     }
 
@@ -142,21 +124,24 @@ public class TiketDAO {
                         String origin = rs.getString("origin");
                         String destination = rs.getString("destination");
                         String kelas = rs.getString("kelas");
-                        LocalDateTime waktuKeberangkatan = LocalDateTime.parse(
-                            rs.getString("waktu_keberangkatan"), DATETIME_FORMATTER);
-                        
-                        return new TiketPesawat(id, harga, tersedia, flightNumber, origin, 
+                        LocalDateTime waktuKeberangkatan =
+                            SqlDates.parseDateTime(rs.getString("waktu_keberangkatan"), "waktu_keberangkatan");
+
+                        return new TiketPesawat(id, harga, tersedia, flightNumber, origin,
                                 destination, maskapai, kelas, waktuKeberangkatan);
                     } else if ("HOTEL".equals(tipe)) {
-                        LocalDate checkIn = LocalDate.parse(rs.getString("check_in"), DATE_FORMATTER);
-                        LocalDate checkOut = LocalDate.parse(rs.getString("check_out"), DATE_FORMATTER);
+                        LocalDate checkIn = SqlDates.parseDate(rs.getString("check_in"), "check_in");
+                        LocalDate checkOut = SqlDates.parseDate(rs.getString("check_out"), "check_out");
                         String hotelName = rs.getString("hotel_name");
                         String roomNumber = rs.getString("room_number");
                         String address = rs.getString("address");
-                        
-                        return new TiketHotel(id, harga, tersedia, checkIn, checkOut, 
+
+                        return new TiketHotel(id, harga, tersedia, checkIn, checkOut,
                                 hotelName, roomNumber, address);
                     }
+                    // A row exists but carries a tipe this code cannot map. Returning null here
+                    // used to surface much later as an NPE on Pemesanan.getTiket().
+                    throw new SQLException("Tiket " + id + " has unrecognised tipe: " + tipe);
                 }
             }
         }
@@ -275,8 +260,8 @@ public class TiketDAO {
                     String rsOrigin = rs.getString("origin");
                     String rsDestination = rs.getString("destination");
                     String rsKelas = rs.getString("kelas");
-                    LocalDateTime waktuKeberangkatan = LocalDateTime.parse(
-                        rs.getString("waktu_keberangkatan"), DATETIME_FORMATTER);
+                    LocalDateTime waktuKeberangkatan =
+                        SqlDates.parseDateTime(rs.getString("waktu_keberangkatan"), "waktu_keberangkatan");
                     
                     TiketPesawat tiket = new TiketPesawat(id, harga, tersedia, flightNumber, 
                             rsOrigin, rsDestination, maskapai, rsKelas, waktuKeberangkatan);
@@ -321,14 +306,15 @@ public class TiketDAO {
             parameters.add("%" + hotelName.trim() + "%");
         }
         
+        // The requested stay must fit inside the listing's window, not the other way round.
         if (checkIn != null) {
-            sqlBuilder.append(" AND th.check_in >= ?");
-            parameters.add(checkIn.format(DATE_FORMATTER));
+            sqlBuilder.append(" AND th.check_in <= ?");
+            parameters.add(SqlDates.format(checkIn));
         }
-        
+
         if (checkOut != null) {
-            sqlBuilder.append(" AND th.check_out <= ?");
-            parameters.add(checkOut.format(DATE_FORMATTER));
+            sqlBuilder.append(" AND th.check_out >= ?");
+            parameters.add(SqlDates.format(checkOut));
         }
         
         if (tersediaOnly) {
@@ -357,8 +343,8 @@ public class TiketDAO {
                     int id = rs.getInt("id");
                     float harga = rs.getFloat("harga");
                     boolean tersedia = rs.getInt("tersedia") == 1;
-                    LocalDate rsCheckIn = LocalDate.parse(rs.getString("check_in"), DATE_FORMATTER);
-                    LocalDate rsCheckOut = LocalDate.parse(rs.getString("check_out"), DATE_FORMATTER);
+                    LocalDate rsCheckIn = SqlDates.parseDate(rs.getString("check_in"), "check_in");
+                    LocalDate rsCheckOut = SqlDates.parseDate(rs.getString("check_out"), "check_out");
                     String rsHotelName = rs.getString("hotel_name");
                     String roomNumber = rs.getString("room_number");
                     String address = rs.getString("address");

@@ -53,6 +53,20 @@ tasks.register('seed', JavaExec) {
     mainClass = 'com.owo.utils.TestDataInserter'
 }
 
+tasks.register('searchDemo', JavaExec) {
+    group = 'application'
+    description = 'Exercise flight and hotel search without the UI'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.owo.demo.SearchDemo'
+}
+
+// Point every launched JVM at the project's own database. Without this the app
+// resolves to ~/.owo/owo.db, which is correct for an installed copy but not for
+// development against the checked-in file.
+tasks.withType(JavaExec).configureEach {
+    systemProperty 'owo.db.path', file('owo.db').absolutePath
+}
+
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
