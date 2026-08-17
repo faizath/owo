@@ -9,7 +9,16 @@ import java.util.concurrent.TimeUnit;
 public class NotificationBridge {
     private static NotificationBridge instance;
     private WebEngine webEngine;
-    private final ConcurrentLinkedQueue<String> notificationQueue;
+    private static final int MAX_DELIVERY_ATTEMPTS = 3;
+
+    /** A queued message plus how many delivery attempts it has already survived. */
+    private record Pending(String message, int attempts) {
+        Pending retry() {
+            return new Pending(message, attempts + 1);
+        }
+    }
+
+    private final ConcurrentLinkedQueue<Pending> notificationQueue;
     private final ScheduledExecutorService scheduler;
     private boolean isConnected;
 
@@ -42,7 +51,7 @@ public class NotificationBridge {
             return;
         }
         
-        notificationQueue.offer(message);
+        notificationQueue.offer(new Pending(message, 0));
         
         // If we're connected, try to process immediately
         if (isConnected) {
@@ -55,31 +64,26 @@ public class NotificationBridge {
             return;
         }
 
-        String notification;
-        while ((notification = notificationQueue.poll()) != null) {
-            final String currentNotification = notification; // Make it effectively final
-            try {
-                String jsCommand = String.format(
-                    "if (window.showNotification) { window.showNotification('%s'); } " +
-                    "else { console.log('Notification: %s'); }",
-                    currentNotification.replace("'", "\\'").replace("\n", "\\n"),
-                    currentNotification.replace("'", "\\'").replace("\n", "\\n")
-                );
-                
-                javafx.application.Platform.runLater(() -> {
-                    try {
-                        webEngine.executeScript(jsCommand);
-                    } catch (Exception e) {
-                        System.err.println("Error executing notification script: " + e.getMessage());
-                        // Re-queue the notification for retry
-                        notificationQueue.offer(currentNotification);
+        Pending pending;
+        while ((pending = notificationQueue.poll()) != null) {
+            final Pending current = pending;
+            javafx.application.Platform.runLater(() -> {
+                try {
+                    // Passed as an argument. Concatenating it into JavaScript source made
+                    // every apostrophe in a message a potential syntax error.
+                    netscape.javascript.JSObject window =
+                            (netscape.javascript.JSObject) webEngine.executeScript("window");
+                    window.call("showNotification", current.message);
+                } catch (Exception e) {
+                    if (current.attempts + 1 < MAX_DELIVERY_ATTEMPTS) {
+                        notificationQueue.offer(current.retry());
+                    } else {
+                        // Unbounded re-queueing against a one-second scheduler spins forever.
+                        System.err.println("Dropping notification after "
+                                + MAX_DELIVERY_ATTEMPTS + " attempts: " + e.getMessage());
                     }
-                });
-                
-            } catch (Exception e) {
-                System.err.println("Error processing notification: " + e.getMessage());
-                e.printStackTrace();
-            }
+                }
+            });
         }
     }
 
