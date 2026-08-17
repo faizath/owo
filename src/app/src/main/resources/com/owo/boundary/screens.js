@@ -954,8 +954,13 @@
 
   // --------------------------------------------------------------- RefundForm
 
-  /** Refund statuses that are still being decided or paid, versus finished. */
-  const REFUND_OPEN = ['PENDING_REVIEW', 'APPROVED', 'PROCESSING'];
+  /**
+   * Refund statuses that are still being decided or paid, versus finished.
+   *
+   * FAILED belongs here: a failed disbursement is retried rather than re-decided, so it
+   * is still outstanding from the customer's point of view.
+   */
+  const REFUND_OPEN = ['PENDING_REVIEW', 'APPROVED', 'PROCESSING', 'FAILED'];
 
   const REFUND_LABEL = {
     PENDING_REVIEW: 'Menunggu peninjauan',
@@ -1063,7 +1068,39 @@
   // -------------------------------------------------------------- TinjauRefund
 
   /**
-   * The administrator review queue.
+   * What an administrator can do to a refund in each status.
+   *
+   * Deciding a refund is not the end of it: an approved refund still has to be paid out.
+   * PROCESSING, COMPLETED and FAILED had no writer anywhere, so an approved refund sat
+   * under "Sedang Diproses" for ever and "Selesai" could only ever hold rejections.
+   */
+  const REVIEW_ACTIONS = {
+    PENDING_REVIEW: [
+      { key: 'reject', label: 'Tolak', busy: 'Menolak...', className: 'btn-reject' },
+      { key: 'approve', label: 'Setujui', busy: 'Menyetujui...', className: 'btn-approve' }
+    ],
+    APPROVED: [
+      { key: 'process', label: 'Mulai Pencairan', busy: 'Memproses...', className: 'btn-approve' }
+    ],
+    PROCESSING: [
+      { key: 'fail', label: 'Tandai Gagal', busy: 'Menyimpan...', className: 'btn-reject' },
+      { key: 'complete', label: 'Tandai Selesai', busy: 'Menyimpan...', className: 'btn-approve' }
+    ],
+    FAILED: [
+      { key: 'process', label: 'Coba Cairkan Lagi', busy: 'Memproses...', className: 'btn-approve' }
+    ]
+  };
+
+  const REVIEW_CALL = {
+    approve: function (id) { return window.OwOAPI.approveRefund(id); },
+    reject: function (id) { return window.OwOAPI.rejectRefund(id); },
+    process: function (id) { return window.OwOAPI.processRefund(id); },
+    complete: function (id) { return window.OwOAPI.completeRefund(id); },
+    fail: function (id) { return window.OwOAPI.failRefund(id); }
+  };
+
+  /**
+   * The administrator work queue.
    *
    * Approval and rejection existed with tested rules but nothing could reach them, so
    * every refund stayed in review for ever. Authority is enforced in Java; this screen
@@ -1074,7 +1111,14 @@
       wireChrome();
       ensureBanner(document.querySelector('.review-container') || document.body);
 
+      // Every other controller guards its container; this one dereferenced it directly,
+      // so a markup change would have failed here with a null property read rather than
+      // a message.
       const queue = byId('refundQueue');
+      if (!queue) {
+        fail('Antrean refund tidak dapat ditampilkan.');
+        return;
+      }
       queue.innerHTML = '<p class="queue-empty">Memuat...</p>';
 
       load();
@@ -1092,15 +1136,17 @@
         const rows = refunds || [];
         if (!rows.length) {
           queue.innerHTML =
-            '<p class="queue-empty">Tidak ada refund yang menunggu peninjauan.</p>';
+            '<p class="queue-empty">Tidak ada refund yang perlu ditindaklanjuti.</p>';
           return;
         }
 
         queue.innerHTML = rows.map(function (r) {
+          const actions = REVIEW_ACTIONS[r.status] || [];
           return '<div class="review-card" data-refund="' + esc(r.id) + '">'
             + '<div class="review-card-header">'
             + '<span class="review-id">' + esc(r.id) + '</span>'
-            + '<span class="review-booking">Pemesanan TXN' + esc(r.pemesananId) + '</span>'
+            + '<span class="review-booking">Pemesanan TXN' + esc(r.pemesananId)
+            + ' • ' + esc(REFUND_LABEL[r.status] || r.status) + '</span>'
             + '</div>'
             + '<div class="review-grid">'
             + '<div><div class="review-label">Jumlah</div>'
@@ -1114,10 +1160,12 @@
             + '<div class="review-value">' + esc(r.rekeningTujuan) + '</div></div>'
             + '</div>'
             + '<div class="review-actions">'
-            + '<button type="button" class="review-button btn-reject" '
-            + 'data-decision="reject" data-id="' + esc(r.id) + '">Tolak</button>'
-            + '<button type="button" class="review-button btn-approve" '
-            + 'data-decision="approve" data-id="' + esc(r.id) + '">Setujui</button>'
+            + actions.map(function (a) {
+              return '<button type="button" class="review-button ' + a.className + '" '
+                + 'data-decision="' + a.key + '" data-busy="' + esc(a.busy) + '" '
+                + 'data-id="' + esc(r.id) + '">'
+                + esc(a.label) + '</button>';
+            }).join('')
             + '</div>'
             + '</div>';
         }).join('');
@@ -1125,21 +1173,21 @@
         queue.querySelectorAll('[data-decision]').forEach(function (button) {
           button.addEventListener('click', function () {
             const id = button.dataset.id;
-            const approving = button.dataset.decision === 'approve';
+            const action = button.dataset.decision;
+            const label = button.textContent;
 
-            // Both buttons on the card are disabled, not just the one pressed, so a
-            // double click cannot send an approval and a rejection for one refund.
+            // Every button on the card is disabled, not just the one pressed, so a double
+            // click cannot send two conflicting outcomes for one refund.
             const card = queue.querySelector('[data-refund="' + id + '"]');
             if (card) {
               card.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
             }
-            busy(button, true, approving ? 'Menyetujui...' : 'Menolak...');
 
-            const decide = approving ? window.OwOAPI.approveRefund : window.OwOAPI.rejectRefund;
-            decide(id)
+            busy(button, true, button.dataset.busy || 'Memproses...');
+
+            REVIEW_CALL[action](id)
               .then(function () {
-                window.App.showNotification(
-                  'Refund ' + id + (approving ? ' disetujui.' : ' ditolak.'));
+                window.App.showNotification('Refund ' + id + ': ' + label.toLowerCase() + '.');
                 load();
               })
               .catch(function (err) {

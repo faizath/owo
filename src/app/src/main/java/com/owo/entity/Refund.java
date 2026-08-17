@@ -88,6 +88,20 @@ public class Refund {
                 + ", Alasan: " + alasan + ", Status: " + status;
     }
 
+    /**
+     * The refund lifecycle, and the only transitions it permits.
+     *
+     * <pre>
+     * PENDING_REVIEW ──approve──▶ APPROVED ──▶ PROCESSING ──▶ COMPLETED
+     *        │                                     │
+     *        └──reject──▶ REJECTED                 └──▶ FAILED ──retry──▶ PROCESSING
+     * </pre>
+     *
+     * <p>PROCESSING, COMPLETED and FAILED existed as constants with nothing in {@code main}
+     * able to write them, so an approved refund sat under "Sedang Diproses" for ever and
+     * the "Selesai" tab could only ever hold rejections. Disbursement is the missing half:
+     * approving authorises the payment, and these record it actually being made.
+     */
     public enum RefundStatus {
         PENDING_REVIEW,
         APPROVED,
@@ -95,6 +109,31 @@ public class Refund {
         PROCESSING,
         COMPLETED,
         FAILED;
+
+        private static final java.util.Map<RefundStatus, java.util.Set<RefundStatus>> TRANSITIONS;
+
+        static {
+            java.util.Map<RefundStatus, java.util.Set<RefundStatus>> t =
+                    new java.util.EnumMap<>(RefundStatus.class);
+            t.put(PENDING_REVIEW, java.util.EnumSet.of(APPROVED, REJECTED));
+            t.put(APPROVED, java.util.EnumSet.of(PROCESSING));
+            // A failed disbursement is retried rather than re-decided: the approval still
+            // stands, so it must not go back through review.
+            t.put(PROCESSING, java.util.EnumSet.of(COMPLETED, FAILED));
+            t.put(FAILED, java.util.EnumSet.of(PROCESSING));
+            t.put(REJECTED, java.util.EnumSet.noneOf(RefundStatus.class));
+            t.put(COMPLETED, java.util.EnumSet.noneOf(RefundStatus.class));
+            TRANSITIONS = java.util.Collections.unmodifiableMap(t);
+        }
+
+        public boolean canTransitionTo(RefundStatus target) {
+            return target != null && TRANSITIONS.get(this).contains(target);
+        }
+
+        /** True once the refund can no longer change. */
+        public boolean isTerminal() {
+            return TRANSITIONS.get(this).isEmpty();
+        }
 
         /** @throws IllegalArgumentException on an unrecognised stored value */
         public static RefundStatus fromDb(String value) {

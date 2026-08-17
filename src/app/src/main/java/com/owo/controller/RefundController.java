@@ -145,6 +145,73 @@ public class RefundController {
     }
 
     /**
+     * Everything an administrator still has to act on.
+     *
+     * <p>Wider than the review queue because deciding a refund is not the end of it: an
+     * approved refund still has to be paid, and a failed payment still has to be retried.
+     * Restricting the queue to PENDING_REVIEW is why an approved refund had nowhere left
+     * to go.
+     */
+    public List<Refund> getRefundsAktif() throws SQLException {
+        return RefundDAO.getRefundsByStatus(java.util.EnumSet.of(
+                RefundStatus.PENDING_REVIEW, RefundStatus.APPROVED,
+                RefundStatus.PROCESSING, RefundStatus.FAILED));
+    }
+
+    /** Starts paying an approved refund out. */
+    public Refund prosesRefund(String refundId)
+            throws PemesananController.PemesananException, SQLException {
+        return majukan(refundId, RefundStatus.PROCESSING,
+                "Pencairan refund %s sedang diproses.");
+    }
+
+    /** Records that the money has reached the payee. */
+    public Refund selesaikanRefund(String refundId)
+            throws PemesananController.PemesananException, SQLException {
+        return majukan(refundId, RefundStatus.COMPLETED,
+                "Refund %s telah dicairkan ke rekening tujuan.");
+    }
+
+    /** Records that the disbursement did not go through, leaving it retryable. */
+    public Refund gagalkanRefund(String refundId)
+            throws PemesananController.PemesananException, SQLException {
+        return majukan(refundId, RefundStatus.FAILED,
+                "Pencairan refund %s gagal dan akan dicoba kembali.");
+    }
+
+    /**
+     * Moves a refund one step along the disbursement path.
+     *
+     * <p>The booking is not touched: approval already settled it as REFUNDED, and paying
+     * the money out does not change what happened to the booking.
+     */
+    private Refund majukan(String refundId, RefundStatus target, String pesanTemplate)
+            throws PemesananController.PemesananException, SQLException {
+        Refund refund = refundId == null ? null : RefundDAO.getRefundById(refundId);
+        if (refund == null) {
+            throw new PemesananController.PemesananException(REFUND_TIDAK_DITEMUKAN);
+        }
+
+        RefundStatus current = refund.getStatus();
+        if (!current.canTransitionTo(target)) {
+            throw new PemesananController.PemesananException(
+                    "Refund berstatus " + current + " tidak dapat menjadi " + target + ".");
+        }
+
+        if (!RefundDAO.advanceStatus(refundId, current, target)) {
+            throw new PemesananController.PemesananException(
+                    "Status refund ini sudah diubah oleh peninjau lain.");
+        }
+        refund.setStatus(target);
+
+        Pemesanan pemesanan = PemesananDAO.getPemesananById(refund.getPemesananID());
+        if (pemesanan != null) {
+            beritahuPelanggan(pemesanan, String.format(pesanTemplate, refund.getId()));
+        }
+        return refund;
+    }
+
+    /**
      * Corrects where an unreviewed refund pays out.
      *
      * <p>Only the customer who filed it may change it, and only while it is still awaiting

@@ -424,10 +424,15 @@ public class JavaScriptBridge {
 
     // --------------------------------------------------------------------- review
 
-    /** The administrator review queue. */
+    /**
+     * The administrator work queue: everything still to decide or still to pay out.
+     *
+     * <p>Not just PENDING_REVIEW — an approved refund still has to be disbursed, and
+     * scoping this to review alone is what left approved refunds with nowhere to go.
+     */
     public void getPendingRefunds(String callbackName) {
         run(callbackName, () -> withAdminSession(userId -> {
-            List<Refund> refunds = refundController.getRefundsMenungguPeninjauan();
+            List<Refund> refunds = refundController.getRefundsAktif();
             Json.Arr items = Json.arr();
             for (Refund refund : refunds) {
                 items.add(refundJson(refund));
@@ -462,6 +467,41 @@ public class JavaScriptBridge {
                 return error(e.getMessage(), ERR_INVALID_INPUT);
             }
         }));
+    }
+
+    /** Starts paying an approved refund out. */
+    public void processRefund(String argsJson, String callbackName) {
+        run(callbackName, () -> withAdminSession(userId ->
+                advance(argsJson, refundController::prosesRefund, "Pencairan refund dimulai")));
+    }
+
+    /** Records that an in-progress disbursement reached the payee. */
+    public void completeRefund(String argsJson, String callbackName) {
+        run(callbackName, () -> withAdminSession(userId ->
+                advance(argsJson, refundController::selesaikanRefund, "Refund selesai")));
+    }
+
+    /** Records that an in-progress disbursement did not go through. */
+    public void failRefund(String argsJson, String callbackName) {
+        run(callbackName, () -> withAdminSession(userId ->
+                advance(argsJson, refundController::gagalkanRefund, "Pencairan refund gagal")));
+    }
+
+    /** A disbursement step: same argument, same failure handling, different destination. */
+    private String advance(String argsJson, RefundStep step, String message) throws Exception {
+        Map<String, Object> args = Json.parseObject(argsJson);
+        String refundId = Json.optString(args, "refundId", "");
+        try {
+            return success(message, refundJson(step.apply(refundId)));
+        } catch (PemesananController.PemesananException e) {
+            return error(e.getMessage(), ERR_INVALID_INPUT);
+        }
+    }
+
+    @FunctionalInterface
+    private interface RefundStep {
+        Refund apply(String refundId)
+                throws PemesananController.PemesananException, java.sql.SQLException;
     }
 
     private Json.Obj refundJson(Refund refund) {

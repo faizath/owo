@@ -569,11 +569,24 @@ class BridgeLiveTest {
         runOnFxThread(() -> engine.executeScript(
                 "document.querySelector('#refundQueue [data-decision=\"approve\"]').click()"));
 
-        // The queue empties because the refund left PENDING_REVIEW, which is the whole
-        // point: approval had tested rules and no way to reach them.
-        await("document.querySelectorAll('#refundQueue .review-card').length === 0");
+        // The booking settles immediately — approval is what ends it — but the card stays
+        // in the queue offering the next step, because authorising a payment is not the
+        // same as making one. It used to disappear here, and the money with it.
+        await("document.querySelectorAll('#refundQueue [data-decision=\"process\"]').length === 1");
         assertEquals(PemesananStatus.REFUNDED,
                 PemesananStatus.fromDb(
                         PemesananDAO.getPemesananById(booking.getId()).getStatus()));
+
+        runOnFxThread(() -> engine.executeScript(
+                "document.querySelector('#refundQueue [data-decision=\"process\"]').click()"));
+        await("document.querySelectorAll('#refundQueue [data-decision=\"complete\"]').length === 1");
+
+        runOnFxThread(() -> engine.executeScript(
+                "document.querySelector('#refundQueue [data-decision=\"complete\"]').click()"));
+
+        // Only once the money has reached the payee is there nothing left to do.
+        await("document.querySelectorAll('#refundQueue .review-card').length === 0");
+        assertEquals(Refund.RefundStatus.COMPLETED,
+                RefundDAO.getRefundByPemesananId(booking.getId()).get(0).getStatus());
     }
 }

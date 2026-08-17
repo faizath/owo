@@ -165,6 +165,16 @@
     rejectRefund: function (refundId) {
       return call('rejectRefund', { refundId: refundId });
     },
+    // Disbursement: approving authorises the payment, these record it being made.
+    processRefund: function (refundId) {
+      return call('processRefund', { refundId: refundId });
+    },
+    completeRefund: function (refundId) {
+      return call('completeRefund', { refundId: refundId });
+    },
+    failRefund: function (refundId) {
+      return call('failRefund', { refundId: refundId });
+    },
 
     // Screens
     getScreen: function (name) {

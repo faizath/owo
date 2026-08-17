@@ -204,6 +204,59 @@ public class RefundDAO {
         }
     }
 
+    /**
+     * Moves a refund from one status to another, only if it is still in {@code from}.
+     *
+     * <p>Reading the status and then writing unconditionally lets two administrators
+     * working the same disbursement queue both succeed, so a refund marked completed by
+     * one is marked failed by the other. Putting the expected status in the {@code WHERE}
+     * makes the loser's update match nothing, the same way the booking claim tests
+     * availability in its own update.
+     *
+     * @return false if no row matched — the refund is gone, or no longer in {@code from}
+     */
+    public static boolean advanceStatus(String id, Refund.RefundStatus from,
+            Refund.RefundStatus to) throws SQLException {
+        String sql = "UPDATE refund SET status = ? WHERE id = ? AND status = ?";
+        try (Connection conn = DBHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, to.name());
+            pstmt.setString(2, id);
+            pstmt.setString(3, from.name());
+            return pstmt.executeUpdate() > 0;
+        }
+    }
+
+    /** Every refund in any of {@code statuses}, oldest booking first. */
+    public static List<Refund> getRefundsByStatus(java.util.Collection<Refund.RefundStatus> statuses)
+            throws SQLException {
+        List<Refund> refundList = new ArrayList<>();
+        if (statuses == null || statuses.isEmpty()) {
+            return refundList;
+        }
+
+        // Placeholders are generated from the collection's size, never from its contents.
+        String placeholders = String.join(",", java.util.Collections.nCopies(statuses.size(), "?"));
+        String sql = "SELECT * FROM refund WHERE status IN (" + placeholders
+                + ") ORDER BY pemesanan_id ASC";
+
+        try (Connection conn = DBHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            int index = 1;
+            for (Refund.RefundStatus status : statuses) {
+                pstmt.setString(index++, status.name());
+            }
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    refundList.add(mapRefund(rs, rs.getString("id"), rs.getInt("pemesanan_id")));
+                }
+            }
+        }
+        return refundList;
+    }
+
     public static void updateStatus(String id, Refund.RefundStatus status) throws SQLException {
         String sql = "UPDATE refund SET status = ? WHERE id = ?";
         try (Connection conn = DBHelper.getConnection();
