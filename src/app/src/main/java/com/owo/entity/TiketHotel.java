@@ -2,6 +2,12 @@ package com.owo.entity;
 
 import java.time.LocalDate;
 
+/**
+ * A bookable hotel room.
+ *
+ * <p>Priced per unit: the rate is the same whether one guest or four sleep in it, so this
+ * keeps {@link Tiket}'s default of charging {@code harga} once rather than per guest.
+ */
 public class TiketHotel extends Tiket {
     private LocalDate checkIn;
     private LocalDate checkOut;

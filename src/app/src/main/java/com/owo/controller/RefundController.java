@@ -70,7 +70,10 @@ public class RefundController {
         Duration sisaWaktu = Duration.between(now, keberangkatan);
         double persentase = sisaWaktu.compareTo(TIER_BOUNDARY) > 0 ? TIER_AWAL : TIER_AKHIR;
 
-        double jumlahRefund = (pemesanan.getTiket().getHarga() * persentase) - BIAYA_ADMIN;
+        // The total the booking was actually made for, not the unit price: a party of four
+        // on a flight paid four fares and used to be refunded one.
+        double dibayar = pemesanan.getTiket().hitungTotalHarga(pemesanan.getJumlahPeserta());
+        double jumlahRefund = (dibayar * persentase) - BIAYA_ADMIN;
         if (jumlahRefund <= 0) {
             // Clamping to zero told the user "Refund berhasil diajukan... IDR 0.00" and
             // moved the booking to REFUND_IN_PROGRESS for nothing.

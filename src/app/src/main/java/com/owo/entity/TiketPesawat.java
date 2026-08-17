@@ -32,6 +32,17 @@ public class TiketPesawat extends Tiket {
         return new Builder();
     }
 
+    /**
+     * A flight is sold per seat, so every passenger pays the fare.
+     *
+     * <p>A party of four used to pay what a solo traveller paid, because nothing scaled
+     * the price by party size at all.
+     */
+    @Override
+    protected int satuanDikenakan(int jumlahPeserta) {
+        return jumlahPeserta;
+    }
+
     /** Names every field, so no two strings can be transposed unnoticed. */
     public static final class Builder {
         private int id;

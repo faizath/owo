@@ -365,7 +365,10 @@ public class JavaScriptBridge {
                 double jumlah = refundController.hitungJumlahRefund(pemesanan);
                 return success("Estimasi refund dihitung", Json.obj()
                         .put("pemesananId", pemesananId)
-                        .put("hargaTiket", (double) pemesanan.getTiket().getHarga())
+                        // What the booking cost, not the unit price: for a flight those
+                        // differ by the party size.
+                        .put("hargaTiket", pemesanan.getTiket()
+                                .hitungTotalHarga(pemesanan.getJumlahPeserta()))
                         .put("biayaAdmin", RefundController.BIAYA_ADMIN)
                         .put("jumlahRefund", jumlah));
             } catch (PemesananController.PemesananException e) {
