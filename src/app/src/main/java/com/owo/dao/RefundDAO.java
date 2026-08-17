@@ -145,6 +145,65 @@ public class RefundDAO {
         return refund;
     }
 
+    /**
+     * Records a refund decision and its effect on the booking as one transaction.
+     *
+     * <p>These used to be three writes on three connections. A failure after the first
+     * left the refund decided while the booking stayed at {@code REFUND_IN_PROGRESS}, and
+     * because deciding requires {@code PENDING_REVIEW} nothing could ever decide it again
+     * — the refund was wedged permanently with no retry path.
+     *
+     * <p>The refund update is conditional on the status it was read at, so two
+     * administrators deciding at once cannot both succeed.
+     *
+     * @param releaseTiketId ticket to return to the catalogue, or null to leave it claimed
+     * @return false if the refund was no longer awaiting review
+     */
+    public static boolean applyDecision(String refundId, Refund.RefundStatus from,
+            Refund.RefundStatus to, int pemesananId, PemesananStatus bookingStatus,
+            Integer releaseTiketId) throws SQLException {
+
+        String decideSql = "UPDATE refund SET status = ? WHERE id = ? AND status = ?";
+        String bookingSql = "UPDATE pemesanan SET status = ? WHERE id = ?";
+        String releaseSql = "UPDATE tiket SET tersedia = 1 WHERE id = ?";
+
+        try (Connection conn = DBHelper.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                try (PreparedStatement decide = conn.prepareStatement(decideSql)) {
+                    decide.setString(1, to.name());
+                    decide.setString(2, refundId);
+                    decide.setString(3, from.name());
+                    if (decide.executeUpdate() == 0) {
+                        conn.rollback();
+                        return false;
+                    }
+                }
+
+                try (PreparedStatement booking = conn.prepareStatement(bookingSql)) {
+                    booking.setString(1, bookingStatus.dbValue());
+                    booking.setInt(2, pemesananId);
+                    if (booking.executeUpdate() == 0) {
+                        throw new SQLException("No pemesanan with id " + pemesananId);
+                    }
+                }
+
+                if (releaseTiketId != null) {
+                    try (PreparedStatement release = conn.prepareStatement(releaseSql)) {
+                        release.setInt(1, releaseTiketId);
+                        release.executeUpdate();
+                    }
+                }
+
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
+        }
+    }
+
     public static void updateStatus(String id, Refund.RefundStatus status) throws SQLException {
         String sql = "UPDATE refund SET status = ? WHERE id = ?";
         try (Connection conn = DBHelper.getConnection();
@@ -164,16 +223,36 @@ public class RefundDAO {
      */
     public static void updateDetailPencairan(String id, String namaPenerima, String rekeningTujuan)
             throws SQLException {
-        String sql = "UPDATE refund SET nama_penerima = ?, rekening_tujuan = ? WHERE id = ?";
+        if (!updateDetailPencairan(id, namaPenerima, rekeningTujuan, null)) {
+            throw new SQLException("No refund with id " + id);
+        }
+    }
+
+    /**
+     * Rewrites the payee, optionally only while the refund is still in {@code onlyWhen}.
+     *
+     * <p>Checking the status in the caller and then updating unconditionally leaves a
+     * window in which an approval lands between the two, writing a new payee onto a refund
+     * that has already been signed off. Making the status part of the {@code WHERE} closes
+     * it, the same way the booking claim tests availability in its own update.
+     *
+     * @return false if no row matched — the refund is gone, or no longer in that status
+     */
+    public static boolean updateDetailPencairan(String id, String namaPenerima,
+            String rekeningTujuan, Refund.RefundStatus onlyWhen) throws SQLException {
+        String sql = "UPDATE refund SET nama_penerima = ?, rekening_tujuan = ? WHERE id = ?"
+                + (onlyWhen == null ? "" : " AND status = ?");
+
         try (Connection conn = DBHelper.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, namaPenerima);
             pstmt.setString(2, rekeningTujuan);
             pstmt.setString(3, id);
-            if (pstmt.executeUpdate() == 0) {
-                throw new SQLException("No refund with id " + id);
+            if (onlyWhen != null) {
+                pstmt.setString(4, onlyWhen.name());
             }
+            return pstmt.executeUpdate() > 0;
         }
     }
 }

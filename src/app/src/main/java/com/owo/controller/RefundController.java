@@ -161,13 +161,18 @@ public class RefundController {
         }
 
         Refund refund = getOwnedRefund(refundId, customerId);
-        if (refund.getStatus() != RefundStatus.PENDING_REVIEW) {
+
+        // The status is part of the update, not a check preceding it: an approval landing
+        // between the two would otherwise redirect a payout that was already signed off.
+        boolean updated = RefundDAO.updateDetailPencairan(refundId, namaPenerima.trim(),
+                rekeningTujuan.trim(), RefundStatus.PENDING_REVIEW);
+        if (!updated) {
             throw new PemesananController.PemesananException(
                     "Detail pencairan hanya dapat diubah selama refund menunggu peninjauan.");
         }
 
-        RefundDAO.updateDetailPencairan(refundId, namaPenerima.trim(), rekeningTujuan.trim());
         refund.setDetailPencairan(namaPenerima.trim(), rekeningTujuan.trim());
+        refund.setStatus(RefundStatus.PENDING_REVIEW);
         return refund;
     }
 
@@ -221,19 +226,8 @@ public class RefundController {
 
     public void setujuiRefund(Refund refund)
             throws PemesananController.PemesananException, SQLException {
-        if (refund == null || refund.getStatus() != RefundStatus.PENDING_REVIEW) {
-            throw new PemesananController.PemesananException(
-                    "Refund ini tidak sedang menunggu peninjauan.");
-        }
-
-        RefundDAO.updateStatus(refund.getId(), RefundStatus.APPROVED);
-        refund.setStatus(RefundStatus.APPROVED);
-
-        Pemesanan pemesanan = PemesananDAO.getPemesananById(refund.getPemesananID());
-        if (pemesanan != null) {
-            pemesananController.transition(pemesanan, PemesananStatus.REFUNDED);
-            PemesananDAO.releaseTiket(pemesanan.getTiket().getId());
-        }
+        // Approving releases the ticket: the booking is over and the unit is sellable.
+        decide(refund, RefundStatus.APPROVED, PemesananStatus.REFUNDED, true);
     }
 
     /**
@@ -244,24 +238,59 @@ public class RefundController {
      */
     public void tolakRefund(Refund refund)
             throws PemesananController.PemesananException, SQLException {
+        PemesananStatus restoreTo = refund == null ? null : refund.getStatusSebelumnya();
+        if (restoreTo == null) {
+            // Rows written before status_sebelumnya existed carry no previous status.
+            // CONFIRMED is the only safe guess, and it is the one that downgrades a
+            // checked-in booking — so it is used but never silently: see PR-REF-08.
+            restoreTo = PemesananStatus.CONFIRMED;
+        }
+        decide(refund, RefundStatus.REJECTED, restoreTo, false);
+    }
+
+    /**
+     * Applies a decision to a refund and its booking as one transaction.
+     *
+     * <p>The state machine is checked here — the booking must be able to reach
+     * {@code bookingStatus} — and the writes are handed to a single DAO call that owns one
+     * connection, because leaving the refund decided and the booking untouched produces a
+     * refund nothing can ever decide again.
+     */
+    private void decide(Refund refund, RefundStatus decision, PemesananStatus bookingStatus,
+            boolean releaseTiket)
+            throws PemesananController.PemesananException, SQLException {
+
         if (refund == null || refund.getStatus() != RefundStatus.PENDING_REVIEW) {
             throw new PemesananController.PemesananException(
                     "Refund ini tidak sedang menunggu peninjauan.");
         }
 
-        RefundDAO.updateStatus(refund.getId(), RefundStatus.REJECTED);
-        refund.setStatus(RefundStatus.REJECTED);
-
         Pemesanan pemesanan = PemesananDAO.getPemesananById(refund.getPemesananID());
         if (pemesanan == null) {
-            return;
+            throw new PemesananController.PemesananException(
+                    "Pemesanan untuk refund ini tidak ditemukan.");
         }
 
-        PemesananStatus restoreTo = refund.getStatusSebelumnya();
-        if (restoreTo == null) {
-            restoreTo = PemesananStatus.CONFIRMED;
+        PemesananStatus current = PemesananController.readStatus(pemesanan);
+        if (current != bookingStatus && !current.canTransitionTo(bookingStatus)) {
+            throw new PemesananController.PemesananException(
+                    "Pemesanan berstatus " + current + " tidak dapat menjadi "
+                            + bookingStatus + ".");
         }
-        pemesananController.transition(pemesanan, restoreTo);
+
+        Integer tiketId = releaseTiket && pemesanan.getTiket() != null
+                ? pemesanan.getTiket().getId() : null;
+
+        boolean applied = RefundDAO.applyDecision(refund.getId(), RefundStatus.PENDING_REVIEW,
+                decision, pemesanan.getId(), bookingStatus, tiketId);
+        if (!applied) {
+            // The conditional update matched nothing: somebody else decided it first.
+            throw new PemesananController.PemesananException(
+                    "Refund ini sudah diputuskan oleh peninjau lain.");
+        }
+
+        refund.setStatus(decision);
+        pemesanan.setStatus(bookingStatus.dbValue());
     }
 
     private LocalDateTime getWaktuKeberangkatan(Tiket tiket) {
