@@ -14,7 +14,17 @@ public class PemesananTest {
     private Pemesanan pemesananHotel;
     private final int id = 1;
     private final String customerId = "1";
-    private final TiketPesawat tiketPesawat = new TiketPesawat(1, 100000.0f, true, "GA123", "Jakarta", "Bali", "Garuda Indonesia", "Ekonomi", LocalDateTime.now().plusDays(1));
+    private final TiketPesawat tiketPesawat = TiketPesawat.builder()
+                .id(1)
+                .harga(100000.0f)
+                .tersedia(true)
+                .flightNumber("GA123")
+                .origin("Jakarta")
+                .destination("Bali")
+                .maskapai("Garuda Indonesia")
+                .kelas("Ekonomi")
+                .waktuKeberangkatan(LocalDateTime.now().plusDays(1))
+                .build();
     private final TiketHotel tiketHotel = new TiketHotel(2, 500000.0f, true, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3), "Grand Hotel", "101", "Jakarta");
 
     @BeforeEach
@@ -62,7 +72,17 @@ public class PemesananTest {
 
     @Test
     void testSetAndGetTiket() {
-        TiketPesawat newTiketPesawat = new TiketPesawat(2, 200000.0f, true, "GA124", "Bali", "Jakarta", "Garuda Indonesia", "Ekonomi", LocalDateTime.now().plusDays(2));
+        TiketPesawat newTiketPesawat = TiketPesawat.builder()
+                .id(2)
+                .harga(200000.0f)
+                .tersedia(true)
+                .flightNumber("GA124")
+                .origin("Bali")
+                .destination("Jakarta")
+                .maskapai("Garuda Indonesia")
+                .kelas("Ekonomi")
+                .waktuKeberangkatan(LocalDateTime.now().plusDays(2))
+                .build();
         pemesananPesawat.setTiket(newTiketPesawat);
         assertEquals(newTiketPesawat, pemesananPesawat.getTiket());
 

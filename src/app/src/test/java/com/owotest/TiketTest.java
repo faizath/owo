@@ -23,7 +23,17 @@ class TiketTest {
         checkIn = LocalDate.of(2024, 3, 15);
         checkOut = LocalDate.of(2024, 3, 20);
         tiketHotel = new TiketHotel(1, 1000000.0f, true, checkIn, checkOut, "Grand Hotel", "101", "Jakarta");
-        tiketPesawat = new TiketPesawat(2, 2000000.0f, true, "GA123", "Jakarta", "Bali", "Garuda Indonesia", "Ekonomi", LocalDateTime.now().plusDays(1));
+        tiketPesawat = TiketPesawat.builder()
+                .id(2)
+                .harga(2000000.0f)
+                .tersedia(true)
+                .flightNumber("GA123")
+                .origin("Jakarta")
+                .destination("Bali")
+                .maskapai("Garuda Indonesia")
+                .kelas("Ekonomi")
+                .waktuKeberangkatan(LocalDateTime.now().plusDays(1))
+                .build();
     }
 
     @Test

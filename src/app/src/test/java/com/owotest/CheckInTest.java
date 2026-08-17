@@ -25,18 +25,45 @@ public class CheckInTest {
     void setUp() {
         checkInController = new CheckInController();
 
-        TiketPesawat tiketHariIni = new TiketPesawat(101, 1500000f, true, "GA-202", "CGK", "DPS", "Garuda Indonesia",
-                "Ekonomi", LocalDateTime.now());
+        TiketPesawat tiketHariIni = TiketPesawat.builder()
+                .id(101)
+                .harga(1500000f)
+                .tersedia(true)
+                .flightNumber("GA-202")
+                .origin("CGK")
+                .destination("DPS")
+                .maskapai("Garuda Indonesia")
+                .kelas("Ekonomi")
+                .waktuKeberangkatan(LocalDateTime.now())
+                .build();
         pemesananBisaCheckIn = new Pemesanan(1, "1", tiketHariIni);
         pemesananBisaCheckIn.setStatus("CONFIRMED");
 
-        TiketPesawat tiketBesok = new TiketPesawat(102, 1200000f, true, "QZ-7510", "SUB", "CGK", "AirAsia", "Ekonomi",
-                LocalDateTime.now().plusDays(1));
+        TiketPesawat tiketBesok = TiketPesawat.builder()
+                .id(102)
+                .harga(1200000f)
+                .tersedia(true)
+                .flightNumber("QZ-7510")
+                .origin("SUB")
+                .destination("CGK")
+                .maskapai("AirAsia")
+                .kelas("Ekonomi")
+                .waktuKeberangkatan(LocalDateTime.now().plusDays(1))
+                .build();
         pemesananTerlaluAwal = new Pemesanan(2, "2", tiketBesok);
         pemesananTerlaluAwal.setStatus("CONFIRMED");
 
-        TiketPesawat tiketStatusSalah = new TiketPesawat(103, 950000f, true, "SJ-182", "CGK", "PNK", "Sriwijaya Air",
-                "Bisnis", LocalDateTime.now());
+        TiketPesawat tiketStatusSalah = TiketPesawat.builder()
+                .id(103)
+                .harga(950000f)
+                .tersedia(true)
+                .flightNumber("SJ-182")
+                .origin("CGK")
+                .destination("PNK")
+                .maskapai("Sriwijaya Air")
+                .kelas("Bisnis")
+                .waktuKeberangkatan(LocalDateTime.now())
+                .build();
         pemesananStatusSalah = new Pemesanan(3, "3", tiketStatusSalah);
         pemesananStatusSalah.setStatus("PENDING");
 

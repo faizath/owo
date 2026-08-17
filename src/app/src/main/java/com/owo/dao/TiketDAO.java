@@ -50,8 +50,17 @@ public class TiketDAO {
                 }
 
                 conn.commit();
-                return new TiketPesawat(tiketId, harga, tersedia, flightNumber, origin, destination,
-                        maskapai, kelas, waktuKeberangkatan);
+                return TiketPesawat.builder()
+                        .id(tiketId)
+                        .harga(harga)
+                        .tersedia(tersedia)
+                        .flightNumber(flightNumber)
+                        .origin(origin)
+                        .destination(destination)
+                        .maskapai(maskapai)
+                        .kelas(kelas)
+                        .waktuKeberangkatan(waktuKeberangkatan)
+                        .build();
             } catch (SQLException e) {
                 conn.rollback();
                 throw e;
@@ -136,8 +145,17 @@ public class TiketDAO {
                         LocalDateTime waktuKeberangkatan =
                             SqlDates.parseDateTime(rs.getString("waktu_keberangkatan"), "waktu_keberangkatan");
 
-                        return new TiketPesawat(id, harga, tersedia, flightNumber, origin,
-                                destination, maskapai, kelas, waktuKeberangkatan);
+                        return TiketPesawat.builder()
+                        .id(id)
+                        .harga(harga)
+                        .tersedia(tersedia)
+                        .flightNumber(flightNumber)
+                        .origin(origin)
+                        .destination(destination)
+                        .maskapai(maskapai)
+                        .kelas(kelas)
+                        .waktuKeberangkatan(waktuKeberangkatan)
+                        .build();
                     } else if ("HOTEL".equals(tipe)) {
                         LocalDate checkIn = SqlDates.parseDate(rs.getString("check_in"), "check_in");
                         LocalDate checkOut = SqlDates.parseDate(rs.getString("check_out"), "check_out");
@@ -255,8 +273,17 @@ public class TiketDAO {
                     LocalDateTime waktuKeberangkatan =
                         SqlDates.parseDateTime(rs.getString("waktu_keberangkatan"), "waktu_keberangkatan");
                     
-                    TiketPesawat tiket = new TiketPesawat(id, harga, tersedia, flightNumber, 
-                            rsOrigin, rsDestination, maskapai, rsKelas, waktuKeberangkatan);
+                    TiketPesawat tiket = TiketPesawat.builder()
+                        .id(id)
+                        .harga(harga)
+                        .tersedia(tersedia)
+                        .flightNumber(flightNumber)
+                        .origin(rsOrigin)
+                        .destination(rsDestination)
+                        .maskapai(maskapai)
+                        .kelas(rsKelas)
+                        .waktuKeberangkatan(waktuKeberangkatan)
+                        .build();
                     results.add(tiket);
                 }
             }
