@@ -628,6 +628,8 @@
       const history = byId('historyList');
       active.innerHTML = '<p style="padding:16px;color:#666;">Memuat...</p>';
 
+      wireCheckInModal();
+
       window.OwOAPI.getUserBookings()
         .then(function (bookings) { render(bookings || []); })
         .catch(function (err) {
@@ -759,6 +761,41 @@
       }
 
       /**
+       * The booking the modal is currently confirming.
+       *
+       * The modal is one element that is never re-rendered, so its handlers are attached
+       * once and read this. Attaching them per open left every previous opening's handler
+       * in place: opening the modal for one booking, cancelling, then confirming another
+       * checked in both.
+       */
+      let pendingCheckIn = null;
+
+      function wireCheckInModal() {
+        const modal = byId('checkinModal');
+        if (!modal) return;
+
+        function dismiss() {
+          modal.style.display = 'none';
+          pendingCheckIn = null;
+        }
+
+        [modal.querySelector('.modal-btn-secondary'), modal.querySelector('.close-button')]
+          .forEach(function (el) {
+            if (el) el.addEventListener('click', dismiss);
+          });
+
+        const confirm = modal.querySelector('.modal-btn-primary');
+        if (confirm) {
+          confirm.addEventListener('click', function () {
+            if (!pendingCheckIn) return;
+            show('modal-action-buttons', false);
+            show('modal-loading', true);
+            performCheckIn(pendingCheckIn, modal);
+          });
+        }
+      }
+
+      /**
        * Confirms a check-in before performing it.
        *
        * Check-in is not reversible by the customer, so it gets a confirmation step
@@ -766,11 +803,16 @@
        * screen but nothing opened it, and the action fired straight from the card.
        */
       function openCheckIn(booking) {
+        if (!booking) return;
+
         const modal = byId('checkinModal');
-        if (!modal || !booking) {
+        if (!modal) {
+          // No confirmation step available; the check-in itself still has to work.
           performCheckIn(booking, null);
           return;
         }
+
+        pendingCheckIn = booking;
 
         setText('modal-booking-code', booking.transactionId);
         setText('modal-booking-route', bookingTitle(booking));
@@ -787,26 +829,6 @@
         show('modal-action-buttons', true, 'flex');
 
         modal.style.display = 'flex';
-
-        const confirm = modal.querySelector('.modal-btn-primary');
-        const cancel = modal.querySelector('.modal-btn-secondary');
-        const close = modal.querySelector('.close-button');
-
-        function dismiss() {
-          modal.style.display = 'none';
-        }
-
-        [cancel, close].forEach(function (el) {
-          if (el) el.addEventListener('click', dismiss);
-        });
-
-        if (confirm) {
-          confirm.addEventListener('click', function () {
-            show('modal-action-buttons', false);
-            show('modal-loading', true);
-            performCheckIn(booking, modal);
-          });
-        }
       }
 
       function performCheckIn(booking, modal) {
