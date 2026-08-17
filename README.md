@@ -64,10 +64,21 @@ Secure user authentication and account management.
 The application follows a clean architecture pattern with clear separation of concerns:
 
 ### 📱 Boundary Layer (UI Components)
-- `PemesananViewer` - Ticket booking interface
-- `RefundViewer` - Refund management interface  
-- `RiwayatPemesananViewer` - Booking history and check-in interface
-- `LoginForm` - Authentication interface
+
+The boundary is HTML, CSS and JavaScript rendered inside a single `WebView` — there are no
+Java UI classes. `App.html` is the shell: it hosts one `#app` container and a router that
+swaps screen fragments in place, so the JavaScript bridge is injected once and survives
+navigation.
+
+- `boundary/App.html` - Application shell, session bar, notifications
+- `boundary/app.js` - Router, session, formatting and escaping helpers
+- `boundary/screens.js` - One controller per screen
+- `boundary/owo-bridge.js` - Promise wrapper over the Java bridge
+- `boundary/screens/*.html` - Screen fragments (markup and styles only)
+
+Screen fragments contain no `<script>` blocks and no inline event handlers; their
+behaviour lives in `screens.js`. Java serves each fragment through the bridge, because a
+packaged build runs from a jar where the page cannot fetch its own resources.
 
 ### 🎮 Controller Layer (Business Logic)
 - `PemesananController` - Handles booking operations
@@ -90,10 +101,23 @@ The application follows a clean architecture pattern with clear separation of co
 - `NotifikasiDAO` - Notification data operations
 
 ### 🔧 Utilities
-- `DBHelper` - Database connection management
-- `PasswordUtil` - Password encryption utilities
-- `NotifikasiHelper` - Notification management
-- `NotificationBridge` - Bridge for web-java communication
+- `DBHelper` - Database location and connections (a fresh connection per call)
+- `JavaScriptBridge` - The only surface JavaScript can call; owns the session
+- `BridgeInstaller` - Wires the bridge into the `WebEngine`
+- `Json` - JSON reader/writer for the bridge, locale-independent
+- `SqlDates` - Tolerant date parsing for stored values
+- `PasswordUtil` - Password hashing (bcrypt)
+- `NotifikasiHelper` - Notification polling, started on login
+- `NotificationBridge` - Delivers notifications into the page
+- `JsConsole` - Forwards page console output to the application log
+
+### 🔐 Session and authorization
+
+The session lives in Java, on `JavaScriptBridge`. **No bridge method accepts a user id** —
+every operation on user data derives identity from the session, so a client cannot request
+another user's records. Booking status transitions are decided by `PemesananController`
+against an explicit state machine (`PemesananStatus`), and refund amounts are computed
+server-side from the stored ticket price.
 
 ## 🚀 Installation & Setup
 
