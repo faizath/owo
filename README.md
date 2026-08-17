@@ -76,6 +76,10 @@ navigation.
 - `boundary/owo-bridge.js` - Promise wrapper over the Java bridge
 - `boundary/screens/*.html` - Screen fragments (markup and styles only)
 
+Screens are served from a fixed allow-list in `JavaScriptBridge`, and the boundary tests
+read that same list rather than keeping their own copy, so a screen cannot be added to the
+router while escaping the checks.
+
 Screen fragments contain no `<script>` blocks and no inline event handlers; their
 behaviour lives in `screens.js`. Java serves each fragment through the bridge, because a
 packaged build runs from a jar where the page cannot fetch its own resources.
@@ -156,13 +160,18 @@ configuration is required.
    ./gradlew run
    ```
 
-### Demo Account
+### Demo Accounts
 
-`./gradlew seed` creates a demo account alongside the sample flights and hotels:
+`./gradlew seed` creates two accounts alongside the sample flights and hotels:
 
-| Email | Password |
-|---|---|
-| `demo@owo.id` | `demo1234` |
+| Email | Password | Role |
+|---|---|---|
+| `demo@owo.id` | `demo1234` | Customer |
+| `admin@owo.id` | `admin1234` | Administrator — can review refunds |
+
+The administrator flag lives on the account row and is read at login. Registration cannot
+set it, and the review operations re-check it on every call, so signing in as the customer
+and asking for the review queue is refused rather than merely hidden.
 
 ### Alternative Commands (Windows)
 For Windows users, use `gradlew.bat` instead:
@@ -230,6 +239,27 @@ Test coverage includes:
 - Controller logic testing
 - Authentication flow testing
 - Database operations testing
+- Ticket capacity and booking party size
+- Refund history, review and administrator authorization
+- Notification queueing
+
+`BridgeLiveTest` drives a real `WebView` and needs a display, so it is opt-in:
+
+```bash
+./gradlew test -Powo.live=true
+```
+
+It is the only layer that can answer whether a bridge method is callable from the page and
+whether a screen renders; neither question can be settled from Java or by reading markup.
+
+### Looking at the UI
+
+```bash
+./gradlew screenshots     # renders each screen to build/screenshots (needs a display)
+```
+
+No automated check can see whether a screen *looks* right, only whether its markup and
+behaviour are present. This renders each one to a PNG so it can be inspected.
 
 ## 📝 License
 
