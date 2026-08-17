@@ -8,3 +8,5 @@ src/app/build
 
 .vscode/
 build/
+# macOS directory metadata
+.DS_Store
