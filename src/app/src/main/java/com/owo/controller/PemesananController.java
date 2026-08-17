@@ -26,17 +26,36 @@ public class PemesananController {
 
     public Pemesanan createPemesanan(int customerId, Tiket tiket)
             throws PemesananException, SQLException {
+        return createPemesanan(customerId, tiket, 1);
+    }
+
+    /**
+     * Books a ticket for a party of {@code jumlahPeserta}.
+     *
+     * <p>Capacity is checked here for a clear message and again in the claiming update, so
+     * a party that grew between the two is still refused.
+     */
+    public Pemesanan createPemesanan(int customerId, Tiket tiket, int jumlahPeserta)
+            throws PemesananException, SQLException {
         if (tiket == null) {
             throw new PemesananException("Tiket tidak boleh kosong.");
         }
         if (!tiket.isTersedia()) {
             throw new PemesananException("Tiket sudah tidak tersedia.");
         }
+        if (jumlahPeserta < 1) {
+            throw new PemesananException("Jumlah peserta minimal 1.");
+        }
+        if (jumlahPeserta > tiket.getKapasitas()) {
+            throw new PemesananException("Tiket ini hanya memuat " + tiket.getKapasitas()
+                    + " orang, tidak cukup untuk " + jumlahPeserta + " orang.");
+        }
 
         try {
-            return PemesananDAO.createPemesanan(customerId, tiket);
+            return PemesananDAO.createPemesanan(customerId, tiket, jumlahPeserta);
         } catch (SQLException e) {
-            // The conditional availability claim lost a race with another booking.
+            // The conditional claim lost a race with another booking, or the row's capacity
+            // no longer matches the copy this call was validated against.
             throw new PemesananException("Tiket sudah tidak tersedia.");
         }
     }
