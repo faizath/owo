@@ -1,9 +1,12 @@
 package com.owotest;
 
+import com.owo.utils.JavaScriptBridge;
+
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,12 +32,46 @@ class BoundaryResourceTest {
     private static final Pattern ASSET_REFERENCE =
             Pattern.compile("(?:\\.\\./)?assets/([A-Za-z0-9 _.\\-]+)");
 
-    private static final List<String> SCREENS = List.of(
-            "LoginForm", "RegisterForm", "Pemesanan", "CekKetersediaanPesawat",
-            "CekKetersediaanHotel", "Pembayaran", "RiwayatPemesanan", "RefundForm");
+    /**
+     * Screens the router may load, read from {@code JavaScriptBridge}'s own allow-list.
+     *
+     * <p>This used to be a hand-maintained copy of that list. A screen added to the bridge
+     * and not to the copy was routable but exempt from every check below, which is exactly
+     * the drift these tests exist to catch.
+     */
+    private static List<String> routableScreens() throws Exception {
+        Field field = JavaScriptBridge.class.getDeclaredField("SCREENS");
+        field.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        List<String> screens = (List<String>) field.get(null);
+        return screens;
+    }
 
     private static Path resources() throws URISyntaxException {
         return Paths.get(BoundaryResourceTest.class.getResource("/com/owo/boundary").toURI());
+    }
+
+    @Test
+    void everyFragmentOnDiskIsRoutable() throws Exception {
+        Path screens = resources().resolve("screens");
+        List<String> known = routableScreens();
+
+        List<String> orphans = new ArrayList<>();
+        try (Stream<Path> files = Files.list(screens)) {
+            for (Path file : files.filter(Files::isRegularFile).toList()) {
+                String name = file.getFileName().toString();
+                if (!name.endsWith(".html")) {
+                    continue;
+                }
+                String screen = name.substring(0, name.length() - ".html".length());
+                if (!known.contains(screen)) {
+                    orphans.add(screen);
+                }
+            }
+        }
+
+        // A fragment the bridge will not serve is dead weight that still looks live.
+        assertTrue(orphans.isEmpty(), "fragments no route can reach: " + orphans);
     }
 
     @Test
@@ -75,7 +112,7 @@ class BoundaryResourceTest {
         Path screens = resources().resolve("screens");
 
         List<String> missing = new ArrayList<>();
-        for (String screen : SCREENS) {
+        for (String screen : routableScreens()) {
             if (!Files.exists(screens.resolve(screen + ".html"))) {
                 missing.add(screen);
             }
@@ -89,7 +126,7 @@ class BoundaryResourceTest {
         Path screens = resources().resolve("screens");
 
         List<String> offenders = new ArrayList<>();
-        for (String screen : SCREENS) {
+        for (String screen : routableScreens()) {
             String html = Files.readString(screens.resolve(screen + ".html"), StandardCharsets.UTF_8);
             if (html.contains("<script")) {
                 offenders.add(screen + " has an inline script");
