@@ -22,6 +22,13 @@
             min-height: 100vh;
         }
 
+        /* Screens and the shell both mark elements hidden with this class, and nothing
+           defined it — so the error banner, which starts hidden and is only filled in on
+           failure, rendered as an empty coloured bar at the top of every screen. */
+        .hidden {
+            display: none !important;
+        }
+
         .fatal-error {
             margin: 60px auto;
             max-width: 600px;
@@ -35,9 +42,12 @@
         }
 
         /* Session bar --------------------------------------------------------- */
+        /* Anchored to the bottom. Every screen carries its own fixed header across the
+           top, so a bar in the top-right corner sat on top of their navigation and hid
+           whichever item happened to be last. */
         .session-bar {
             position: fixed;
-            top: 12px;
+            bottom: 16px;
             right: 16px;
             z-index: 9000;
             display: flex;
