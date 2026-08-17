@@ -17,10 +17,13 @@ public class AkunDAO {
         try (Connection conn = DBHelper.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
+            // Hash once and reuse, so the returned entity carries the same hash as the row.
+            String hashedPassword = passwordUtil.hashPassword(password);
+
             pstmt.setString(1, nama);
             pstmt.setString(2, email);
-            pstmt.setString(3, passwordUtil.hashPassword(password));
-            
+            pstmt.setString(3, hashedPassword);
+
             int affectedRows = pstmt.executeUpdate();
             if (affectedRows == 0) {
                 throw new SQLException("Creating akun failed, no rows affected.");
@@ -29,7 +32,7 @@ public class AkunDAO {
             try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     int id = generatedKeys.getInt(1);
-                    return new Akun(id, nama, email, password);
+                    return Akun.fromHashedPassword(id, nama, email, hashedPassword);
                 } else {
                     throw new SQLException("Creating akun failed, no ID obtained.");
                 }
@@ -48,7 +51,7 @@ public class AkunDAO {
                     String nama = rs.getString("nama");
                     String email = rs.getString("email");
                     String hashedPassword = rs.getString("hashed_password");
-                    return new Akun(id, nama, email, hashedPassword);
+                    return Akun.fromHashedPassword(id, nama, email, hashedPassword);
                 }
             }
         }
@@ -66,7 +69,7 @@ public class AkunDAO {
                     int id = rs.getInt("id");
                     String nama = rs.getString("nama");
                     String hashedPassword = rs.getString("hashed_password");
-                    return new Akun(id, nama, email, hashedPassword);
+                    return Akun.fromHashedPassword(id, nama, email, hashedPassword);
                 }
             }
         }

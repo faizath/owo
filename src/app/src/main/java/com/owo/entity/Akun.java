@@ -1,20 +1,36 @@
 package com.owo.entity;
 
 import com.owo.utils.PasswordUtil;
-import java.util.ArrayList;
 
 public class Akun {
     private static PasswordUtil passwordUtil = new PasswordUtil();
-    private static ArrayList<Akun> allAkun = new ArrayList<>();
     private int ID;
     private String nama, email, hashedPassword;
 
+    /** Takes a plaintext password and hashes it. Use for accounts being created. */
     public Akun(int ID, String nama, String email, String password) {
         this.ID = ID;
         this.nama = nama;
         this.email = email;
         this.hashedPassword = passwordUtil.hashPassword(password);
-        allAkun.add(this);
+    }
+
+    private Akun(int ID, String nama, String email, String hashedPassword, boolean alreadyHashed) {
+        this.ID = ID;
+        this.nama = nama;
+        this.email = email;
+        this.hashedPassword = hashedPassword;
+    }
+
+    /**
+     * Rebuilds an account from a stored hash, without hashing it a second time.
+     *
+     * <p>Passing a stored hash to the public constructor produces
+     * {@code bcrypt(bcrypt(password))}, against which {@link #checkPassword} can never
+     * succeed. DAO hydration must use this factory.
+     */
+    public static Akun fromHashedPassword(int ID, String nama, String email, String hashedPassword) {
+        return new Akun(ID, nama, email, hashedPassword, true);
     }
 
     public int getID() {
@@ -51,23 +67,5 @@ public class Akun {
 
     public boolean checkEmail(String email) {
         return this.email.equals(email);
-    }
-
-    public static Akun getAkunByID(int ID) {
-        for (Akun akun : allAkun) {
-            if (akun.getID() == ID) {
-                return akun;
-            }
-        }
-        return null;
-    }
-
-    public static Akun getAkunByEmail(String email) {
-        for (Akun akun : allAkun) {
-            if (akun.checkEmail(email)) {
-                return akun;
-            }
-        }
-        return null;
     }
 }
