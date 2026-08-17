@@ -3,8 +3,10 @@ package com.owotest;
 import com.owo.controller.AuthController;
 import com.owo.controller.RefundController;
 import com.owo.dao.PemesananDAO;
+import com.owo.dao.RefundDAO;
 import com.owo.entity.Akun;
 import com.owo.entity.Pemesanan;
+import com.owo.entity.Refund;
 import com.owo.entity.PemesananStatus;
 import com.owo.utils.BridgeInstaller;
 import com.owo.utils.Json;
@@ -436,6 +438,33 @@ class BridgeLiveTest {
         assertEquals(Boolean.TRUE,
                 eval("document.querySelector('#refundStatusList .refund-card')"
                         + "  .textContent.indexOf('Menunggu peninjauan') >= 0"));
+    }
+
+    @Test
+    void correctingThePayeeOnAPendingRefundReachesTheDatabase() throws Exception {
+        Akun customer = AuthController.register("Wira", "wira@example.com", "password123");
+        Pemesanan booking = Fixtures.booking(customer, Fixtures.flight(20),
+                PemesananStatus.CONFIRMED);
+        var refund = new RefundController().ajukanRefund(booking.getId(), customer.getID(),
+                "Perubahan rencana", "Salah Nama", "0000000000");
+
+        signIn("wira@example.com", "password123");
+
+        // Driven through the bridge rather than the prompt-based button, because a modal
+        // prompt cannot be dismissed from a headless script.
+        runOnFxThread(() -> engine.executeScript(
+                "window.__done = false;"
+                        + "window.OwOAPI.updateRefundPayee(" + Json.quote(refund.getId())
+                        + ", 'Wira Benar', '9876543210')"
+                        + "  .then(function () { window.__done = true; })"
+                        + "  .catch(function (e) { window.__done = 'error: ' + e.message; });"));
+        await("window.__done");
+
+        // The DAO update behind this had no caller at all, so a wrong account number was
+        // permanent once submitted.
+        Refund stored = RefundDAO.getRefundById(refund.getId());
+        assertEquals("Wira Benar", stored.getNamaPenerima());
+        assertEquals("9876543210", stored.getRekeningTujuan());
     }
 
     @Test
