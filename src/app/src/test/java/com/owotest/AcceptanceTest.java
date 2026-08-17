@@ -140,6 +140,74 @@ class AcceptanceTest {
                 PemesananDAO.getPemesananById(booking.getId()).getStatus());
     }
 
+    @Test
+    void checkInIsDeterministic() throws Exception {
+        AuthController.register("Rina", "rina@example.com", "password123");
+        Akun user = AuthController.login("rina@example.com", "password123");
+
+        PemesananController bookings = new PemesananController();
+        CheckInController checkIn = new CheckInController(bookings);
+
+        // Ten separate same-day bookings. Check-in used to be Math.random() > 0.3, so
+        // roughly three of these would have failed for no reason.
+        for (int i = 0; i < 10; i++) {
+            TiketPesawat flight = TiketDAO.createTiketPesawat(900_000f, true, "GA" + (600 + i),
+                    "Jakarta (CGK)", "Surabaya (SBY)", "Garuda Indonesia", "Ekonomi",
+                    LocalDateTime.now().withHour(23).withMinute(0).withSecond(0).withNano(0));
+
+            Pemesanan booking = bookings.createPemesanan(user.getID(), flight);
+            bookings.konfirmasiPemesanan(booking.getId(), user.getID());
+            checkIn.checkIn(booking.getId(), user.getID());
+
+            assertEquals(PemesananStatus.CHECKED_IN.dbValue(),
+                    PemesananDAO.getPemesananById(booking.getId()).getStatus(),
+                    "check-in failed on attempt " + (i + 1));
+        }
+    }
+
+    @Test
+    void twoListingsFromOneAirlineAreIndividuallySelectable() throws Exception {
+        AuthController.register("Tono", "tono@example.com", "password123");
+        Akun user = AuthController.login("tono@example.com", "password123");
+
+        LocalDateTime morning = LocalDateTime.now().plusDays(5).withHour(7).withMinute(30)
+                .withSecond(0).withNano(0);
+        TiketPesawat early = TiketDAO.createTiketPesawat(1_500_000f, true, "GA401",
+                "Jakarta (CGK)", "Denpasar (DPS)", "Garuda Indonesia", "Ekonomi", morning);
+        TiketPesawat late = TiketDAO.createTiketPesawat(2_500_000f, true, "GA403",
+                "Jakarta (CGK)", "Denpasar (DPS)", "Garuda Indonesia", "Bisnis",
+                morning.plusHours(7));
+
+        // Selection used to match on the airline name, which both of these share.
+        Pemesanan booking = new PemesananController().createPemesanan(user.getID(), late);
+
+        Pemesanan stored = PemesananDAO.getPemesananById(booking.getId());
+        assertEquals(late.getId(), stored.getTiket().getId());
+        assertEquals(2_500_000f, stored.getTiket().getHarga(), 0.01);
+        assertEquals(morning.plusHours(7),
+                ((TiketPesawat) stored.getTiket()).getWaktuKeberangkatan());
+
+        // The one not chosen is still on sale.
+        assertTrue(TiketDAO.getTiketById(early.getId()).isTersedia());
+    }
+
+    @Test
+    void anUnpaidBookingDoesNotAppearAsConfirmed() throws Exception {
+        AuthController.register("Wati", "wati@example.com", "password123");
+        Akun user = AuthController.login("wati@example.com", "password123");
+
+        TiketPesawat flight = TiketDAO.createTiketPesawat(1_500_000f, true, "GA401",
+                "Jakarta (CGK)", "Denpasar (DPS)", "Garuda Indonesia", "Ekonomi",
+                LocalDateTime.now().plusDays(5));
+
+        // Booked but never paid for: closing the application here must not leave it
+        // looking confirmed on the next launch.
+        Pemesanan booking = new PemesananController().createPemesanan(user.getID(), flight);
+
+        assertEquals(PemesananStatus.PENDING.dbValue(),
+                PemesananDAO.getPemesananById(booking.getId()).getStatus());
+    }
+
     /** No table may hold a card number or a CVV, under any column name. */
     private void assertNoCardDataAnywhere() throws Exception {
         List<String> offenders = new ArrayList<>();
