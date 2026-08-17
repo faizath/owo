@@ -1075,6 +1075,8 @@
           list.innerHTML = rows.length ? rows.map(refundCard).join('')
             : '<p style="padding:16px;color:#666;">Tidak ada refund pada kategori ini.</p>';
 
+          wirePayeeEditing(list, all, paint);
+
           if (highlightId) {
             const card = list.querySelector('[data-refund="' + highlightId + '"]');
             if (card) card.scrollIntoView({ block: 'center' });
@@ -1100,6 +1102,41 @@
       });
   }
 
+  /**
+   * Lets the payee be corrected while a refund is still awaiting review.
+   *
+   * A wrong account number is only discoverable after submission, and once a decision is
+   * made the payee is part of the record — so this is offered on pending refunds only,
+   * which is the same window the backend enforces.
+   */
+  function wirePayeeEditing(list, all, repaint) {
+    list.querySelectorAll('[data-edit-payee]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        const id = button.dataset.editPayee;
+        const refund = all.filter(function (r) { return r.id === id; })[0];
+        if (!refund) return;
+
+        const nama = prompt('Nama penerima', refund.namaPenerima || '');
+        if (nama === null) return;
+        const rekening = prompt('Rekening tujuan', refund.rekeningTujuan || '');
+        if (rekening === null) return;
+
+        busy(button, true, 'Menyimpan...');
+        window.OwOAPI.updateRefundPayee(id, nama, rekening)
+          .then(function (updated) {
+            refund.namaPenerima = updated.namaPenerima;
+            refund.rekeningTujuan = updated.rekeningTujuan;
+            window.App.showNotification('Detail pencairan diperbarui.');
+            repaint();
+          })
+          .catch(function (err) {
+            busy(button, false);
+            fail(err.message);
+          });
+      });
+    });
+  }
+
   function refundCard(r) {
     const open = REFUND_OPEN.indexOf(r.status) >= 0;
     return '<div class="refund-card" data-refund="' + esc(r.id) + '">'
@@ -1121,6 +1158,10 @@
       + '<div class="info-item"><div class="info-label">Rekening Tujuan</div>'
       + '<div class="info-value">' + esc(r.rekeningTujuan) + '</div></div>'
       + '</div>'
+      + (r.status === 'PENDING_REVIEW'
+          ? '<button type="button" class="payee-edit-button" data-edit-payee="'
+            + esc(r.id) + '">Ubah detail pencairan</button>'
+          : '')
       + '</div>';
   }
 })();
