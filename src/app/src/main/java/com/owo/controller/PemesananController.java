@@ -97,8 +97,22 @@ public class PemesananController {
     public Pemesanan batalkanPemesanan(int pemesananId, int customerId)
             throws PemesananException, SQLException {
         Pemesanan pemesanan = getOwnedPemesanan(pemesananId, customerId);
-        transition(pemesanan, PemesananStatus.CANCELLED);
-        PemesananDAO.releaseTiket(pemesanan.getTiket().getId());
+        PemesananStatus current = readStatus(pemesanan);
+        assertCanTransition(current, PemesananStatus.CANCELLED);
+
+        Tiket tiket = pemesanan.getTiket();
+        boolean cancelled = PemesananDAO.cancelAndRelease(
+                pemesananId, current, tiket == null ? null : tiket.getId());
+        if (!cancelled) {
+            // The conditional update matched nothing: the booking moved on between the
+            // read and the write.
+            throw new PemesananException("Status pemesanan sudah berubah, coba muat ulang.");
+        }
+
+        pemesanan.setStatus(PemesananStatus.CANCELLED.dbValue());
+        if (tiket != null) {
+            tiket.setTersedia(true);
+        }
         return pemesanan;
     }
 
@@ -106,7 +120,21 @@ public class PemesananController {
     public void transition(Pemesanan pemesanan, PemesananStatus target)
             throws PemesananException, SQLException {
         PemesananStatus current = readStatus(pemesanan);
+        assertCanTransition(current, target);
 
+        PemesananDAO.updateStatus(pemesanan.getId(), target);
+        pemesanan.setStatus(target.dbValue());
+    }
+
+    /**
+     * Refuses a move the state machine does not allow.
+     *
+     * <p>Shared so that a caller which has to own the write itself — cancellation, which
+     * must release the ticket in the same transaction — still refuses exactly what
+     * {@link #transition} refuses, with the same wording.
+     */
+    private static void assertCanTransition(PemesananStatus current, PemesananStatus target)
+            throws PemesananException {
         if (current == target) {
             throw new PemesananException("Pemesanan sudah berstatus " + target + ".");
         }
@@ -114,9 +142,6 @@ public class PemesananController {
             throw new PemesananException(
                     "Pemesanan berstatus " + current + " tidak dapat diubah menjadi " + target + ".");
         }
-
-        PemesananDAO.updateStatus(pemesanan.getId(), target);
-        pemesanan.setStatus(target.dbValue());
     }
 
     /** Reads the status as an enum, converting a bad stored value into a safe message. */

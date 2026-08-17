@@ -92,7 +92,55 @@ public class PemesananDAO {
         }
     }
 
-    /** Returns a claimed ticket to the catalogue. Used when a booking is cancelled. */
+    /**
+     * Cancels a booking and returns its ticket to the catalogue as one transaction.
+     *
+     * <p>These were two writes on two connections. A failure between them left the booking
+     * CANCELLED while its unit stayed claimed — and because CANCELLED is terminal, nothing
+     * could ever release it again. That is the same permanent loss of a unit the cancel
+     * button exists to prevent, so it must not be reachable by crashing halfway.
+     *
+     * <p>The status update is conditional on the status the caller validated against, so a
+     * booking that changed underneath a slow request is refused rather than overwritten.
+     *
+     * @param tiketId the unit to release, or null when the booking has no ticket row
+     * @return false if the booking was no longer in {@code from}
+     */
+    public static boolean cancelAndRelease(int pemesananId, PemesananStatus from, Integer tiketId)
+            throws SQLException {
+        String cancelSql = "UPDATE pemesanan SET status = ? WHERE id = ? AND status = ?";
+        String releaseSql = "UPDATE tiket SET tersedia = 1 WHERE id = ?";
+
+        try (Connection conn = DBHelper.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                try (PreparedStatement cancel = conn.prepareStatement(cancelSql)) {
+                    cancel.setString(1, PemesananStatus.CANCELLED.dbValue());
+                    cancel.setInt(2, pemesananId);
+                    cancel.setString(3, from.dbValue());
+                    if (cancel.executeUpdate() == 0) {
+                        conn.rollback();
+                        return false;
+                    }
+                }
+
+                if (tiketId != null) {
+                    try (PreparedStatement release = conn.prepareStatement(releaseSql)) {
+                        release.setInt(1, tiketId);
+                        release.executeUpdate();
+                    }
+                }
+
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
+        }
+    }
+
+    /** Returns a claimed ticket to the catalogue. */
     public static void releaseTiket(int tiketId) throws SQLException {
         String sql = "UPDATE tiket SET tersedia = 1 WHERE id = ?";
         try (Connection conn = DBHelper.getConnection();

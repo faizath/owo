@@ -120,6 +120,36 @@ class PemesananControllerTest {
     }
 
     @Test
+    void batalkanPemesanan_onAConfirmedBooking_alsoReleasesTheTicket() throws Exception {
+        TiketPesawat flight = Fixtures.flight(3);
+        Pemesanan booking = controller.createPemesanan(customer.getID(), flight);
+        controller.konfirmasiPemesanan(booking.getId(), customer.getID());
+
+        controller.batalkanPemesanan(booking.getId(), customer.getID());
+
+        assertEquals(PemesananStatus.CANCELLED.dbValue(),
+                PemesananDAO.getPemesananById(booking.getId()).getStatus());
+        assertTrue(TiketDAO.getTiketById(flight.getId()).isTersedia());
+    }
+
+    @Test
+    void cancelAndRelease_refusesABookingThatMovedOn() throws Exception {
+        TiketPesawat flight = Fixtures.flight(3);
+        Pemesanan booking = controller.createPemesanan(customer.getID(), flight);
+        controller.konfirmasiPemesanan(booking.getId(), customer.getID());
+
+        // The caller validated against PENDING; by the time it writes, the booking is
+        // CONFIRMED. Overwriting it would cancel a paid booking on stale information.
+        assertFalse(PemesananDAO.cancelAndRelease(
+                booking.getId(), PemesananStatus.PENDING, flight.getId()));
+
+        assertEquals(PemesananStatus.CONFIRMED.dbValue(),
+                PemesananDAO.getPemesananById(booking.getId()).getStatus());
+        // The rollback must leave the ticket claimed, not release it for the failed cancel.
+        assertFalse(TiketDAO.getTiketById(flight.getId()).isTersedia());
+    }
+
+    @Test
     void aRefundedBookingCannotBeCancelled() throws Exception {
         Pemesanan booking = Fixtures.booking(customer, Fixtures.flight(3), PemesananStatus.REFUNDED);
 
