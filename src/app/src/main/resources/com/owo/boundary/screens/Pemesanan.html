@@ -452,27 +452,6 @@
             font-weight: 400;
         }
 
-        /* Hotel Listings */
-        .hotel-listings {
-            padding: 60px;
-            background: #f5f3ff;
-            display: none;
-        }
-
-        .hotel-listings.show {
-            display: block;
-        }
-
-        .flight-listings {
-            padding: 60px;
-            background: #f5f3ff;
-            display: none;
-        }
-        
-        .flight-listings.show {
-            display: block;
-        }
-
         .hotel-card {
             background: white;
             border-radius: 16px;
@@ -801,124 +780,6 @@
             font-size: 14px;
         }
 
-        /* Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal {
-            background: white;
-            border-radius: 16px;
-            padding: 32px;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
-        }
-
-        .modal-overlay.active .modal {
-            transform: scale(1);
-        }
-
-        .modal-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-        }
-
-        .modal-icon.success {
-            background: #D1FAE5;
-            color: #059669;
-        }
-
-        .modal-icon.error {
-            background: #FEE2E2;
-            color: #DC2626;
-        }
-
-        .modal-icon.loading {
-            background: #DBEAFE;
-            color: #2563EB;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .modal-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: #111827;
-        }
-
-        .modal-message {
-            font-size: 16px;
-            color: #6B7280;
-            margin-bottom: 24px;
-            line-height: 1.5;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
-
-        .modal-button {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s ease;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .modal-button.primary {
-            background: #613DC1;
-            color: white;
-        }
-
-        .modal-button.primary:hover {
-            background: #4E148C;
-        }
-
-        .modal-button.secondary {
-            background: #F3F4F6;
-            color: #374151;
-        }
-
-        .modal-button.secondary:hover {
-            background: #E5E7EB;
-        }
-
         /* Responsive Design */
         @media (max-width: 768px) {
             .header {
@@ -1090,14 +951,6 @@
                                 <option value="4">4</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Jumlah Kamar</label>
-                            <select class="form-select" id="rooms">
-                                <option value="1" selected>1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                            </select>
-                        </div>
                         <button type="submit" class="search-btn" id="search-hotel-button">Cek Ketersediaan</button>
                     </div>
                 </form>
@@ -1137,29 +990,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Hotel Listings Section -->
-    <section class="hotel-listings">
-        <!-- Hotel listings will be dynamically populated -->
-    </section>
-
-    <!-- Flight Listings Section -->
-    <section class="flight-listings" id="flightListings">
-        <!-- Flight listings will be dynamically populated -->
-    </section>
-
-    <!-- Modal -->
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal">
-            <div class="modal-icon" id="modalIcon">
-                ⏳
-            </div>
-            <h3 class="modal-title" id="modalTitle">Mencari Hotel...</h3>
-            <p class="modal-message" id="modalMessage">Mohon tunggu sebentar, kami sedang mencari hotel yang tersedia...</p>
-            <div class="modal-buttons" id="modalButtons">
-            </div>
-        </div>
-    </div>
 
     <!-- Footer -->
     <footer class="footer">

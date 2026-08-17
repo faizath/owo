@@ -186,6 +186,17 @@
             border-color: #613DC1;
         }
 
+        /* Details the account already supplies: shown, not asked for again. */
+        .form-static {
+            padding: 12px 16px;
+            border: 2px solid #F3F4F6;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #F9FAFB;
+            color: #374151;
+            min-height: 45px;
+        }
+
         .form-input::placeholder {
             color: #9CA3AF;
         }
@@ -727,27 +738,23 @@
                 <!-- Guest Information -->
                 <div class="guest-info">
                     <h2 class="section-title">Info Tamu</h2>
-                    <p class="section-subtitle">Nama harus sesuai dengan valid ID yang digunakan saat check-in</p>
-                    
+                    <p class="section-subtitle">Pemesanan dibuat atas nama akun yang sedang masuk</p>
+
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label">Nama Depan <span class="required">*</span></label>
-                            <input type="text" class="form-input" placeholder="Nama Depan" id="firstName">
+                            <label class="form-label">Nama</label>
+                            <div class="form-static" id="guestName"></div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Nama Belakang <span class="required">*</span></label>
-                            <input type="text" class="form-input" placeholder="Nama Belakang" id="lastName">
+                            <label class="form-label">Email</label>
+                            <div class="form-static" id="guestEmail"></div>
                         </div>
                     </div>
-                    
+
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label">Email <span class="required">*</span></label>
-                            <input type="email" class="form-input" placeholder="Email" id="email">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">No Telp <span class="required">*</span></label>
-                            <input type="tel" class="form-input" placeholder="No Telp" id="phone">
+                            <label class="form-label">Jumlah Peserta</label>
+                            <div class="form-static" id="guestParty"></div>
                         </div>
                     </div>
                 </div>
@@ -804,14 +811,10 @@
                             </div>
                             <div class="form-group">
                                 <label class="form-label">&nbsp;</label>
+                                <!-- Options are filled from the current year; the list was
+                                     hardcoded and had drifted into the past. -->
                                 <select class="form-input" id="expiryYear">
                                     <option value="">Tahun</option>
-                                    <option value="2024">2024</option>
-                                    <option value="2025">2025</option>
-                                    <option value="2026">2026</option>
-                                    <option value="2027">2027</option>
-                                    <option value="2028">2028</option>
-                                    <option value="2029">2029</option>
                                 </select>
                             </div>
                         </div>

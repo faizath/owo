@@ -117,8 +117,11 @@
     },
 
     // Bookings
-    createBooking: function (tiketId) {
-      return call('createBooking', { tiketId: tiketId });
+    createBooking: function (tiketId, jumlahPeserta) {
+      return call('createBooking', {
+        tiketId: tiketId,
+        jumlahPeserta: jumlahPeserta || 1
+      });
     },
     getUserBookings: function () {
       return call('getUserBookings');

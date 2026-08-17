@@ -229,11 +229,13 @@
           const button = byId('search-flight-button');
           busy(button, true, 'Mencari...');
 
+          // `penumpang` is the name the bridge filters on. It used to be sent as
+          // `passengers`, which nothing read, so the count was collected and dropped.
           const criteria = {
             origin: byId('departure') ? byId('departure').value : '',
             destination: byId('arrival') ? byId('arrival').value : '',
             kelas: byId('flightClass') ? byId('flightClass').value : '',
-            passengers: byId('passengers') ? parseInt(byId('passengers').value, 10) || 1 : 1
+            penumpang: byId('passengers') ? parseInt(byId('passengers').value, 10) || 1 : 1
           };
 
           window.OwOAPI.searchFlights(criteria)
@@ -258,11 +260,14 @@
           const button = byId('search-hotel-button');
           busy(button, true, 'Mencari...');
 
+          // One booking is one room, so the guest count is what the room must hold.
+          // The separate "jumlah kamar" input was removed rather than faked: booking
+          // several rooms at once would be several bookings, which nothing supports.
           const criteria = {
             location: byId('destination-input') ? byId('destination-input').value : '',
             checkin: checkIn ? checkIn.value : '',
             checkout: checkOut ? checkOut.value : '',
-            guests: byId('guests-input') ? parseInt(byId('guests-input').value, 10) || 1 : 1
+            tamu: byId('guests-input') ? parseInt(byId('guests-input').value, 10) || 1 : 1
           };
 
           window.OwOAPI.searchHotels(criteria)
@@ -331,7 +336,9 @@
           const chosen = results.filter(function (f) { return f.id === id; })[0];
           busy(button, true);
 
-          window.OwOAPI.createBooking(id)
+          // The party searched for is the party booked for; sending it again lets the
+          // backend refuse a listing whose capacity changed since the search.
+          window.OwOAPI.createBooking(id, criteria.penumpang || 1)
             .then(function (booking) {
               window.App.navigate('Pembayaran', { booking: booking, tiket: chosen });
             })
@@ -391,7 +398,7 @@
           const chosen = results.filter(function (h) { return h.id === id; })[0];
           busy(button, true);
 
-          window.OwOAPI.createBooking(id)
+          window.OwOAPI.createBooking(id, criteria.tamu || 1)
             .then(function (booking) {
               window.App.navigate('Pembayaran', { booking: booking, tiket: chosen });
             })
@@ -421,6 +428,28 @@
 
       const tiket = booking.tiket || {};
       const price = Number(tiket.price) || 0;
+
+      // Guest details come from the session rather than being asked for again: the
+      // booking is made by the signed-in account and nothing stores a separate guest.
+      const session = window.App.session || {};
+      if (byId('guestName')) byId('guestName').textContent = session.nama || '-';
+      if (byId('guestEmail')) byId('guestEmail').textContent = session.email || '-';
+      if (byId('guestParty')) {
+        byId('guestParty').textContent = (booking.jumlahPeserta || 1) + ' orang';
+      }
+
+      // The expiry year list was hardcoded and its first entries were already past,
+      // so choosing them failed validation for no reason the user could see.
+      const yearSelect = byId('expiryYear');
+      if (yearSelect) {
+        const thisYear = new Date().getFullYear();
+        for (let y = thisYear; y <= thisYear + 10; y++) {
+          const option = document.createElement('option');
+          option.value = String(y);
+          option.textContent = String(y);
+          yearSelect.appendChild(option);
+        }
+      }
 
       const container = byId('bookingDetailsContainer');
       if (container) {
@@ -641,6 +670,7 @@
           + '<div class="booking-info">'
           + '<div class="booking-date">' + esc(bookingWhen(b)) + '</div>'
           + '<div class="booking-location">' + esc(bookingWhere(b)) + '</div>'
+          + '<div class="booking-party">' + esc(b.jumlahPeserta || 1) + ' orang</div>'
           + '</div>'
           + '<div class="booking-status status-active">' + esc(STATUS_LABEL[b.status] || b.status) + '</div>'
           + '</div>'
