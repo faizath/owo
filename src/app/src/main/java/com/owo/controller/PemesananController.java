@@ -1,92 +1,111 @@
 package com.owo.controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+import com.owo.dao.PemesananDAO;
 import com.owo.entity.Pemesanan;
+import com.owo.entity.PemesananStatus;
 import com.owo.entity.Tiket;
 
+import java.sql.SQLException;
+import java.util.List;
+
+/**
+ * Booking lifecycle, enforced against the database.
+ *
+ * <p>This used to keep bookings in its own {@code HashMap} with its own id counter that
+ * restarted at 1, disconnected from the {@code AUTOINCREMENT} column, so its ids collided
+ * with real ones. It also had no callers at all.
+ */
 public class PemesananController {
-    private Map<Integer, Pemesanan> pemesananMap;
-    private int nextId;
 
-    public PemesananController() {
-        this.pemesananMap = new HashMap<>();
-        this.nextId = 1;
+    /** Raised when a request is refused for a business reason, with a user-safe message. */
+    public static class PemesananException extends Exception {
+        public PemesananException(String message) {
+            super(message);
+        }
     }
 
-    public Pemesanan createPemesanan(String customerId, Tiket tiket) throws Exception {
-        if (customerId == null || customerId.trim().isEmpty()) {
-            throw new Exception("Customer ID tidak boleh kosong.");
-        }
+    public Pemesanan createPemesanan(int customerId, Tiket tiket)
+            throws PemesananException, SQLException {
         if (tiket == null) {
-            throw new Exception("Tiket tidak boleh kosong.");
+            throw new PemesananException("Tiket tidak boleh kosong.");
         }
-        
-        Pemesanan pemesanan = new Pemesanan(nextId++, customerId, tiket);
-        pemesananMap.put(pemesanan.getId(), pemesanan);
+        if (!tiket.isTersedia()) {
+            throw new PemesananException("Tiket sudah tidak tersedia.");
+        }
+
+        try {
+            return PemesananDAO.createPemesanan(customerId, tiket);
+        } catch (SQLException e) {
+            // The conditional availability claim lost a race with another booking.
+            throw new PemesananException("Tiket sudah tidak tersedia.");
+        }
+    }
+
+    /**
+     * Loads a booking and verifies it belongs to {@code customerId}.
+     *
+     * @throws PemesananException if it does not exist or belongs to someone else. Both
+     *     cases report the same message, so the response cannot be used to probe for
+     *     other users' booking ids.
+     */
+    public Pemesanan getOwnedPemesanan(int pemesananId, int customerId)
+            throws PemesananException, SQLException {
+        Pemesanan pemesanan = PemesananDAO.getPemesananById(pemesananId);
+        if (pemesanan == null || !String.valueOf(customerId).equals(pemesanan.getCustomerId())) {
+            throw new PemesananException("Pemesanan tidak ditemukan.");
+        }
         return pemesanan;
     }
 
-    public Pemesanan getPemesananById(int id) throws Exception {
-        Pemesanan pemesanan = pemesananMap.get(id);
-        if (pemesanan == null) {
-            throw new Exception("Pemesanan dengan ID " + id + " tidak ditemukan.");
-        }
+    public List<Pemesanan> getPemesananByCustomerId(int customerId) throws SQLException {
+        return PemesananDAO.getPemesananByCustomerId(customerId);
+    }
+
+    /** Marks a booking paid. */
+    public Pemesanan konfirmasiPemesanan(int pemesananId, int customerId)
+            throws PemesananException, SQLException {
+        Pemesanan pemesanan = getOwnedPemesanan(pemesananId, customerId);
+        transition(pemesanan, PemesananStatus.CONFIRMED);
         return pemesanan;
     }
 
-    public void konfirmasiPemesanan(int pemesananId) throws Exception {
-        Pemesanan pemesanan = getPemesananById(pemesananId);
-        if (!pemesanan.getStatus().equals("PENDING")) {
-            throw new Exception("Hanya pemesanan dengan status PENDING yang bisa dikonfirmasi.");
-        }
-        pemesanan.setStatus("CONFIRMED");
-    }
-
-    public void batalkanPemesanan(int pemesananId) throws Exception {
-        Pemesanan pemesanan = getPemesananById(pemesananId);
-        if (pemesanan.getStatus().equals("CANCELLED")) {
-            throw new Exception("Pemesanan sudah dibatalkan sebelumnya.");
-        }
-        pemesanan.setStatus("CANCELLED");
-    }
-    
-    public Pemesanan updateTiketPemesanan(int pemesananId, Tiket newTiket) throws Exception {
-        Pemesanan pemesanan = getPemesananById(pemesananId);
-        if (!pemesanan.getStatus().equals("PENDING")) {
-            throw new Exception("Tiket hanya bisa diubah untuk pemesanan yang berstatus PENDING.");
-        }
-        if (newTiket == null) {
-            throw new Exception("Tiket baru tidak boleh kosong.");
-        }
-        pemesanan.setTiket(newTiket);
+    /**
+     * Cancels a booking and returns its ticket to the catalogue.
+     *
+     * <p>Cancellation used to be permitted from any state except {@code CANCELLED}, so a
+     * refunded booking could be cancelled, orphaning its refund record.
+     */
+    public Pemesanan batalkanPemesanan(int pemesananId, int customerId)
+            throws PemesananException, SQLException {
+        Pemesanan pemesanan = getOwnedPemesanan(pemesananId, customerId);
+        transition(pemesanan, PemesananStatus.CANCELLED);
+        PemesananDAO.releaseTiket(pemesanan.getTiket().getId());
         return pemesanan;
     }
 
-    public List<Pemesanan> getAllPemesanan() {
-        return new ArrayList<>(pemesananMap.values());
-    }
+    /** Applies a status change if the state machine allows it, and persists it. */
+    public void transition(Pemesanan pemesanan, PemesananStatus target)
+            throws PemesananException, SQLException {
+        PemesananStatus current = readStatus(pemesanan);
 
-    public List<Pemesanan> getPemesananByStatus(String status) {
-        return pemesananMap.values().stream()
-                .filter(p -> p.getStatus().equalsIgnoreCase(status))
-                .collect(Collectors.toList());
-    }
-
-    public List<Pemesanan> getPemesananByCustomerId(String customerId) {
-        return pemesananMap.values().stream()
-                .filter(p -> p.getCustomerId().equals(customerId))
-                .collect(Collectors.toList());
-    }
-
-    public void deletePemesanan(int pemesananId) throws Exception {
-        if (!pemesananMap.containsKey(pemesananId)) {
-            throw new Exception("Pemesanan dengan ID " + pemesananId + " tidak ditemukan untuk dihapus.");
+        if (current == target) {
+            throw new PemesananException("Pemesanan sudah berstatus " + target + ".");
         }
-        pemesananMap.remove(pemesananId);
+        if (!current.canTransitionTo(target)) {
+            throw new PemesananException(
+                    "Pemesanan berstatus " + current + " tidak dapat diubah menjadi " + target + ".");
+        }
+
+        PemesananDAO.updateStatus(pemesanan.getId(), target);
+        pemesanan.setStatus(target.dbValue());
+    }
+
+    /** Reads the status as an enum, converting a bad stored value into a safe message. */
+    public static PemesananStatus readStatus(Pemesanan pemesanan) throws PemesananException {
+        try {
+            return PemesananStatus.fromDb(pemesanan.getStatus());
+        } catch (IllegalArgumentException e) {
+            throw new PemesananException("Status pemesanan tidak dikenali.");
+        }
     }
 }

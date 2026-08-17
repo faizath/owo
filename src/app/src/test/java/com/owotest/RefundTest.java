@@ -42,21 +42,13 @@ public class RefundTest {
     }
 
     @Test
-    void testSetDetailKartu() {
-        String namaKartu = "John Doe";
-        String nomorKartu = "1234567890123456";
-        String expiryMonth = "12";
-        String expiryYear = "2025";
-        String cvv = "123";
+    void testSetDetailPencairan() {
+        // The card number, expiry and CVV this used to assert are no longer stored:
+        // a disbursement needs a payee and an account reference, nothing more.
+        refund.setDetailPencairan("John Doe", "BCA 1234");
 
-        refund.setDetailKartu(namaKartu, nomorKartu, expiryMonth, expiryYear, cvv);
-
-        String[] details = refund.getDetailKartu();
-        assertEquals(namaKartu, details[0]);
-        assertEquals(nomorKartu, details[1]);
-        assertEquals(expiryMonth, details[2]);
-        assertEquals(expiryYear, details[3]);
-        assertEquals(cvv, details[4]);
+        assertEquals("John Doe", refund.getNamaPenerima());
+        assertEquals("BCA 1234", refund.getRekeningTujuan());
     }
 
     @Test

@@ -1,10 +1,13 @@
 package com.owo.utils;
 
 import com.owo.controller.AuthController;
-import com.owo.dao.PemesananDAO;
+import com.owo.controller.CheckInController;
+import com.owo.controller.PemesananController;
+import com.owo.controller.RefundController;
 import com.owo.dao.TiketDAO;
 import com.owo.entity.Akun;
 import com.owo.entity.Pemesanan;
+import com.owo.entity.Refund;
 import com.owo.entity.Tiket;
 import com.owo.entity.TiketHotel;
 import com.owo.entity.TiketPesawat;
@@ -45,6 +48,10 @@ public class JavaScriptBridge {
     public static final String ERR_CREDENTIALS = "ERR_CREDENTIALS";
     public static final String ERR_NOT_FOUND = "ERR_NOT_FOUND";
     public static final String ERR_INTERNAL = "ERR_INTERNAL";
+
+    private final PemesananController pemesananController = new PemesananController();
+    private final CheckInController checkInController = new CheckInController(pemesananController);
+    private final RefundController refundController = new RefundController(pemesananController);
 
     private JSObject jsObject;
 
@@ -232,12 +239,7 @@ public class JavaScriptBridge {
 
     /** Books an existing ticket by id. The client never supplies a price or a user id. */
     public void createBooking(String argsJson, String callbackName) {
-        run(callbackName, () -> {
-            Integer userId = sessionUserId;
-            if (userId == null) {
-                return error("Silakan masuk terlebih dahulu", ERR_UNAUTHENTICATED);
-            }
-
+        run(callbackName, () -> withSession(userId -> {
             Map<String, Object> args = Json.parseObject(argsJson);
             int tiketId = Json.requireInt(args, "tiketId");
 
@@ -246,25 +248,119 @@ public class JavaScriptBridge {
                 return error("Tiket tidak ditemukan", ERR_NOT_FOUND);
             }
 
-            Pemesanan pemesanan = PemesananDAO.createPemesanan(userId, tiket);
-            return success("Pemesanan dibuat", bookingJson(pemesanan));
-        });
+            try {
+                Pemesanan pemesanan = pemesananController.createPemesanan(userId, tiket);
+                return success("Pemesanan dibuat", bookingJson(pemesanan));
+            } catch (PemesananController.PemesananException e) {
+                return error(e.getMessage(), ERR_INVALID_INPUT);
+            }
+        }));
     }
 
     public void getUserBookings(String callbackName) {
-        run(callbackName, () -> {
-            Integer userId = sessionUserId;
-            if (userId == null) {
-                return error("Silakan masuk terlebih dahulu", ERR_UNAUTHENTICATED);
-            }
-
-            List<Pemesanan> bookings = PemesananDAO.getPemesananByCustomerId(userId);
+        run(callbackName, () -> withSession(userId -> {
+            List<Pemesanan> bookings = pemesananController.getPemesananByCustomerId(userId);
             Json.Arr items = Json.arr();
             for (Pemesanan booking : bookings) {
                 items.add(bookingJson(booking));
             }
             return success("Riwayat pemesanan dimuat", items);
-        });
+        }));
+    }
+
+    /** Marks a booking paid. The transaction reference is generated here, not by the client. */
+    public void confirmPayment(String argsJson, String callbackName) {
+        run(callbackName, () -> withSession(userId -> {
+            Map<String, Object> args = Json.parseObject(argsJson);
+            int pemesananId = Json.requireInt(args, "pemesananId");
+
+            try {
+                Pemesanan pemesanan = pemesananController.konfirmasiPemesanan(pemesananId, userId);
+                return success("Pembayaran berhasil", bookingJson(pemesanan));
+            } catch (PemesananController.PemesananException e) {
+                return error(e.getMessage(), ERR_INVALID_INPUT);
+            }
+        }));
+    }
+
+    public void cancelBooking(String argsJson, String callbackName) {
+        run(callbackName, () -> withSession(userId -> {
+            Map<String, Object> args = Json.parseObject(argsJson);
+            int pemesananId = Json.requireInt(args, "pemesananId");
+
+            try {
+                Pemesanan pemesanan = pemesananController.batalkanPemesanan(pemesananId, userId);
+                return success("Pemesanan dibatalkan", bookingJson(pemesanan));
+            } catch (PemesananController.PemesananException e) {
+                return error(e.getMessage(), ERR_INVALID_INPUT);
+            }
+        }));
+    }
+
+    public void performCheckIn(String argsJson, String callbackName) {
+        run(callbackName, () -> withSession(userId -> {
+            Map<String, Object> args = Json.parseObject(argsJson);
+            int pemesananId = Json.requireInt(args, "pemesananId");
+
+            try {
+                Pemesanan pemesanan = checkInController.checkIn(pemesananId, userId);
+                return success("Check-in berhasil", bookingJson(pemesanan));
+            } catch (PemesananController.PemesananException e) {
+                return error(e.getMessage(), ERR_INVALID_INPUT);
+            }
+        }));
+    }
+
+    /**
+     * Quotes a refund without filing one, so the form can show the real figure rather
+     * than computing its own from client-held data.
+     */
+    public void quoteRefund(String argsJson, String callbackName) {
+        run(callbackName, () -> withSession(userId -> {
+            Map<String, Object> args = Json.parseObject(argsJson);
+            int pemesananId = Json.requireInt(args, "pemesananId");
+
+            try {
+                Pemesanan pemesanan = pemesananController.getOwnedPemesanan(pemesananId, userId);
+                double jumlah = refundController.hitungJumlahRefund(pemesanan);
+                return success("Estimasi refund dihitung", Json.obj()
+                        .put("pemesananId", pemesananId)
+                        .put("hargaTiket", (double) pemesanan.getTiket().getHarga())
+                        .put("biayaAdmin", RefundController.BIAYA_ADMIN)
+                        .put("jumlahRefund", jumlah));
+            } catch (PemesananController.PemesananException e) {
+                return error(e.getMessage(), ERR_INVALID_INPUT);
+            }
+        }));
+    }
+
+    public void createRefund(String argsJson, String callbackName) {
+        run(callbackName, () -> withSession(userId -> {
+            Map<String, Object> args = Json.parseObject(argsJson);
+            int pemesananId = Json.requireInt(args, "pemesananId");
+            String alasan = Json.optString(args, "alasan", "");
+            String namaPenerima = Json.optString(args, "namaPenerima", "");
+            String rekeningTujuan = Json.optString(args, "rekeningTujuan", "");
+
+            try {
+                Refund refund = refundController.ajukanRefund(
+                        pemesananId, userId, alasan, namaPenerima, rekeningTujuan);
+                return success("Pengajuan refund diterima", refundJson(refund));
+            } catch (PemesananController.PemesananException e) {
+                return error(e.getMessage(), ERR_INVALID_INPUT);
+            }
+        }));
+    }
+
+    private Json.Obj refundJson(Refund refund) {
+        return Json.obj()
+                .put("id", refund.getId())
+                .put("pemesananId", refund.getPemesananID())
+                .put("alasan", refund.getAlasan())
+                .put("status", refund.getStatus().name())
+                .put("jumlahRefund", refund.getJumlahRefund())
+                .put("namaPenerima", refund.getNamaPenerima())
+                .put("rekeningTujuan", refund.getRekeningTujuan());
     }
 
     private Json.Obj bookingJson(Pemesanan pemesanan) {
@@ -301,6 +397,21 @@ public class JavaScriptBridge {
     }
 
     // ------------------------------------------------------------------ plumbing
+
+    /** An operation that needs an authenticated user. */
+    @FunctionalInterface
+    interface SessionOperation {
+        String execute(int userId) throws Exception;
+    }
+
+    /** Refuses the operation unless a session is active, then supplies its user id. */
+    private String withSession(SessionOperation operation) throws Exception {
+        Integer userId = sessionUserId;
+        if (userId == null) {
+            return error("Silakan masuk terlebih dahulu", ERR_UNAUTHENTICATED);
+        }
+        return operation.execute(userId);
+    }
 
     /** The body of a bridge operation: runs off the FX thread, returns a JSON response. */
     @FunctionalInterface

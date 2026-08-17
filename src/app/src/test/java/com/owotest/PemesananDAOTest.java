@@ -5,6 +5,7 @@ import com.owo.dao.PemesananDAO;
 import com.owo.dao.TiketDAO;
 import com.owo.entity.Akun;
 import com.owo.entity.Pemesanan;
+import com.owo.entity.PemesananStatus;
 import com.owo.entity.TiketPesawat;
 import com.owo.utils.DBHelper;
 import com.owotest.support.TempDatabase;
@@ -93,11 +94,11 @@ class PemesananDAOTest {
     void createPemesanan_thenUpdateStatus_persists() throws Exception {
         Pemesanan created = PemesananDAO.createPemesanan(customer.getID(), flight("GA401", 3));
 
-        PemesananDAO.updateStatus(created.getId(), "CONFIRMED");
+        PemesananDAO.updateStatus(created.getId(), PemesananStatus.CONFIRMED);
 
         Pemesanan reread = PemesananDAO.getPemesananById(created.getId());
         assertNotNull(reread);
-        assertEquals("CONFIRMED", reread.getStatus());
+        assertEquals(PemesananStatus.CONFIRMED.dbValue(), reread.getStatus());
     }
 
     @Test

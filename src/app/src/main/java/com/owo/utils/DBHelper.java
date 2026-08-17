@@ -136,7 +136,7 @@ public class DBHelper {
                 )
             """);
 
-            // Create refund table
+            // Create refund table. Deliberately carries no card columns; see migrateRefundTable.
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS refund (
                     id TEXT PRIMARY KEY,
@@ -144,11 +144,9 @@ public class DBHelper {
                     alasan TEXT NOT NULL,
                     status TEXT NOT NULL,
                     jumlah_refund REAL NOT NULL,
-                    nama_kartu TEXT,
-                    nomor_kartu TEXT,
-                    expiry_month TEXT,
-                    expiry_year TEXT,
-                    cvv TEXT,
+                    nama_penerima TEXT,
+                    rekening_tujuan TEXT,
+                    status_sebelumnya TEXT,
                     FOREIGN KEY (pemesanan_id) REFERENCES pemesanan(id)
                 )
             """);
@@ -164,6 +162,67 @@ public class DBHelper {
                     FOREIGN KEY (user_id) REFERENCES akun(id)
                 )
             """);
+
+            migrateRefundTable(conn, stmt);
+        }
+    }
+
+    /**
+     * Removes stored card data from databases created before it was taken out of the schema.
+     *
+     * <p>{@code CREATE TABLE IF NOT EXISTS} leaves an existing table alone, so a database
+     * seeded by an earlier build still carries {@code nomor_kartu}, {@code expiry_month},
+     * {@code expiry_year} and {@code cvv}. Those columns are dropped here and their
+     * contents discarded; the refund rows themselves are preserved.
+     */
+    private static void migrateRefundTable(Connection conn, Statement stmt) throws SQLException {
+        boolean hasCardColumns = false;
+        try (var rs = stmt.executeQuery("PRAGMA table_info(refund)")) {
+            while (rs.next()) {
+                String column = rs.getString("name");
+                if ("cvv".equals(column) || "nomor_kartu".equals(column)
+                        || "expiry_month".equals(column) || "expiry_year".equals(column)
+                        || "nama_kartu".equals(column)) {
+                    hasCardColumns = true;
+                }
+            }
+        }
+        if (!hasCardColumns) {
+            return;
+        }
+
+        System.out.println("Migrating refund table: removing stored card data.");
+        boolean previousAutoCommit = conn.getAutoCommit();
+        conn.setAutoCommit(false);
+        try {
+            stmt.execute("""
+                CREATE TABLE refund_migrated (
+                    id TEXT PRIMARY KEY,
+                    pemesanan_id INTEGER NOT NULL,
+                    alasan TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    jumlah_refund REAL NOT NULL,
+                    nama_penerima TEXT,
+                    rekening_tujuan TEXT,
+                    status_sebelumnya TEXT,
+                    FOREIGN KEY (pemesanan_id) REFERENCES pemesanan(id)
+                )
+            """);
+            // The cardholder name carries over as the payee; the card number, expiry and
+            // CVV are intentionally not copied.
+            stmt.execute("""
+                INSERT INTO refund_migrated
+                    (id, pemesanan_id, alasan, status, jumlah_refund, nama_penerima)
+                SELECT id, pemesanan_id, alasan, status, jumlah_refund, nama_kartu FROM refund
+            """);
+            stmt.execute("DROP TABLE refund");
+            stmt.execute("ALTER TABLE refund_migrated RENAME TO refund");
+            conn.commit();
+        } catch (SQLException e) {
+            conn.rollback();
+            throw e;
+        } finally {
+            conn.setAutoCommit(previousAutoCommit);
         }
     }
 }

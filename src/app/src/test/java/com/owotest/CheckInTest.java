@@ -52,8 +52,10 @@ public class CheckInTest {
         boolean hasil = checkInController.validasiCheckIn(pemesananBisaCheckIn);
 
         assertTrue(hasil, "validasiCheckIn seharusnya mengembalikan true untuk pemesanan yang valid.");
-        assertEquals("CHECKED_IN", pemesananBisaCheckIn.getStatus(),
-                "Status pemesanan seharusnya berubah menjadi 'CHECKED_IN'.");
+        // validasiCheckIn hanya memeriksa kelayakan. Perubahan status dilakukan oleh
+        // checkIn(), yang juga menyimpannya ke basis data.
+        assertEquals("CONFIRMED", pemesananBisaCheckIn.getStatus(),
+                "Validasi saja seharusnya tidak mengubah status.");
     }
 
     @Test
@@ -61,8 +63,8 @@ public class CheckInTest {
     void testValidHotelCheckInSuccess() {
         boolean hasil = checkInController.validasiCheckIn(pemesananHotelBisaCheckIn);
         assertTrue(hasil, "Check-in hotel pada hari H seharusnya berhasil.");
-        assertEquals("CHECKED_IN", pemesananHotelBisaCheckIn.getStatus(),
-                "Status pemesanan hotel seharusnya berubah menjadi 'CHECKED_IN'.");
+        assertEquals("CONFIRMED", pemesananHotelBisaCheckIn.getStatus(),
+                "Validasi saja seharusnya tidak mengubah status.");
     }
 
     @Test

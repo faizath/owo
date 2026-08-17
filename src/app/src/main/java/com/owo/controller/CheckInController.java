@@ -1,54 +1,99 @@
 package com.owo.controller;
 
 import com.owo.entity.Pemesanan;
+import com.owo.entity.PemesananStatus;
 import com.owo.entity.Tiket;
 import com.owo.entity.TiketHotel;
 import com.owo.entity.TiketPesawat;
+
+import java.sql.SQLException;
 import java.time.LocalDate;
 
+/**
+ * Check-in eligibility and the state change it produces.
+ *
+ * <p>The rule is same-day: check-in opens on the departure or check-in date and closes at
+ * the end of it. Only the "too early" half used to be enforced, so a booking could be
+ * checked into months after the flight had gone — and the test suite covered only that
+ * same half, which is why it shipped green.
+ */
 public class CheckInController {
 
+    private final PemesananController pemesananController;
+
+    public CheckInController() {
+        this(new PemesananController());
+    }
+
+    public CheckInController(PemesananController pemesananController) {
+        this.pemesananController = pemesananController;
+    }
+
+    /**
+     * Validates without persisting. Retained for the entity-level tests.
+     *
+     * @return true if this booking may be checked into today
+     */
     public boolean validasiCheckIn(Pemesanan pemesanan) {
+        try {
+            assertCheckInAllowed(pemesanan);
+            return true;
+        } catch (PemesananController.PemesananException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Checks a booking in and persists the change.
+     *
+     * <p>The status change used to be applied to the in-memory object only, so check-in
+     * appeared to succeed and then reverted on restart.
+     */
+    public Pemesanan checkIn(int pemesananId, int customerId)
+            throws PemesananController.PemesananException, SQLException {
+        Pemesanan pemesanan = pemesananController.getOwnedPemesanan(pemesananId, customerId);
+        assertCheckInAllowed(pemesanan);
+        pemesananController.transition(pemesanan, PemesananStatus.CHECKED_IN);
+        return pemesanan;
+    }
+
+    private void assertCheckInAllowed(Pemesanan pemesanan)
+            throws PemesananController.PemesananException {
         if (pemesanan == null) {
-            System.err.println("   [GAGAL] Objek pemesanan tidak boleh null.");
-            return false;
+            throw new PemesananController.PemesananException("Pemesanan tidak ditemukan.");
         }
-        System.out.println("\n==> Memvalidasi check-in untuk Pemesanan ID: " + pemesanan.getId());
-
         if (pemesanan.getTiket() == null) {
-            System.err.println("   [GAGAL] Objek tiket pada pemesanan tidak boleh null.");
-            return false;
+            throw new PemesananController.PemesananException("Tiket pemesanan tidak ditemukan.");
         }
 
-        if (!"CONFIRMED".equalsIgnoreCase(pemesanan.getStatus())) {
-            System.err
-                    .println("   [GAGAL] Check-in tidak tersedia. Status pemesanan saat ini: " + pemesanan.getStatus());
-            return false;
+        PemesananStatus status = PemesananController.readStatus(pemesanan);
+        if (status != PemesananStatus.CONFIRMED) {
+            throw new PemesananController.PemesananException(
+                    "Check-in tidak tersedia untuk pemesanan berstatus " + status + ".");
         }
 
-        // Validasi waktu: Check-in hanya bisa dilakukan pada hari H.
         LocalDate tanggalAcara = getTanggalBooking(pemesanan.getTiket());
-
         if (tanggalAcara == null) {
-            System.err.println("   [GAGAL] Tidak dapat menentukan tanggal acara dari tiket.");
-            return false;
+            throw new PemesananController.PemesananException(
+                    "Tidak dapat menentukan tanggal keberangkatan.");
         }
 
-        if (LocalDate.now().isBefore(tanggalAcara)) {
-            System.err.println("   [GAGAL] Check-in hanya bisa dilakukan pada tanggal " + tanggalAcara);
-            return false;
+        LocalDate today = LocalDate.now();
+        if (today.isBefore(tanggalAcara)) {
+            throw new PemesananController.PemesananException(
+                    "Check-in baru dapat dilakukan pada tanggal " + tanggalAcara + ".");
         }
-
-        pemesanan.setStatus("CHECKED_IN");
-        System.out.println("   [SUKSES] Check-in berhasil! Status pemesanan diubah menjadi: " + pemesanan.getStatus());
-        return true;
+        if (today.isAfter(tanggalAcara)) {
+            throw new PemesananController.PemesananException(
+                    "Masa check-in telah berakhir pada tanggal " + tanggalAcara + ".");
+        }
     }
 
     private LocalDate getTanggalBooking(Tiket tiket) {
-        if (tiket instanceof TiketPesawat) {
-            return ((TiketPesawat) tiket).getWaktuKeberangkatan().toLocalDate();
-        } else if (tiket instanceof TiketHotel) {
-            return ((TiketHotel) tiket).getCheckIn();
+        if (tiket instanceof TiketPesawat pesawat) {
+            return pesawat.getWaktuKeberangkatan().toLocalDate();
+        } else if (tiket instanceof TiketHotel hotel) {
+            return hotel.getCheckIn();
         }
         return null;
     }

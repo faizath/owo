@@ -1,16 +1,28 @@
 package com.owo.entity;
 
+/**
+ * A refund request against a booking.
+ *
+ * <p>This deliberately holds <strong>no card data</strong>. The table previously carried
+ * {@code nomor_kartu}, {@code expiry_month}, {@code expiry_year} and {@code cvv} in
+ * plaintext. Retaining a card verification value after authorisation is prohibited
+ * outright, so the capability was removed rather than completed. What a disbursement
+ * actually needs is a payee and an account reference.
+ */
 public class Refund {
     private String id;
     private int pemesananID;
     private String alasan;
     private RefundStatus status;
     private double jumlahRefund;
-    private String namaKartu;
-    private String nomorKartu;
-    private String expiryMonth;
-    private String expiryYear;
-    private String cvv;
+    private String namaPenerima;
+    private String rekeningTujuan;
+
+    /**
+     * The booking status to restore if this refund is rejected. Rejection used to write
+     * CONFIRMED unconditionally, which silently downgraded a checked-in booking.
+     */
+    private PemesananStatus statusSebelumnya;
 
     public Refund(String id, int pemesananID, String alasan, double jumlahRefund) {
         this.id = id;
@@ -40,44 +52,40 @@ public class Refund {
         return jumlahRefund;
     }
 
-    public String getNamaKartu() {
-        return namaKartu;
+    public String getNamaPenerima() {
+        return namaPenerima;
     }
 
-    public String getNomorKartu() {
-        return nomorKartu;
+    public String getRekeningTujuan() {
+        return rekeningTujuan;
     }
 
-    public String getExpiryMonth() {
-        return expiryMonth;
-    }
-
-    public String getExpiryYear() {
-        return expiryYear;
-    }
-
-    public String getCvv() {
-        return cvv;
-    }
-
-    public String getData() {
-        return "Refund ID: " + id + ", Pemesanan ID: " + pemesananID + ", Alasan: " + alasan + ", Status: " + status;
+    public PemesananStatus getStatusSebelumnya() {
+        return statusSebelumnya;
     }
 
     public void setStatus(RefundStatus status) {
         this.status = status;
     }
 
-    public void setDetailKartu(String namaKartu, String nomorKartu, String expiryMonth, String expiryYear, String cvv) {
-        this.namaKartu = namaKartu;
-        this.nomorKartu = nomorKartu;
-        this.expiryMonth = expiryMonth;
-        this.expiryYear = expiryYear;
-        this.cvv = cvv;
+    public void setStatusSebelumnya(PemesananStatus statusSebelumnya) {
+        this.statusSebelumnya = statusSebelumnya;
     }
 
-    public String[] getDetailKartu() {
-        return new String[] { namaKartu, nomorKartu, expiryMonth, expiryYear, cvv };
+    /**
+     * Records where the money should go.
+     *
+     * @param rekeningTujuan a bank account reference, or the last four digits of a masked
+     *     card number — never a full PAN
+     */
+    public void setDetailPencairan(String namaPenerima, String rekeningTujuan) {
+        this.namaPenerima = namaPenerima;
+        this.rekeningTujuan = rekeningTujuan;
+    }
+
+    public String getData() {
+        return "Refund ID: " + id + ", Pemesanan ID: " + pemesananID
+                + ", Alasan: " + alasan + ", Status: " + status;
     }
 
     public enum RefundStatus {
@@ -86,8 +94,18 @@ public class Refund {
         REJECTED,
         PROCESSING,
         COMPLETED,
-        FAILED
+        FAILED;
 
+        /** @throws IllegalArgumentException on an unrecognised stored value */
+        public static RefundStatus fromDb(String value) {
+            if (value == null || value.isBlank()) {
+                throw new IllegalArgumentException("Refund status is missing");
+            }
+            try {
+                return valueOf(value.trim().toUpperCase(java.util.Locale.ROOT));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Unrecognised refund status: " + value, e);
+            }
+        }
     }
-
 }
