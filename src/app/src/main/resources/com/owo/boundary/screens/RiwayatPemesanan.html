@@ -378,6 +378,24 @@
             cursor: not-allowed;
         }
 
+        /* Destructive, so it is outlined rather than filled: it must not read as the
+           primary action next to Bayar. */
+        .btn-cancel {
+            background: transparent;
+            color: #B91C1C;
+            border: 1px solid #FCA5A5;
+        }
+
+        .btn-cancel:hover {
+            background: #FEF2F2;
+        }
+
+        .btn-cancel:disabled {
+            color: #999;
+            border-color: #E5E7EB;
+            cursor: not-allowed;
+        }
+
         /* History Section */
         .history-section {
             margin-top: 40px;

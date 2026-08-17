@@ -478,6 +478,32 @@
             cursor: not-allowed;
         }
 
+        /* Abandoning this screen used to leave the booking PENDING with its ticket
+           claimed, so the unit stayed out of the catalogue for everyone. */
+        .cancel-button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 12px;
+            background: transparent;
+            color: #B91C1C;
+            border: 1px solid #FCA5A5;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .cancel-button:hover {
+            background: #FEF2F2;
+        }
+
+        .cancel-button:disabled {
+            color: #9CA3AF;
+            border-color: #E5E7EB;
+            cursor: not-allowed;
+        }
+
         /* Success Modal */
         .success-modal {
             position: fixed;
@@ -860,6 +886,7 @@
                 </div>
 
                 <button class="payment-button" id="payment-button">PAYMENT</button>
+                <button type="button" class="cancel-button" id="cancel-booking-button">Batalkan Pemesanan</button>
             </div>
         </div>
     </div>

@@ -64,6 +64,63 @@
     }
   }
 
+  /**
+   * Turns a destructive button into a two-step confirmation.
+   *
+   * WebView's native `confirm()` resolves to false unless a confirm handler is installed
+   * on the engine, and nothing installs one — a dialog-based confirmation would therefore
+   * refuse every cancellation without showing anything. Asking for a second click needs
+   * no platform dialog. The armed state lapses on its own so a stray first click does not
+   * leave a live destructive button behind.
+   */
+  function confirmTwice(button, armedLabel, onConfirmed) {
+    if (!button) return;
+    const original = button.textContent;
+    let armed = false;
+    let timer = null;
+
+    function disarm() {
+      armed = false;
+      button.textContent = original;
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+    }
+
+    button.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (!armed) {
+        armed = true;
+        button.textContent = armedLabel;
+        timer = setTimeout(disarm, 6000);
+        return;
+      }
+      disarm();
+      onConfirmed();
+    });
+  }
+
+  /**
+   * Cancels a booking and returns to the history.
+   *
+   * Cancelling is what releases the claimed ticket back to the catalogue; simply leaving
+   * the payment screen does not, which is why every state the transition table allows to
+   * CANCELLED offers this.
+   */
+  function cancelBooking(bookingId, button) {
+    busy(button, true, 'Membatalkan...');
+    window.OwOAPI.cancelBooking(bookingId)
+      .then(function () {
+        window.App.showNotification('Pemesanan dibatalkan.');
+        window.App.navigate('RiwayatPemesanan');
+      })
+      .catch(function (err) {
+        busy(button, false);
+        fail(err.message);
+      });
+  }
+
   /** An ISO date string for an `<input type="date">`, offset from today. */
   function isoDate(offsetDays) {
     const d = new Date();
@@ -535,6 +592,12 @@
           });
       });
 
+      // A PENDING booking already holds its ticket, so leaving this screen unpaid used to
+      // take the unit out of the catalogue for everybody with nothing able to give it back.
+      confirmTwice(byId('cancel-booking-button'), 'Klik lagi untuk membatalkan', function () {
+        cancelBooking(booking.id, byId('cancel-booking-button'));
+      });
+
       /** @returns a message describing the first problem, or null when the card is plausible */
       function validateCard() {
         const number = (byId('cardNumber') || {}).value || '';
@@ -696,6 +759,14 @@
             + 'data-action="pay" data-id="' + esc(b.id) + '">Bayar</button>';
         }
 
+        // PENDING and CONFIRMED are exactly the states PemesananStatus allows to reach
+        // CANCELLED; offering it anywhere else would only produce a refusal from Java.
+        let cancelButton = '';
+        if (b.status === 'PENDING' || b.status === 'CONFIRMED') {
+          cancelButton = '<button type="button" class="action-button btn-cancel" '
+            + 'data-action="cancel" data-id="' + esc(b.id) + '">Batalkan</button>';
+        }
+
         return '<div class="booking-card">'
           + '<div class="booking-header">'
           + '<div class="booking-route">'
@@ -712,7 +783,8 @@
           + '</div>'
           + '<div class="booking-status status-active">' + esc(STATUS_LABEL[b.status] || b.status) + '</div>'
           + '</div>'
-          + '<div class="booking-actions">' + payButton + checkInButton + refundButton + '</div>'
+          + '<div class="booking-actions">' + payButton + checkInButton + refundButton
+          + cancelButton + '</div>'
           + '</div>';
       }
 
@@ -741,6 +813,14 @@
 
         document.querySelectorAll('[data-action]').forEach(function (button) {
           const id = parseInt(button.dataset.id, 10);
+
+          if (button.dataset.action === 'cancel') {
+            // Cancelling is irreversible and releases the ticket, so it asks twice.
+            confirmTwice(button, 'Klik lagi untuk membatalkan', function () {
+              cancelBooking(id, button);
+            });
+            return;
+          }
 
           button.addEventListener('click', function () {
             const booking = find(id);
