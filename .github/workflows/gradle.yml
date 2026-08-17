@@ -1,4 +1,4 @@
-name: Gradle Unit Tests
+name: Build and test
 
 on:
   push:
@@ -6,30 +6,55 @@ on:
   pull_request:
     branches: [ showcase ]
 
+# A newer push supersedes the run already in flight for the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        java-version: [21]
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK
+      # The daemon JVM criteria in src/gradle/gradle-daemon-jvm.properties ask for
+      # Java 21 with no vendor pin, which this satisfies without Gradle having to
+      # provision a toolchain over the network.
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: ${{ matrix.java-version }}
+          java-version: '21'
+          cache: gradle
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x src/gradlew
+      # BridgeLiveTest drives a real WebView, so it needs a display and the GTK/GL
+      # libraries JavaFX's WebKit links against. Without them the live tests are
+      # skipped rather than failed — and they are the only layer that exercises the
+      # page through the controls a user actually has.
+      - name: Install a virtual display
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgtk-3-0 libgl1 libxtst6
 
-      - name: Build with Gradle
+      # `build` already runs `check` → `test`, so this is the whole suite in one
+      # pass; -Powo.live=true opts the WebView tests in. Running `test` separately
+      # afterwards adds no coverage and costs a full reconfiguration, because the
+      # configuration cache is never stored while a Test task is in the graph.
+      - name: Build and test
         working-directory: src
-        run: ./gradlew build
+        run: xvfb-run --auto-servernum ./gradlew build -Powo.live=true
 
-      - name: Run tests
-        working-directory: src
-        run: ./gradlew test
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            src/app/build/reports/tests/test
+            src/app/build/test-results/test
+          retention-days: 7
