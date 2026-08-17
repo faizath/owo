@@ -34,7 +34,7 @@ class AkunTest {
 
     @Test
     void testSetHashedPassword() {
-        akun.setHashedPassword("newpassword");
+        akun.setPassword("newpassword");
         assertTrue(akun.checkPassword("newpassword"));
         assertFalse(akun.checkPassword("password123"));
     }

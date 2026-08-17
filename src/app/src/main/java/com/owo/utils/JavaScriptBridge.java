@@ -174,6 +174,43 @@ public class JavaScriptBridge {
                 .put("isAdmin", akun.isAdmin());
     }
 
+    /** Changes the signed-in account's display name. Identity comes from the session. */
+    public void updateProfile(String argsJson, String callbackName) {
+        run(callbackName, () -> withSession(userId -> {
+            Map<String, Object> args = Json.parseObject(argsJson);
+            String nama = Json.optString(args, "nama", "");
+
+            try {
+                Akun akun = AuthController.gantiNama(userId, nama);
+                sessionNama = akun.getNama();
+                return success("Profil diperbarui", akunJson(akun));
+            } catch (AuthController.AuthException e) {
+                return error(e.getMessage(), ERR_INVALID_INPUT);
+            }
+        }));
+    }
+
+    /**
+     * Changes the signed-in account's password.
+     *
+     * <p>The current password is required as well: an unattended session would otherwise
+     * be enough to lock its owner out of their own account.
+     */
+    public void changePassword(String argsJson, String callbackName) {
+        run(callbackName, () -> withSession(userId -> {
+            Map<String, Object> args = Json.parseObject(argsJson);
+            String lama = Json.optString(args, "passwordLama", "");
+            String baru = Json.optString(args, "passwordBaru", "");
+
+            try {
+                AuthController.gantiPassword(userId, lama, baru);
+                return success("Kata sandi diperbarui", null);
+            } catch (AuthController.AuthException e) {
+                return error(e.getMessage(), ERR_INVALID_INPUT);
+            }
+        }));
+    }
+
     // -------------------------------------------------------------------- search
 
     public void searchFlights(String argsJson, String callbackName) {
@@ -579,7 +616,7 @@ public class JavaScriptBridge {
     private static final List<String> SCREENS = List.of(
             "LoginForm", "RegisterForm", "Pemesanan", "CekKetersediaanPesawat",
             "CekKetersediaanHotel", "Pembayaran", "RiwayatPemesanan", "RefundForm",
-            "TinjauRefund");
+            "TinjauRefund", "Informasi", "PengaturanAkun");
 
     /**
      * Returns a screen fragment as markup.

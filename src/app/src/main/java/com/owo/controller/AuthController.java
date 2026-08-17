@@ -72,6 +72,56 @@ public class AuthController {
         return AkunDAO.createAkun(nama.trim(), normalisedEmail, password);
     }
 
+    /**
+     * Changes the display name on an existing account.
+     *
+     * @return the updated account
+     * @throws AuthException if the name is blank or the account no longer exists
+     */
+    public static Akun gantiNama(int userId, String nama) throws AuthException, SQLException {
+        if (nama == null || nama.trim().isEmpty()) {
+            throw new AuthException("Nama tidak boleh kosong.");
+        }
+
+        Akun akun = AkunDAO.getAkunByID(userId);
+        if (akun == null) {
+            throw new AuthException("Akun tidak ditemukan.");
+        }
+
+        akun.setNama(nama.trim());
+        AkunDAO.updateAkun(akun);
+        return akun;
+    }
+
+    /**
+     * Changes the password, verifying the current one first.
+     *
+     * <p>The current password is required even though the caller is already signed in: a
+     * session left open on a shared machine would otherwise be enough to lock its owner
+     * out of their own account.
+     *
+     * @throws AuthException if the current password is wrong or the new one is too short
+     */
+    public static void gantiPassword(int userId, String passwordLama, String passwordBaru)
+            throws AuthException, SQLException {
+        Akun akun = AkunDAO.getAkunByID(userId);
+        if (akun == null) {
+            throw new AuthException("Akun tidak ditemukan.");
+        }
+        if (passwordLama == null || !akun.checkPassword(passwordLama)) {
+            throw new AuthException("Kata sandi saat ini salah.");
+        }
+        if (passwordBaru == null || passwordBaru.length() < MIN_PASSWORD_LENGTH) {
+            throw new AuthException("Password minimal " + MIN_PASSWORD_LENGTH + " karakter.");
+        }
+        if (passwordBaru.equals(passwordLama)) {
+            throw new AuthException("Kata sandi baru harus berbeda dari yang lama.");
+        }
+
+        akun.setPassword(passwordBaru);
+        AkunDAO.updateAkun(akun);
+    }
+
     private static String normaliseEmail(String email) {
         return email == null ? "" : email.trim().toLowerCase();
     }

@@ -1,0 +1,196 @@
+<style>
+    .akun-screen {
+        font-family: 'Poppins', sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: #F9FAFB;
+        min-height: 100vh;
+    }
+
+    .akun-header {
+        background: white;
+        padding: 20px 40px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .akun-brand {
+        color: #613DC1;
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .akun-nav {
+        display: flex;
+        gap: 24px;
+    }
+
+    .akun-nav .nav-item {
+        color: #613DC1;
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .akun-container {
+        max-width: 620px;
+        margin: 0 auto;
+        padding: 32px 24px 64px;
+    }
+
+    .akun-card {
+        background: white;
+        border-radius: 12px;
+        padding: 28px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .akun-card h2 {
+        font-size: 19px;
+        color: #111827;
+        margin-bottom: 4px;
+    }
+
+    .akun-lead {
+        color: #6B7280;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    .akun-field {
+        margin-bottom: 16px;
+    }
+
+    .akun-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 6px;
+    }
+
+    .akun-input {
+        width: 100%;
+        padding: 11px 14px;
+        border: 1px solid #D1D5DB;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 15px;
+        color: #111827;
+    }
+
+    .akun-input:focus {
+        outline: none;
+        border-color: #613DC1;
+    }
+
+    .akun-hint {
+        font-size: 12px;
+        color: #9CA3AF;
+        margin-top: 4px;
+    }
+
+    .akun-button {
+        width: 100%;
+        padding: 13px;
+        background: #613DC1;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    .akun-button:hover {
+        background: #4E148C;
+    }
+
+    .akun-button:disabled {
+        background: #D1D5DB;
+        cursor: not-allowed;
+    }
+
+    .akun-readonly {
+        font-size: 15px;
+        color: #111827;
+    }
+
+    .akun-ok {
+        margin-top: 14px;
+        padding: 12px 14px;
+        border-radius: 8px;
+        background: #ECFDF5;
+        color: #065F46;
+        font-size: 14px;
+    }
+</style>
+
+<div class="akun-screen">
+    <div class="akun-header">
+        <div class="akun-brand">OwO</div>
+        <nav class="akun-nav">
+            <a class="nav-item">Pemesanan</a>
+            <a class="nav-item">Refund</a>
+            <a class="nav-item">Log Out</a>
+        </nav>
+    </div>
+
+    <div class="akun-container">
+        <div class="akun-card">
+            <h2>Profil</h2>
+            <p class="akun-lead">Nama yang tampil pada pemesanan dan notifikasi Anda.</p>
+
+            <div class="akun-field">
+                <span class="akun-label">Email</span>
+                <div class="akun-readonly" id="akunEmail">-</div>
+                <div class="akun-hint">
+                    Email adalah identitas masuk Anda dan tidak dapat diubah di sini.
+                </div>
+            </div>
+
+            <div class="akun-field">
+                <label class="akun-label" for="akunNama">Nama</label>
+                <input type="text" class="akun-input" id="akunNama" autocomplete="name">
+            </div>
+
+            <button type="button" class="akun-button" id="akunSimpanNama">Simpan Nama</button>
+            <div class="akun-ok hidden" id="akunNamaOk">Nama diperbarui.</div>
+        </div>
+
+        <div class="akun-card">
+            <h2>Kata Sandi</h2>
+            <p class="akun-lead">Ganti kata sandi yang Anda gunakan untuk masuk.</p>
+
+            <div class="akun-field">
+                <label class="akun-label" for="akunSandiLama">Kata sandi saat ini</label>
+                <input type="password" class="akun-input" id="akunSandiLama"
+                       autocomplete="current-password">
+            </div>
+
+            <div class="akun-field">
+                <label class="akun-label" for="akunSandiBaru">Kata sandi baru</label>
+                <input type="password" class="akun-input" id="akunSandiBaru"
+                       autocomplete="new-password">
+                <div class="akun-hint">Minimal 8 karakter.</div>
+            </div>
+
+            <div class="akun-field">
+                <label class="akun-label" for="akunSandiUlang">Ulangi kata sandi baru</label>
+                <input type="password" class="akun-input" id="akunSandiUlang"
+                       autocomplete="new-password">
+            </div>
+
+            <button type="button" class="akun-button" id="akunSimpanSandi">Ganti Kata Sandi</button>
+            <div class="akun-ok hidden" id="akunSandiOk">Kata sandi diperbarui.</div>
+        </div>
+    </div>
+</div>

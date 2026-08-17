@@ -182,6 +182,68 @@ class BoundaryResourceTest {
     }
 
     @Test
+    void everyChromeLinkLeadsSomewhere() throws Exception {
+        Path boundary = resources();
+        String screensJs = Files.readString(
+                boundary.resolve("screens.js"), StandardCharsets.UTF_8);
+
+        // Labels that wireChrome must recognise. Nine of these used to call
+        // preventDefault and return, so the link looked live and did nothing; a label
+        // added to a fragment without a route here would silently join them.
+        List<String> labels = List.of(
+                "Tentang Kami", "Profil Perusahaan", "Kontak", "Bantuan dan Keluhan",
+                "Syarat &amp; Ketentuan", "Kebijakan Privasi", "Kebijakan Pembatalan",
+                "Pengaturan Akun", "Pengaturan");
+
+        List<String> unrouted = new ArrayList<>();
+        for (String label : labels) {
+            String lower = label.replace("&amp;", "&").toLowerCase(java.util.Locale.ROOT);
+            if (!screensJs.contains("'" + lower + "'")) {
+                unrouted.add(label);
+            }
+        }
+
+        assertTrue(unrouted.isEmpty(), "chrome labels wireChrome does not route: " + unrouted);
+    }
+
+    @Test
+    void everyChromeLabelInAFragmentIsRouted() throws Exception {
+        Path boundary = resources();
+        String screensJs = Files.readString(
+                boundary.resolve("screens.js"), StandardCharsets.UTF_8);
+        Path screens = boundary.resolve("screens");
+
+        // Anchors carrying a chrome class are wired by wireChrome and by nothing else,
+        // so one whose text it does not recognise is a link that goes nowhere.
+        Pattern chromeLink = Pattern.compile(
+                "<a[^>]*class=\"[^\"]*(?:nav-item|footer-link)[^\"]*\"[^>]*>([^<]+)</a>");
+
+        List<String> unrouted = new ArrayList<>();
+        int examined = 0;
+        for (String screen : routableScreens()) {
+            String html = Files.readString(
+                    screens.resolve(screen + ".html"), StandardCharsets.UTF_8);
+            Matcher m = chromeLink.matcher(html);
+            while (m.find()) {
+                String label = m.group(1).trim().replace("&amp;", "&")
+                        .toLowerCase(java.util.Locale.ROOT);
+                if (label.isEmpty() || label.equals("log out")) {
+                    continue;
+                }
+                examined++;
+                if (!screensJs.contains("'" + label + "'")) {
+                    unrouted.add(screen + " → \"" + label + "\"");
+                }
+            }
+        }
+
+        assertTrue(unrouted.isEmpty(), "chrome links with no destination: " + unrouted);
+        // A regex that matched nothing would pass silently and check nothing at all.
+        assertTrue(examined > 20, "only " + examined + " chrome links found; the pattern "
+                + "no longer matches the markup");
+    }
+
+    @Test
     void noProductionScreenReferencesTheMockDataFile() throws Exception {
         Path boundary = resources();
 

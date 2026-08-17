@@ -138,12 +138,33 @@
     });
   }
 
+  /**
+   * Which section of the Informasi screen each chrome label opens.
+   *
+   * Nine labels in the header, sidebar and footer called preventDefault and returned, so
+   * every policy link, the contact details and the company profile were decoration. The
+   * content they promise is a real obligation of a booking system — what a refund pays,
+   * when a cancellation is free, what is stored — so they lead to it rather than being
+   * deleted.
+   */
+  const INFO_TOPICS = {
+    'tentang kami': 'tentang',
+    'profil perusahaan': 'profil',
+    'kontak': 'kontak',
+    'bantuan dan keluhan': 'bantuan',
+    'syarat & ketentuan': 'syarat',
+    'syarat dan ketentuan': 'syarat',
+    'kebijakan privasi': 'privasi',
+    'kebijakan pembatalan': 'pembatalan'
+  };
+
   /** Wires the shared page chrome: header nav, sidebar menu, logo. */
   function wireChrome() {
     document.querySelectorAll('.nav-item, .footer-link, .menu-item, .sidebar-title a')
       .forEach(function (el) {
         const label = (el.textContent || '').trim().toLowerCase();
         let target = null;
+        let context = null;
 
         if (label === 'pesawat' || label === 'hotel' || label === 'owo'
             || label === 'pemesanan') {
@@ -154,6 +175,11 @@
           target = 'RefundForm';
         } else if (label === 'tinjau refund') {
           target = 'TinjauRefund';
+        } else if (label === 'pengaturan' || label === 'pengaturan akun') {
+          target = 'PengaturanAkun';
+        } else if (INFO_TOPICS[label]) {
+          target = 'Informasi';
+          context = { topik: INFO_TOPICS[label] };
         }
 
         el.addEventListener('click', function (e) {
@@ -161,7 +187,7 @@
           if (label === 'log out') {
             window.App.logout();
           } else if (target) {
-            window.App.navigate(target);
+            window.App.navigate(target, context);
           }
         });
       });
@@ -1212,6 +1238,119 @@
               });
           });
         });
+      }
+    }
+  };
+
+  // ----------------------------------------------------------------- Informasi
+
+  S.Informasi = {
+    init: function (context) {
+      wireChrome();
+
+      const panels = document.querySelectorAll('.info-panel');
+      const buttons = document.querySelectorAll('.info-menu-item');
+      if (!panels.length) return;
+
+      // An unknown topic shows the first section rather than an empty page, so a link
+      // added to the markup without a mapping still lands somewhere readable.
+      show((context && context.topik) || 'tentang');
+
+      buttons.forEach(function (button) {
+        button.addEventListener('click', function () { show(button.dataset.topik); });
+      });
+
+      function show(topik) {
+        let matched = false;
+        panels.forEach(function (panel) {
+          const isMatch = panel.dataset.topik === topik;
+          panel.hidden = !isMatch;
+          matched = matched || isMatch;
+        });
+        if (!matched) {
+          panels[0].hidden = false;
+          topik = panels[0].dataset.topik;
+        }
+        buttons.forEach(function (button) {
+          button.classList.toggle('active', button.dataset.topik === topik);
+        });
+      }
+    }
+  };
+
+  // ------------------------------------------------------------ PengaturanAkun
+
+  S.PengaturanAkun = {
+    init: function () {
+      wireChrome();
+      ensureBanner(document.querySelector('.akun-container') || document.body);
+
+      const session = window.App.session || {};
+      if (byId('akunEmail')) byId('akunEmail').textContent = session.email || '-';
+      if (byId('akunNama')) byId('akunNama').value = session.nama || '';
+
+      const namaButton = byId('akunSimpanNama');
+      if (namaButton) {
+        namaButton.addEventListener('click', function () {
+          const nama = ((byId('akunNama') || {}).value || '').trim();
+          if (!nama) {
+            fail('Nama tidak boleh kosong.');
+            return;
+          }
+
+          busy(namaButton, true, 'Menyimpan...');
+          window.OwOAPI.updateProfile(nama)
+            .then(function (akun) {
+              busy(namaButton, false);
+              // setSession, not an assignment: App.session is a getter, and it is what
+              // repaints the session bar. Without this the header and the shell keep
+              // showing the old name until the next login.
+              window.App.setSession(akun);
+              document.querySelectorAll('.user-greeting').forEach(function (el) {
+                el.textContent = 'Hi, ' + akun.nama + '!';
+              });
+              reveal('akunNamaOk');
+            })
+            .catch(function (err) {
+              busy(namaButton, false);
+              fail(err.message);
+            });
+        });
+      }
+
+      const sandiButton = byId('akunSimpanSandi');
+      if (sandiButton) {
+        sandiButton.addEventListener('click', function () {
+          const lama = (byId('akunSandiLama') || {}).value || '';
+          const baru = (byId('akunSandiBaru') || {}).value || '';
+          const ulang = (byId('akunSandiUlang') || {}).value || '';
+
+          // Checked here as well as in Java: a mistyped confirmation is the user's own
+          // slip, and there is nothing for the server to decide about it.
+          if (baru !== ulang) {
+            fail('Konfirmasi kata sandi tidak cocok.');
+            return;
+          }
+
+          busy(sandiButton, true, 'Menyimpan...');
+          window.OwOAPI.changePassword(lama, baru)
+            .then(function () {
+              busy(sandiButton, false);
+              ['akunSandiLama', 'akunSandiBaru', 'akunSandiUlang'].forEach(function (id) {
+                if (byId(id)) byId(id).value = '';
+              });
+              reveal('akunSandiOk');
+            })
+            .catch(function (err) {
+              busy(sandiButton, false);
+              fail(err.message);
+            });
+        });
+      }
+
+      function reveal(id) {
+        const el = byId(id);
+        if (el) el.classList.remove('hidden');
       }
     }
   };

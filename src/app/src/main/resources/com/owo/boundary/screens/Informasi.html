@@ -1,0 +1,400 @@
+<style>
+    .info-screen {
+        font-family: 'Poppins', sans-serif;
+        line-height: 1.7;
+        color: #333;
+        background: #F9FAFB;
+        min-height: 100vh;
+    }
+
+    .info-header {
+        background: white;
+        padding: 20px 40px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .info-brand {
+        color: #613DC1;
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .info-nav {
+        display: flex;
+        gap: 24px;
+    }
+
+    .info-nav .nav-item {
+        color: #613DC1;
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .info-container {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 32px 24px 64px;
+        display: grid;
+        grid-template-columns: minmax(200px, 240px) 1fr;
+        gap: 28px;
+        align-items: start;
+    }
+
+    @media (max-width: 760px) {
+        .info-container {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .info-menu {
+        background: white;
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        position: sticky;
+        top: 24px;
+    }
+
+    .info-menu-item {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 10px 14px;
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        font-family: inherit;
+        font-size: 14px;
+        color: #374151;
+        cursor: pointer;
+    }
+
+    .info-menu-item:hover {
+        background: #F3F4F6;
+    }
+
+    .info-menu-item.active {
+        background: #613DC1;
+        color: white;
+        font-weight: 600;
+    }
+
+    .info-panel {
+        background: white;
+        border-radius: 12px;
+        padding: 32px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .info-panel[hidden] {
+        display: none;
+    }
+
+    .info-panel h2 {
+        font-size: 22px;
+        color: #111827;
+        margin-bottom: 6px;
+    }
+
+    .info-lead {
+        color: #6B7280;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    .info-panel h3 {
+        font-size: 16px;
+        color: #111827;
+        margin: 22px 0 6px;
+    }
+
+    .info-panel p {
+        font-size: 15px;
+        color: #374151;
+        margin-bottom: 10px;
+    }
+
+    .info-panel ul {
+        margin: 0 0 12px 20px;
+        font-size: 15px;
+        color: #374151;
+    }
+
+    .info-panel li {
+        margin-bottom: 6px;
+    }
+
+    .info-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 15px;
+        margin-bottom: 12px;
+    }
+
+    .info-table th,
+    .info-table td {
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 1px solid #F3F4F6;
+    }
+
+    .info-table th {
+        color: #6B7280;
+        font-weight: 600;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .info-contact {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        margin-top: 8px;
+    }
+
+    .info-contact-card {
+        border: 1px solid #F3F4F6;
+        border-radius: 10px;
+        padding: 16px;
+    }
+
+    .info-contact-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #9CA3AF;
+        margin-bottom: 4px;
+    }
+
+    .info-contact-value {
+        font-size: 15px;
+        color: #111827;
+        word-break: break-word;
+    }
+
+    .info-note {
+        margin-top: 24px;
+        padding: 14px 16px;
+        border-radius: 8px;
+        background: #F5F3FF;
+        color: #4C1D95;
+        font-size: 14px;
+    }
+</style>
+
+<div class="info-screen">
+    <div class="info-header">
+        <div class="info-brand">OwO</div>
+        <nav class="info-nav">
+            <a class="nav-item">Pemesanan</a>
+            <a class="nav-item">Refund</a>
+            <a class="nav-item">Log Out</a>
+        </nav>
+    </div>
+
+    <div class="info-container">
+        <nav class="info-menu" id="infoMenu">
+            <button type="button" class="info-menu-item" data-topik="tentang">Tentang Kami</button>
+            <button type="button" class="info-menu-item" data-topik="profil">Profil Perusahaan</button>
+            <button type="button" class="info-menu-item" data-topik="kontak">Kontak</button>
+            <button type="button" class="info-menu-item" data-topik="bantuan">Bantuan dan Keluhan</button>
+            <button type="button" class="info-menu-item" data-topik="syarat">Syarat &amp; Ketentuan</button>
+            <button type="button" class="info-menu-item" data-topik="privasi">Kebijakan Privasi</button>
+            <button type="button" class="info-menu-item" data-topik="pembatalan">Kebijakan Pembatalan</button>
+        </nav>
+
+        <div id="infoPanels">
+            <section class="info-panel" data-topik="tentang" hidden>
+                <h2>Tentang Kami</h2>
+                <p class="info-lead">OwO adalah aplikasi pemesanan tiket pesawat dan kamar hotel.</p>
+                <p>
+                    OwO dibangun sebagai proyek mata kuliah IF2050 Dasar Rekayasa Perangkat
+                    Lunak di Institut Teknologi Bandung. Aplikasi ini menangani pencarian
+                    ketersediaan, pemesanan, pembayaran, check-in, dan pengajuan refund dalam
+                    satu alur.
+                </p>
+                <h3>Yang membedakan</h3>
+                <ul>
+                    <li>Satu pemesanan mengambil satu unit — satu kamar atau satu blok kursi —
+                        sehingga ketersediaan yang Anda lihat adalah ketersediaan sebenarnya.</li>
+                    <li>Nilai refund dihitung oleh sistem dari harga tiket yang tersimpan,
+                        bukan dari angka yang dikirim oleh halaman.</li>
+                    <li>Setiap keputusan refund dicatat beserta peninjau dan waktunya.</li>
+                </ul>
+            </section>
+
+            <section class="info-panel" data-topik="profil" hidden>
+                <h2>Profil Perusahaan</h2>
+                <p class="info-lead">Keterangan ringkas mengenai penyelenggara layanan.</p>
+                <table class="info-table">
+                    <tbody>
+                        <tr><th>Nama layanan</th><td>OwO Booking System</td></tr>
+                        <tr><th>Penyelenggara</th><td>Kelompok mata kuliah IF2050,
+                            Institut Teknologi Bandung</td></tr>
+                        <tr><th>Bidang</th><td>Pemesanan tiket pesawat dan kamar hotel</td></tr>
+                        <tr><th>Alamat</th><td>Jalan Ganesha No. 10, Bandung 40132,
+                            Jawa Barat</td></tr>
+                        <tr><th>Status</th><td>Proyek akademik; transaksi pembayaran
+                            disimulasikan dan tidak menagih kartu sungguhan</td></tr>
+                    </tbody>
+                </table>
+                <div class="info-note">
+                    Data kartu tidak pernah disimpan. Formulir pembayaran hanya memvalidasi
+                    format di halaman; tidak ada nomor kartu, masa berlaku, atau CVV yang
+                    dikirim ke sistem maupun ditulis ke basis data.
+                </div>
+            </section>
+
+            <section class="info-panel" data-topik="kontak" hidden>
+                <h2>Kontak</h2>
+                <p class="info-lead">Cara menghubungi kami.</p>
+                <div class="info-contact">
+                    <div class="info-contact-card">
+                        <div class="info-contact-label">Surel</div>
+                        <div class="info-contact-value">support@owo.id</div>
+                    </div>
+                    <div class="info-contact-card">
+                        <div class="info-contact-label">Telepon</div>
+                        <div class="info-contact-value">+62 22 250 0935</div>
+                    </div>
+                    <div class="info-contact-card">
+                        <div class="info-contact-label">Alamat</div>
+                        <div class="info-contact-value">Jalan Ganesha No. 10,
+                            Bandung 40132</div>
+                    </div>
+                    <div class="info-contact-card">
+                        <div class="info-contact-label">Jam layanan</div>
+                        <div class="info-contact-value">Senin–Jumat, 09.00–17.00 WIB</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="info-panel" data-topik="bantuan" hidden>
+                <h2>Bantuan dan Keluhan</h2>
+                <p class="info-lead">Masalah yang paling sering ditanyakan, beserta jalan keluarnya.</p>
+
+                <h3>Pemesanan saya masih "Menunggu pembayaran"</h3>
+                <p>
+                    Pemesanan sudah memegang unitnya sejak dibuat. Selesaikan pembayaran dari
+                    Riwayat Pemesanan, atau tekan <strong>Batalkan</strong> agar unit tersebut
+                    kembali tersedia untuk orang lain.
+                </p>
+
+                <h3>Tombol Check In tidak muncul</h3>
+                <p>
+                    Check-in hanya terbuka pada tanggal keberangkatan atau tanggal check-in
+                    hotel, dan hanya untuk pemesanan berstatus aktif.
+                </p>
+
+                <h3>Refund saya masih diproses</h3>
+                <p>
+                    Setelah disetujui, pencairan dicatat bertahap: Disetujui, Sedang diproses,
+                    lalu Selesai. Anda menerima notifikasi pada setiap perubahan.
+                </p>
+
+                <h3>Mengajukan keluhan</h3>
+                <p>
+                    Kirimkan surel ke support@owo.id dengan mencantumkan kode pemesanan
+                    (diawali TXN) atau nomor refund (diawali RFD). Kode tersebut tertera pada
+                    kartu pemesanan di Riwayat Pemesanan.
+                </p>
+            </section>
+
+            <section class="info-panel" data-topik="syarat" hidden>
+                <h2>Syarat &amp; Ketentuan</h2>
+                <p class="info-lead">Ketentuan yang berlaku saat Anda memesan melalui OwO.</p>
+                <ul>
+                    <li>Satu pemesanan berlaku untuk satu unit. Kamar hotel dikenakan tarif per
+                        kamar; tiket pesawat dikenakan tarif per penumpang.</li>
+                    <li>Jumlah peserta tidak boleh melebihi kapasitas unit yang dipesan.</li>
+                    <li>Unit ditahan sejak pemesanan dibuat. Pemesanan yang dibatalkan
+                        mengembalikan unit tersebut ke katalog.</li>
+                    <li>Check-in hanya dapat dilakukan pada tanggal keberangkatan atau tanggal
+                        check-in, dan tidak dapat dibatalkan sendiri oleh pemesan.</li>
+                    <li>Identitas pemesan diambil dari akun yang sedang masuk. Pemesanan hanya
+                        dapat dilihat dan diubah oleh pemiliknya.</li>
+                </ul>
+            </section>
+
+            <section class="info-panel" data-topik="privasi" hidden>
+                <h2>Kebijakan Privasi</h2>
+                <p class="info-lead">Data apa yang disimpan, dan data apa yang tidak.</p>
+
+                <h3>Yang disimpan</h3>
+                <ul>
+                    <li>Nama, alamat surel, dan kata sandi dalam bentuk hash.</li>
+                    <li>Riwayat pemesanan beserta jumlah peserta dan statusnya.</li>
+                    <li>Untuk refund: alasan, nama penerima, dan rekening tujuan.</li>
+                    <li>Notifikasi yang dikirimkan kepada Anda.</li>
+                </ul>
+
+                <h3>Yang tidak disimpan</h3>
+                <p>
+                    Nomor kartu, masa berlaku, dan CVV tidak pernah disimpan dan tidak pernah
+                    dikirim dari halaman pembayaran ke sistem. Menyimpan CVV setelah otorisasi
+                    dilarang, sehingga kemampuannya dihapus, bukan sekadar dibatasi.
+                </p>
+
+                <h3>Akses</h3>
+                <p>
+                    Setiap pemesanan dan refund hanya dapat diakses oleh pemiliknya. Peninjau
+                    refund melihat antrean pengajuan untuk menilainya, dan tidak dapat
+                    memutuskan refund atas pemesanannya sendiri.
+                </p>
+            </section>
+
+            <section class="info-panel" data-topik="pembatalan" hidden>
+                <h2>Kebijakan Pembatalan dan Refund</h2>
+                <p class="info-lead">Kapan pembatalan gratis, dan berapa yang dikembalikan.</p>
+
+                <h3>Pembatalan</h3>
+                <p>
+                    Pemesanan yang belum dibayar atau sudah aktif dapat dibatalkan tanpa biaya.
+                    Pembatalan bersifat final dan mengembalikan unit ke katalog. Pemesanan yang
+                    sudah check-in atau sudah direfund tidak dapat dibatalkan.
+                </p>
+
+                <h3>Refund</h3>
+                <p>
+                    Refund diajukan dari pemesanan yang sudah aktif atau sudah check-in, selama
+                    keberangkatan belum berlalu. Nilai yang dikembalikan dihitung dari total
+                    yang dibayarkan:
+                </p>
+                <table class="info-table">
+                    <thead>
+                        <tr>
+                            <th>Waktu pengajuan</th>
+                            <th>Persentase dikembalikan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Lebih dari 7 hari sebelum keberangkatan</td><td>90%</td></tr>
+                        <tr><td>7 hari atau kurang sebelum keberangkatan</td><td>75%</td></tr>
+                        <tr><td>Setelah keberangkatan</td><td>Tidak dapat direfund</td></tr>
+                    </tbody>
+                </table>
+                <p>
+                    Dari nilai tersebut dipotong biaya administrasi tetap sebesar Rp 50.000.
+                    Jika hasilnya tidak melebihi biaya administrasi, pengajuan ditolak dengan
+                    penjelasan, bukan disetujui dengan nilai nol.
+                </p>
+
+                <h3>Proses peninjauan</h3>
+                <p>
+                    Pengajuan ditinjau oleh administrator. Selama masih menunggu peninjauan,
+                    nama penerima dan rekening tujuan masih dapat Anda perbaiki; setelah
+                    diputuskan, keduanya menjadi bagian dari catatan. Pengajuan yang ditolak
+                    mengembalikan pemesanan ke status sebelumnya.
+                </p>
+            </section>
+        </div>
+    </div>
+</div>

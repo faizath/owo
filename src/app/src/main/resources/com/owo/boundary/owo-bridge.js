@@ -99,6 +99,15 @@
     logout: function () {
       return call('logout');
     },
+    updateProfile: function (nama) {
+      return call('updateProfile', { nama: nama });
+    },
+    changePassword: function (passwordLama, passwordBaru) {
+      return call('changePassword', {
+        passwordLama: passwordLama,
+        passwordBaru: passwordBaru
+      });
+    },
     /** @returns the session user, or null when not signed in */
     getSession: function () {
       try {

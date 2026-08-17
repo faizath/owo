@@ -76,7 +76,14 @@ public class Akun {
         this.email = email;
     }
 
-    public void setHashedPassword(String password) {
+    /**
+     * Sets a new password from plaintext, hashing it.
+     *
+     * <p>Named for what it takes, not for what it stores: as {@code setHashedPassword} it
+     * read as though it accepted an already-hashed value, and handing it one would have
+     * stored {@code bcrypt(bcrypt(password))} against which nothing can authenticate.
+     */
+    public void setPassword(String password) {
         this.hashedPassword = passwordUtil.hashPassword(password);
     }
 
