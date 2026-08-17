@@ -197,4 +197,33 @@ class TiketKapasitasTest {
         assertEquals(1, found.size());
         assertEquals(big.getId(), found.get(0).getId());
     }
+
+    @Test
+    void search_offersTheSmallestUnitThatFitsFirst() throws Exception {
+        // The same departure for both, so capacity is what separates them in the ordering.
+        LocalDateTime departure = LocalDate.now().plusDays(5).atTime(9, 0);
+        TiketPesawat family = TiketDAO.createTiketPesawat(1_000_000f, true, "GA501",
+                "Jakarta (CGK)", "Denpasar (DPS)", "Garuda Indonesia", "Ekonomi",
+                departure, 4);
+        TiketPesawat single = TiketDAO.createTiketPesawat(1_200_000f, true, "GA502",
+                "Jakarta (CGK)", "Denpasar (DPS)", "Garuda Indonesia", "Ekonomi",
+                departure, 1);
+
+        List<TiketPesawat> found = TiketDAO.searchTiketPesawat(null, null, null, true, 1);
+
+        // One booking claims a whole unit, so putting the four-seat block in front of a
+        // solo traveller — as sorting by price alone did — denies it to a party of four.
+        assertEquals(single.getId(), found.get(0).getId());
+        assertEquals(family.getId(), found.get(1).getId());
+    }
+
+    @Test
+    void search_forAPartyOfOne_stillExcludesNothingItCanUse() throws Exception {
+        flight("GA401", 6);
+
+        // The filter used to be skipped entirely for a party of one. Applying it changes
+        // no result, because a unit always holds at least one person — which is exactly
+        // why the special case was worth removing rather than documenting.
+        assertEquals(1, TiketDAO.searchTiketPesawat(null, null, null, true, 1).size());
+    }
 }

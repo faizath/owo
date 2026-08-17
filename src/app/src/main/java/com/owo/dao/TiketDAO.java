@@ -255,7 +255,9 @@ public class TiketDAO {
     }
 
     /**
-     * @param minKapasitas the party size that must fit; rows seating fewer are excluded
+     * @param minKapasitas the party size that must fit; rows seating fewer are excluded.
+     *     Results are ordered so that, among flights leaving at the same time, the
+     *     smallest unit holding the party comes first.
      */
     public static List<TiketPesawat> searchTiketPesawat(String origin, String destination,
             String kelas, boolean tersediaOnly, int minKapasitas) throws SQLException {
@@ -289,12 +291,15 @@ public class TiketDAO {
             sqlBuilder.append(" AND t.tersedia = 1");
         }
 
-        if (minKapasitas > 1) {
-            sqlBuilder.append(" AND t.kapasitas >= ?");
-            parameters.add(minKapasitas);
-        }
+        // Unconditional. Skipping it for a party of one made the javadoc a lie, and left
+        // the guard reading as though a solo search were a special case when it is not.
+        sqlBuilder.append(" AND t.kapasitas >= ?");
+        parameters.add(minKapasitas);
 
-        sqlBuilder.append(" ORDER BY tp.waktu_keberangkatan ASC, t.harga ASC");
+        // Capacity ahead of price so that among equally timed flights the smallest unit
+        // that fits the party is offered first. One booking claims a whole unit, so
+        // showing a solo traveller a four-seat block first denies it to a party of four.
+        sqlBuilder.append(" ORDER BY tp.waktu_keberangkatan ASC, t.kapasitas ASC, t.harga ASC");
         
         try (Connection conn = DBHelper.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString())) {
@@ -354,7 +359,8 @@ public class TiketDAO {
 
     /**
      * @param minKapasitas the number of guests that must fit in one room; rooms holding
-     *     fewer are excluded
+     *     fewer are excluded. Among rooms available from the same date, the smallest one
+     *     that holds the party comes first.
      */
     public static List<TiketHotel> searchTiketHotel(String location, LocalDate checkIn,
             LocalDate checkOut, String hotelName, boolean tersediaOnly, int minKapasitas)
@@ -395,12 +401,14 @@ public class TiketDAO {
             sqlBuilder.append(" AND t.tersedia = 1");
         }
 
-        if (minKapasitas > 1) {
-            sqlBuilder.append(" AND t.kapasitas >= ?");
-            parameters.add(minKapasitas);
-        }
+        // Unconditional. Skipping it for a party of one made the javadoc a lie, and left
+        // the guard reading as though a solo search were a special case when it is not.
+        sqlBuilder.append(" AND t.kapasitas >= ?");
+        parameters.add(minKapasitas);
 
-        sqlBuilder.append(" ORDER BY th.check_in ASC, t.harga ASC");
+        // As for flights: the smallest room that holds the party comes first, so a single
+        // guest is not handed the family room while a family has nowhere to stay.
+        sqlBuilder.append(" ORDER BY th.check_in ASC, t.kapasitas ASC, t.harga ASC");
         
         try (Connection conn = DBHelper.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString())) {
