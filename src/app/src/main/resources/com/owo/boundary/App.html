@@ -50,8 +50,17 @@
             font-size: 13px;
         }
 
-        .session-bar.hidden {
+        .session-bar.hidden,
+        .session-bar button.hidden {
             display: none;
+        }
+
+        .session-bar #reviewButton {
+            background: #613DC1;
+        }
+
+        .session-bar #reviewButton:hover {
+            background: #4E148C;
         }
 
         .session-bar .session-name {
@@ -114,6 +123,9 @@
 
     <div class="session-bar hidden" id="sessionBar">
         <span class="session-name" id="sessionName"></span>
+        <!-- Shown only for an administrator. The Java session decides; hiding it here
+             is presentation, not access control. -->
+        <button type="button" class="hidden" id="reviewButton">Tinjau Refund</button>
         <button type="button" id="logoutButton">Keluar</button>
     </div>
 

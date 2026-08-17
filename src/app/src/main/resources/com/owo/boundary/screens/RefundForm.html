@@ -1082,96 +1082,22 @@
                     </form>
                 </div>
 
-                <!-- Refund Processing Section - NEW DESIGN -->
-                <div id="refund-processing" class="content-section">
+                <!-- Refund status. One list, filled from the refunds the signed-in
+                     user has actually filed; this used to be two near-identical blocks
+                     of placeholder markup that nothing ever populated or switched. -->
+                <div id="refund-status" class="content-section">
                     <div class="status-container">
                         <div class="status-header">
                             <div class="status-avatar"></div>
                             <div class="status-title">OwO</div>
                         </div>
                         <div class="status-tabs">
-                            <button class="status-tab active" id="processing-tab">Sedang Diproses</button>
-                            <button class="status-tab" id="completed-tab" disabled>Selesai</button>
+                            <button type="button" class="status-tab active"
+                                    id="processing-tab" data-filter="processing">Sedang Diproses</button>
+                            <button type="button" class="status-tab"
+                                    id="completed-tab" data-filter="completed">Selesai</button>
                         </div>
-                        <div class="refund-card">
-                            <div class="flight-info">
-                                <div class="flight-icon" id="processing-icon"></div> <div>
-                                    <div class="flight-route" id="processing-route-info"></div>
-                                    <div class="flight-details" id="processing-date-info"></div>
-                                </div>
-                                <div class="flight-details">
-                                    <div id="processing-details-info"></div>
-                                    <span class="booking-code" id="processing-code-info"></span>
-                                </div>
-                            </div>
-                            <div class="refund-info-grid">
-                                <div class="info-item">
-                                    <div class="info-label">Dalam Proses Refund</div>
-                                    <div class="info-value" id="processing-refund-amount"></div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">Status</div>
-                                    <div class="status-badge processing">
-                                        <div class="status-dot processing"></div>
-                                        Sedang Diproses
-                                    </div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">Tanggal Pengajuan</div>
-                                    <div class="info-value" id="processing-submission-date"></div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">Metode Refund</div>
-                                    <div class="info-value" id="processing-refund-method"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Refund Completed Section - NEW DESIGN -->
-                <div id="refund-completed" class="content-section">
-                    <div class="status-container">
-                        <div class="status-header">
-                            <div class="status-avatar"></div>
-                            <div class="status-title">OwO</div>
-                        </div>
-                        <div class="status-tabs">
-                            <button class="status-tab">Sedang Diproses</button>
-                            <button class="status-tab active">Selesai</button>
-                        </div>
-                        <div class="refund-card">
-                            <div class="flight-info">
-                                <div class="flight-icon" id="completed-icon"></div> <div>
-                                    <div class="flight-route" id="completed-route-info"></div>
-                                    <div class="flight-details" id="completed-date-info"></div>
-                                </div>
-                                <div class="flight-details">
-                                    <div id="completed-details-info"></div>
-                                    <span class="booking-code" id="completed-code-info"></span>
-                                </div>
-                            </div>
-                            <div class="refund-info-grid">
-                                <div class="info-item">
-                                    <div class="info-label">Refund Selesai</div>
-                                    <div class="info-value" id="completed-refund-amount"></div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">Status</div>
-                                    <div class="status-badge completed">
-                                        <div class="status-dot completed"></div>
-                                        Selesai
-                                    </div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">Tanggal Selesai</div>
-                                    <div class="info-value" id="completed-date"></div> </div>
-                                <div class="info-item">
-                                    <div class="info-label">Metode Refund</div>
-                                    <div class="info-value" id="completed-refund-method"></div>
-                                </div>
-                            </div>
-                        </div>
+                        <div id="refundStatusList"></div>
                     </div>
                 </div>
             </section>

@@ -165,6 +165,13 @@
     }
     bar.classList.remove('hidden');
     document.getElementById('sessionName').textContent = app.session.nama;
+
+    // The review queue is offered only to an administrator. Java refuses the operations
+    // regardless of what the page shows, so this is presentation and not a check.
+    const review = document.getElementById('reviewButton');
+    if (review) {
+      review.classList.toggle('hidden', !app.session.isAdmin);
+    }
   }
 
   // ------------------------------------------------------------------- session
@@ -205,6 +212,13 @@
     const logoutButton = document.getElementById('logoutButton');
     if (logoutButton) {
       logoutButton.addEventListener('click', logout);
+    }
+
+    const reviewButton = document.getElementById('reviewButton');
+    if (reviewButton) {
+      reviewButton.addEventListener('click', function () {
+        navigate('TinjauRefund');
+      });
     }
 
     window.OwOAPI.whenReady().then(function () {

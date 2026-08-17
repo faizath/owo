@@ -83,7 +83,11 @@
             || label === 'pemesanan') {
           target = 'Pemesanan';
         } else if (label === 'refund') {
-          target = 'RiwayatPemesanan';
+          // Without a booking the refund screen shows what has been filed, which is
+          // what this menu entry means. Filing starts from a booking in the history.
+          target = 'RefundForm';
+        } else if (label === 'tinjau refund') {
+          target = 'TinjauRefund';
         }
 
         el.addEventListener('click', function (e) {
@@ -866,10 +870,8 @@
         customerName.value = window.App.session.nama;
       }
 
-      document.querySelectorAll('.route-info, #processing-route-info, #completed-route-info')
+      document.querySelectorAll('.route-info')
         .forEach(function (el) { el.textContent = bookingTitle(booking); });
-      document.querySelectorAll('#processing-code-info, #completed-code-info')
-        .forEach(function (el) { el.textContent = booking.transactionId; });
 
       // The amount is quoted by the server. It used to be computed in the page from a
       // price held in localStorage, which the user could edit.
@@ -879,10 +881,6 @@
           if (amountDisplay) {
             amountDisplay.textContent = window.App.formatRupiah(quote.jumlahRefund);
           }
-          document.querySelectorAll('#processing-refund-amount, #completed-refund-amount')
-            .forEach(function (el) {
-              el.textContent = window.App.formatRupiah(quote.jumlahRefund);
-            });
           if (confirmButton) confirmButton.disabled = false;
         })
         .catch(function (err) {
@@ -928,13 +926,11 @@
           rekeningTujuan: rekeningTujuan.value.trim()
         })
           .then(function (refund) {
-            const modal = byId('successModal');
-            if (modal) {
-              modal.classList.add('show');
-              modal.style.display = 'flex';
-            }
             window.App.showNotification('Pengajuan refund ' + refund.id + ' diterima.');
-            setTimeout(function () { window.App.navigate('RiwayatPemesanan'); }, 2500);
+            // Shows the refund that was just filed instead of navigating away, so the
+            // submission has a visible result rather than only a transient modal.
+            showSection('refund-status');
+            loadRefundStatus(refund.id);
           })
           .catch(function (err) {
             busy(confirmButton, false);
@@ -943,4 +939,179 @@
       });
     }
   };
+
+  // -------------------------------------------------------------- TinjauRefund
+
+  /**
+   * The administrator review queue.
+   *
+   * Approval and rejection existed with tested rules but nothing could reach them, so
+   * every refund stayed in review for ever. Authority is enforced in Java; this screen
+   * is only refused politely if a non-administrator reaches it.
+   */
+  S.TinjauRefund = {
+    init: function () {
+      wireChrome();
+      ensureBanner(document.querySelector('.review-container') || document.body);
+
+      const queue = byId('refundQueue');
+      queue.innerHTML = '<p class="queue-empty">Memuat...</p>';
+
+      load();
+
+      function load() {
+        window.OwOAPI.getPendingRefunds()
+          .then(render)
+          .catch(function (err) {
+            queue.innerHTML = '';
+            fail(err.message);
+          });
+      }
+
+      function render(refunds) {
+        const rows = refunds || [];
+        if (!rows.length) {
+          queue.innerHTML =
+            '<p class="queue-empty">Tidak ada refund yang menunggu peninjauan.</p>';
+          return;
+        }
+
+        queue.innerHTML = rows.map(function (r) {
+          return '<div class="review-card" data-refund="' + esc(r.id) + '">'
+            + '<div class="review-card-header">'
+            + '<span class="review-id">' + esc(r.id) + '</span>'
+            + '<span class="review-booking">Pemesanan TXN' + esc(r.pemesananId) + '</span>'
+            + '</div>'
+            + '<div class="review-grid">'
+            + '<div><div class="review-label">Jumlah</div>'
+            + '<div class="review-value review-amount">'
+            + esc(window.App.formatRupiah(r.jumlahRefund)) + '</div></div>'
+            + '<div><div class="review-label">Alasan</div>'
+            + '<div class="review-value">' + esc(r.alasan) + '</div></div>'
+            + '<div><div class="review-label">Nama Penerima</div>'
+            + '<div class="review-value">' + esc(r.namaPenerima) + '</div></div>'
+            + '<div><div class="review-label">Rekening Tujuan</div>'
+            + '<div class="review-value">' + esc(r.rekeningTujuan) + '</div></div>'
+            + '</div>'
+            + '<div class="review-actions">'
+            + '<button type="button" class="review-button btn-reject" '
+            + 'data-decision="reject" data-id="' + esc(r.id) + '">Tolak</button>'
+            + '<button type="button" class="review-button btn-approve" '
+            + 'data-decision="approve" data-id="' + esc(r.id) + '">Setujui</button>'
+            + '</div>'
+            + '</div>';
+        }).join('');
+
+        queue.querySelectorAll('[data-decision]').forEach(function (button) {
+          button.addEventListener('click', function () {
+            const id = button.dataset.id;
+            const approving = button.dataset.decision === 'approve';
+
+            // Both buttons on the card are disabled, not just the one pressed, so a
+            // double click cannot send an approval and a rejection for one refund.
+            const card = queue.querySelector('[data-refund="' + id + '"]');
+            if (card) {
+              card.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
+            }
+            busy(button, true, approving ? 'Menyetujui...' : 'Menolak...');
+
+            const decide = approving ? window.OwOAPI.approveRefund : window.OwOAPI.rejectRefund;
+            decide(id)
+              .then(function () {
+                window.App.showNotification(
+                  'Refund ' + id + (approving ? ' disetujui.' : ' ditolak.'));
+                load();
+              })
+              .catch(function (err) {
+                if (card) {
+                  card.querySelectorAll('button').forEach(function (b) { b.disabled = false; });
+                }
+                busy(button, false);
+                fail(err.message);
+              });
+          });
+        });
+      }
+    }
+  };
+
+  /** Switches which `.content-section` of the refund screen is visible. */
+  function showSection(id) {
+    document.querySelectorAll('.content-section').forEach(function (section) {
+      section.classList.toggle('active', section.id === id);
+    });
+  }
+
+  /**
+   * Loads the signed-in user's refunds and renders them under the open/finished tabs.
+   *
+   * @param highlightId a refund to scroll into view, used right after filing one
+   */
+  function loadRefundStatus(highlightId) {
+    const list = byId('refundStatusList');
+    if (!list) return;
+    list.innerHTML = '<p style="padding:16px;color:#666;">Memuat...</p>';
+
+    window.OwOAPI.getUserRefunds()
+      .then(function (refunds) {
+        const all = refunds || [];
+        let filter = 'processing';
+
+        function paint() {
+          const rows = all.filter(function (r) {
+            const open = REFUND_OPEN.indexOf(r.status) >= 0;
+            return filter === 'processing' ? open : !open;
+          });
+
+          list.innerHTML = rows.length ? rows.map(refundCard).join('')
+            : '<p style="padding:16px;color:#666;">Tidak ada refund pada kategori ini.</p>';
+
+          if (highlightId) {
+            const card = list.querySelector('[data-refund="' + highlightId + '"]');
+            if (card) card.scrollIntoView({ block: 'center' });
+          }
+        }
+
+        document.querySelectorAll('.status-tab').forEach(function (tab) {
+          tab.disabled = false;
+          tab.addEventListener('click', function () {
+            filter = tab.dataset.filter || 'processing';
+            document.querySelectorAll('.status-tab')
+              .forEach(function (t) { t.classList.remove('active'); });
+            tab.classList.add('active');
+            paint();
+          });
+        });
+
+        paint();
+      })
+      .catch(function (err) {
+        list.innerHTML = '';
+        fail(err.message);
+      });
+  }
+
+  function refundCard(r) {
+    const open = REFUND_OPEN.indexOf(r.status) >= 0;
+    return '<div class="refund-card" data-refund="' + esc(r.id) + '">'
+      + '<div class="flight-info">'
+      + '<div><div class="flight-route">Refund ' + esc(r.id) + '</div>'
+      + '<div class="flight-details">' + esc(r.alasan) + '</div></div>'
+      + '<div class="flight-details">'
+      + '<span class="booking-code">TXN' + esc(r.pemesananId) + '</span></div>'
+      + '</div>'
+      + '<div class="refund-info-grid">'
+      + '<div class="info-item"><div class="info-label">Jumlah</div>'
+      + '<div class="info-value">' + esc(window.App.formatRupiah(r.jumlahRefund)) + '</div></div>'
+      + '<div class="info-item"><div class="info-label">Status</div>'
+      + '<div class="status-badge ' + (open ? 'processing' : 'completed') + '">'
+      + '<div class="status-dot ' + (open ? 'processing' : 'completed') + '"></div>'
+      + esc(REFUND_LABEL[r.status] || r.status) + '</div></div>'
+      + '<div class="info-item"><div class="info-label">Penerima</div>'
+      + '<div class="info-value">' + esc(r.namaPenerima) + '</div></div>'
+      + '<div class="info-item"><div class="info-label">Rekening Tujuan</div>'
+      + '<div class="info-value">' + esc(r.rekeningTujuan) + '</div></div>'
+      + '</div>'
+      + '</div>';
+  }
 })();

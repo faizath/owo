@@ -143,6 +143,28 @@
     createRefund: function (details) {
       return call('createRefund', details);
     },
+    /** Every refund the signed-in user has filed. Scoped by the Java session. */
+    getUserRefunds: function () {
+      return call('getUserRefunds');
+    },
+    updateRefundPayee: function (refundId, namaPenerima, rekeningTujuan) {
+      return call('updateRefundPayee', {
+        refundId: refundId,
+        namaPenerima: namaPenerima,
+        rekeningTujuan: rekeningTujuan
+      });
+    },
+
+    // Refund review. Refused unless the session's account row is an administrator.
+    getPendingRefunds: function () {
+      return call('getPendingRefunds');
+    },
+    approveRefund: function (refundId) {
+      return call('approveRefund', { refundId: refundId });
+    },
+    rejectRefund: function (refundId) {
+      return call('rejectRefund', { refundId: refundId });
+    },
 
     // Screens
     getScreen: function (name) {

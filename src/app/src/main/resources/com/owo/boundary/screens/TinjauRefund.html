@@ -1,0 +1,165 @@
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    .screen {
+        font-family: 'Poppins', sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: #F9FAFB;
+        min-height: 100vh;
+    }
+
+    .review-header {
+        background: white;
+        padding: 20px 40px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .review-title {
+        color: #613DC1;
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .review-subtitle {
+        color: #6B7280;
+        font-size: 14px;
+    }
+
+    .review-nav {
+        display: flex;
+        gap: 24px;
+    }
+
+    .nav-item {
+        color: #613DC1;
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .review-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 32px 24px;
+    }
+
+    .queue-empty {
+        padding: 48px;
+        text-align: center;
+        color: #6B7280;
+        background: white;
+        border-radius: 12px;
+    }
+
+    .review-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .review-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        border-bottom: 1px solid #F3F4F6;
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+    }
+
+    .review-id {
+        font-weight: 700;
+        font-size: 17px;
+        color: #111827;
+    }
+
+    .review-booking {
+        font-size: 13px;
+        color: #6B7280;
+    }
+
+    .review-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .review-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #9CA3AF;
+        margin-bottom: 2px;
+    }
+
+    .review-value {
+        font-size: 15px;
+        color: #111827;
+        word-break: break-word;
+    }
+
+    .review-amount {
+        font-size: 18px;
+        font-weight: 700;
+        color: #613DC1;
+    }
+
+    .review-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+    }
+
+    .review-button {
+        padding: 10px 22px;
+        border: none;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+    }
+
+    .review-button:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+
+    .btn-approve {
+        background: #613DC1;
+        color: white;
+    }
+
+    .btn-reject {
+        background: white;
+        color: #B91C1C;
+        border: 1px solid #FCA5A5;
+    }
+</style>
+
+<div class="review-header">
+    <div>
+        <h1 class="review-title">Tinjau Refund</h1>
+        <p class="review-subtitle">Pengajuan yang menunggu keputusan</p>
+    </div>
+    <nav class="review-nav">
+        <a class="nav-item">Pemesanan</a>
+        <a class="nav-item">Log Out</a>
+    </nav>
+</div>
+
+<div class="review-container">
+    <div id="refundQueue"></div>
+</div>
