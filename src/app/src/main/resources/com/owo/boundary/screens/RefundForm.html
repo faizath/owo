@@ -1,18 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OwO - Refund System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
+<style>
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        body {
+        .screen {
             font-family: 'Poppins', sans-serif;
             background-color: #F9F9F9;
             min-height: 100vh;
@@ -888,7 +882,7 @@
         }
 
         .contact-icon.email {
-            background-image: url('../assets/Email.png');
+            background-image: url('../assets/email.png');
         }
 
         .contact-text {
@@ -954,10 +948,9 @@
                 padding-right: 20px;
             }
         }
-    </style>
-</head>
-<body>
-    <div class="container">
+    
+</style>
+<div class="container">
         <!-- Header -->
         <header class="header">
             <div class="logo"></div>
@@ -994,7 +987,7 @@
                         <div class="menu-icon"></div>
                         <span>Pengaturan Akun</span>
                     </div>
-                    <div class="menu-item" onclick="goToBookingHistory()">
+                    <div class="menu-item">
                         <div class="menu-icon"></div>
                         <span>Pemesanan</span>
                     </div>
@@ -1018,7 +1011,7 @@
             <section class="content-container">
                 <!-- Refund Form Section -->
                 <div id="refund-form" class="content-section active">
-                    <div class="back-button" onclick="goToBookingHistory()">
+                    <div class="back-button">
                         <div class="back-icon"></div>
                         <span class="back-text">Kembali</span>
                     </div>
@@ -1049,63 +1042,22 @@
                                 </label>
                                 <span class="payment-label">Credit/Debit Card</span>
                                 <div class="card-icons">
-                                    <div class="card-icon mastercard" onclick="selectCard('mastercard')"></div>
-                                    <div class="card-icon visa" onclick="selectCard('visa')"></div>
-                                    <div class="card-icon discover" onclick="selectCard('discover')"></div>
-                                    <div class="card-icon amex" onclick="selectCard('amex')"></div>
+                                    <div class="card-icon mastercard"></div>
+                                    <div class="card-icon visa"></div>
+                                    <div class="card-icon discover"></div>
+                                    <div class="card-icon amex"></div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label class="form-label">Nama di kartu</label>
-                                <input type="text" class="form-input" id="cardName" placeholder="Caroline Smith" required>
+                                <label class="form-label">Nama penerima</label>
+                                <input type="text" class="form-input" id="namaPenerima" placeholder="Nama sesuai rekening" required>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Nomor kartu</label>
-                                <input type="text" class="form-input" id="cardNumber" placeholder="0000 0000 0000 0000" required>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Kadalurasa kartu</label>
-                                <div class="expiry-row">
-                                    <div class="expiry-group">
-                                        <select class="form-select" id="expiryMonth" required>
-                                            <option value="">Bulan</option>
-                                            <option value="01">01</option>
-                                            <option value="02">02</option>
-                                            <option value="03">03</option>
-                                            <option value="04">04</option>
-                                            <option value="05">05</option>
-                                            <option value="06">06</option>
-                                            <option value="07">07</option>
-                                            <option value="08">08</option>
-                                            <option value="09">09</option>
-                                            <option value="10">10</option>
-                                            <option value="11">11</option>
-                                            <option value="12">12</option>
-                                        </select>
-                                    </div>
-                                    <div class="expiry-group">
-                                        <select class="form-select" id="expiryYear" required>
-                                            <option value="">Tahun</option>
-                                            <option value="2024">2024</option>
-                                            <option value="2025">2025</option>
-                                            <option value="2026">2026</option>
-                                            <option value="2027">2027</option>
-                                            <option value="2028">2028</option>
-                                            <option value="2029">2029</option>
-                                            <option value="2030">2030</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="cvv-group">
-                                <label class="form-label">CVV</label>
-                                <input type="text" class="form-input" id="cvv" placeholder="000" maxlength="3" required>
+                                <label class="form-label">Rekening tujuan</label>
+                                <input type="text" class="form-input" id="rekeningTujuan" placeholder="Contoh: BCA 1234567890" required>
                             </div>
                         </div>
 
@@ -1138,8 +1090,8 @@
                             <div class="status-title">OwO</div>
                         </div>
                         <div class="status-tabs">
-                            <button class="status-tab active" id="processing-tab" onclick="showSection('refund-processing')">Sedang Diproses</button>
-                            <button class="status-tab" id="completed-tab" onclick="showSection('refund-completed')" disabled>Selesai</button>
+                            <button class="status-tab active" id="processing-tab">Sedang Diproses</button>
+                            <button class="status-tab" id="completed-tab" disabled>Selesai</button>
                         </div>
                         <div class="refund-card">
                             <div class="flight-info">
@@ -1185,8 +1137,8 @@
                             <div class="status-title">OwO</div>
                         </div>
                         <div class="status-tabs">
-                            <button class="status-tab" onclick="showSection('refund-processing')">Sedang Diproses</button>
-                            <button class="status-tab active" onclick="showSection('refund-completed')">Selesai</button>
+                            <button class="status-tab">Sedang Diproses</button>
+                            <button class="status-tab active">Selesai</button>
                         </div>
                         <div class="refund-card">
                             <div class="flight-info">
@@ -1284,183 +1236,8 @@
             <h2 class="modal-title">Pengajuan Refund Gagal</h2>
             <p class="modal-message">Terjadi kesalahan saat memproses permintaan refund Anda. Silakan coba lagi atau hubungi customer service.</p>
             <div>
-                <button class="modal-button secondary" onclick="closeModal('errorModal')">Coba lagi</button>
-                <button class="modal-button" onclick="contactSupport()">Hubungi Support</button>
+                <button class="modal-button secondary">Coba lagi</button>
+                <button class="modal-button">Hubungi Support</button>
             </div>
         </div>
     </div>
-
-    <script>
-        let currentBookingForRefund = null;
-
-        function calculateRefundAmount(bookingData) {
-            if (!bookingData) return 0;
-            const now = new Date();
-            const departureDate = new Date(bookingData.bookingType === 'flight' ? bookingData.departure : bookingData.checkin);
-            const diffTime = departureDate.getTime() - now.getTime();
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            const percentage = diffDays > 7 ? 0.90 : 0.75;
-            const adminFee = 50000;
-            const originalPrice = bookingData.price || bookingData.harga || 0;
-            const refundAmount = (originalPrice * percentage) - adminFee;
-            return Math.max(0, refundAmount);
-        }
-
-        function populateRefundForm(bookingData) {
-            if (!bookingData) {
-                alert('Data pemesanan untuk refund tidak ditemukan! Anda akan dikembalikan.');
-                window.location.href = 'RiwayatPemesanan.html';
-                return;
-            }
-            currentBookingForRefund = bookingData;
-
-            const customerNameEl = document.getElementById('customerName');
-            if (customerNameEl) {
-                customerNameEl.value = `${bookingData.firstName || ''} ${bookingData.lastName || ''}`.trim();
-            }
-
-            const refundAmountEl = document.getElementById('refund-amount-display');
-            if (refundAmountEl) {
-                refundAmountEl.textContent = formatPrice(calculateRefundAmount(bookingData));
-            }
-            
-        }
-
-        function updateStatusViews(bookingData, finalRefundAmount, formDetails) {
-            const submissionDate = new Date();
-            const completionDate = new Date(submissionDate);
-            completionDate.setDate(submissionDate.getDate() + 5);
-
-            const lastFourDigits = formDetails.cardNumber.replace(/\s/g, '').slice(-4);
-            const maskedCard = `Credit Card (•••• ${lastFourDigits})`;
-
-            const isFlight = bookingData.bookingType === 'flight';
-            const route = isFlight ? `${bookingData.from} - ${bookingData.to}` : bookingData.hotelName;
-            const date = isFlight ? formatDate(bookingData.departure, true) : `Check-in: ${formatDate(bookingData.checkin, true)}`;
-            const details = isFlight ? `${bookingData.airlineName} • ${bookingData.flightClass}` : `${bookingData.roomType} • ${bookingData.guests} Tamu`;
-            const code = `Kode Booking: ${bookingData.transactionId || 'N/A'}`;
-            const iconClass = isFlight ? 'flight-icon' : 'hotel-icon';
-
-            document.getElementById('processing-icon').className = iconClass;
-            document.getElementById('processing-route-info').textContent = route;
-            document.getElementById('processing-date-info').textContent = date;
-            document.getElementById('processing-details-info').textContent = details;
-            document.getElementById('processing-code-info').textContent = code;
-            document.getElementById('processing-refund-amount').textContent = formatPrice(finalRefundAmount);
-            document.getElementById('processing-submission-date').textContent = formatDate(submissionDate);
-            document.getElementById('processing-refund-method').textContent = maskedCard;
-
-            document.getElementById('completed-icon').className = iconClass;
-            document.getElementById('completed-route-info').textContent = route;
-            document.getElementById('completed-date-info').textContent = date;
-            document.getElementById('completed-details-info').textContent = details;
-            document.getElementById('completed-code-info').textContent = code;
-            document.getElementById('completed-refund-amount').textContent = formatPrice(finalRefundAmount);
-            document.getElementById('completed-date').textContent = formatDate(completionDate);
-            document.getElementById('completed-refund-method').textContent = maskedCard;
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const bookingDataString = localStorage.getItem('bookingForRefund');
-            populateRefundForm(bookingDataString ? JSON.parse(bookingDataString) : null);
-            if (bookingDataString) localStorage.removeItem('bookingForRefund');
-
-            const refundForm = document.getElementById('refundForm');
-            if (refundForm) {
-                refundForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    if (!validateForm() || !currentBookingForRefund) {
-                        if(!currentBookingForRefund) alert('Data pemesanan tidak ditemukan. Silakan coba lagi.');
-                        return;
-                    }
-
-                    const formDetails = { cardNumber: document.getElementById('cardNumber').value };
-                    const finalRefundAmount = calculateRefundAmount(currentBookingForRefund);
-
-                    updateStatusViews(currentBookingForRefund, finalRefundAmount, formDetails);
-                    showSuccessModal();
-
-                    setTimeout(() => {
-                        closeModal('successModal');
-                        showSection('refund-processing');
-                    }, 2500); 
-                });
-            }
-
-            setupEventListeners();
-        });
-
-        function setupEventListeners() {
-            const cardNumberInput = document.getElementById('cardNumber');
-            if (cardNumberInput) {
-                cardNumberInput.addEventListener('input', function(e) {
-                    let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
-                    e.target.value = (value.match(/.{1,4}/g) || []).join(' ').substring(0, 19);
-                });
-            }
-            const cvvInput = document.getElementById('cvv');
-            if(cvvInput) cvvInput.addEventListener('input', (e) => e.target.value = e.target.value.replace(/[^0-9]/g, ''));
-            
-            document.querySelectorAll('.checkbox-container, .terms-text').forEach(el => {
-                el.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const cb = document.getElementById('termsCheckbox');
-                    cb.checked = !cb.checked;
-                });
-            });
-            document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', function(e) {
-                if (e.target === this) this.classList.remove('active');
-            }));
-        }
-
-        function validateForm() {
-            const fields = ['refundReason', 'customerName', 'cardName', 'cardNumber', 'expiryMonth', 'expiryYear', 'cvv'];
-            for (let id of fields) {
-                const el = document.getElementById(id);
-                if (!el || !el.value.trim()) {
-                    alert(`Mohon lengkapi field: ${el.labels[0].textContent}`);
-                    el.focus(); return false;
-                }
-            }
-            if (!document.getElementById('termsCheckbox').checked) {
-                alert('Mohon setujui syarat dan ketentuan refund.'); return false;
-            }
-            return true;
-        }
-        function formatPrice(amount) {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
-        }
-        function formatDate(dateString, withTime = false) {
-            if (!dateString) return 'N/A';
-            const date = new Date(dateString);
-            const options = { day: 'numeric', month: 'long', year: 'numeric' };
-            if (withTime) {
-                options.hour = '2-digit'; options.minute = '2-digit'; options.hour12 = false;
-            }
-            return new Intl.DateTimeFormat('id-ID', options).format(date).replace('.',':');
-        }
-        function showSection(sectionId) {
-            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-            document.getElementById(sectionId)?.classList.add('active');
-            
-            // Mengatur status aktif pada tab yang benar
-            if (sectionId.startsWith('refund-')) {
-                document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
-                const tabId = sectionId.replace('refund-', '') + '-tab';
-                document.getElementById(tabId)?.classList.add('active');
-            }
-        }
-        function goToBookingHistory() { window.location.href = 'RiwayatPemesanan.html'; }
-        function selectCard(cardType) {
-            document.querySelectorAll('.card-icon').forEach(i => i.classList.remove('selected'));
-            document.querySelector(`.card-icon.${cardType}`)?.classList.add('selected');
-        }
-        function showSuccessModal() { document.getElementById('successModal').classList.add('active'); }
-        function closeModal(modalId) { document.getElementById(modalId)?.classList.remove('active'); }
-        function contactSupport() {
-            window.open('mailto:support@owo.com?subject=Refund Issue');
-            closeModal('errorModal');
-        }
-    </script>
-</body>
-</html>

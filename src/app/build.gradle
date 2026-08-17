@@ -70,6 +70,13 @@ tasks.withType(JavaExec).configureEach {
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+
+    // BridgeLiveTest drives a real WebView and needs a display, so it is opt-in:
+    //   ./gradlew test -Powo.live=true
+    // The reflective bridge contract test runs unconditionally.
+    if (project.hasProperty('owo.live')) {
+        systemProperty 'owo.live', 'true'
+    }
 }
 
 tasks.withType(JavaExec) {

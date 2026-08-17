@@ -1,0 +1,202 @@
+<style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .screen {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f3ff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #613DC1;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .search-details {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .detail-item {
+            background: #f5f3ff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .detail-item strong {
+            color: #613DC1;
+        }
+
+        .hotel-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .hotel-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            transition: transform 0.3s ease;
+        }
+
+        .hotel-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .hotel-image {
+            flex: 0 0 300px;
+            height: 250px;
+            background: #e0e7ff;
+            position: relative;
+        }
+
+        .hotel-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .hotel-content {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hotel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .hotel-title {
+            color: #613DC1;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .hotel-stars {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 10px;
+        }
+
+        .star {
+            color: #FBBF24;
+        }
+
+        .hotel-location {
+            color: #6B7280;
+            margin-bottom: 15px;
+        }
+
+        .hotel-amenities {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .amenity {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #4B5563;
+            font-size: 14px;
+        }
+
+        .hotel-footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hotel-price {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .price-amount {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .price-period {
+            color: #6B7280;
+            font-size: 14px;
+        }
+
+        .book-button {
+            background: #613DC1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .book-button:hover {
+            background: #4E148C;
+        }
+
+        .back-button {
+            background: #F3F4F6;
+            color: #374151;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .back-button:hover {
+            background: #E5E7EB;
+        }
+    
+</style>
+<div class="container">
+        <button class="back-button">← Kembali</button>
+        
+        <div class="header">
+            <h1>Hasil Pencarian Hotel</h1>
+            <div class="search-details" id="searchDetails">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="hotel-list" id="hotelList">
+            <!-- Will be populated by JavaScript -->
+        </div>
+    </div>

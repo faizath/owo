@@ -1,11 +1,5 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OwO - Register</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
+<style>
+
         /* Reset and Base Styles */
         * {
             margin: 0;
@@ -13,7 +7,7 @@
             box-sizing: border-box;
         }
 
-        body {
+        .screen {
             font-family: "Poppins", sans-serif;
             background: white;
             height: 100vh;
@@ -453,10 +447,9 @@
                 bottom: 55%;
             }
         }
-    </style>
-</head>
-<body>
-    <div class="container">
+    
+</style>
+<div class="container">
         <!-- Background Image -->
         <div class="background-image">
             <img src="../assets/bg_image_login.png" alt="Beach Background" />
@@ -535,76 +528,3 @@
             </div>
         </div>
     </div>
-    
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const registerForm = document.getElementById("registerForm");
-            const registerButton = document.querySelector(".register-button");
-            const nameInput = document.getElementById("name");
-            const emailInput = document.getElementById("email");
-            const passwordInput = document.getElementById("password");
-
-            function validateForm() {
-                const name = nameInput.value.trim();
-                const email = emailInput.value.trim();
-                const password = passwordInput.value.trim();
-                
-                registerButton.disabled = !(name.length > 0 && email.length > 0 && password.length > 0);
-            }
-
-            nameInput.addEventListener("input", validateForm);
-            emailInput.addEventListener("input", validateForm);
-            passwordInput.addEventListener("input", validateForm);
-
-            validateForm();
-
-            registerForm.addEventListener("submit", (e) => {
-                e.preventDefault();
-
-                const name = nameInput.value.trim();
-                const email = emailInput.value.trim();
-                const password = passwordInput.value.trim();
-
-                if (!name || !email || !password) {
-                    alert("Please fill in all fields");
-                    return;
-                }
-
-                setTimeout(() => {
-                    registerButton.disabled = false;
-                    registerButton.textContent = "Register";
-
-                    window.location.href = 'LoginForm.html';
-
-                    registerForm.reset();
-                    validateForm();
-                }, 2000);
-            });
-
-            const inputFields = document.querySelectorAll(".input-field");
-            inputFields.forEach((field) => {
-                field.addEventListener("focus", function() {
-                    this.parentElement.classList.add("focused");
-                });
-
-                field.addEventListener("blur", function() {
-                    this.parentElement.classList.remove("focused");
-                });
-            });
-
-            document.addEventListener("keydown", (e) => {
-                if (e.key === "Enter" && document.activeElement.classList.contains("input-field")) {
-                    const inputs = Array.from(inputFields);
-                    const currentIndex = inputs.indexOf(document.activeElement);
-
-                    if (currentIndex < inputs.length - 1) {
-                        inputs[currentIndex + 1].focus();
-                    } else {
-                        registerButton.click();
-                    }
-                }
-            });
-        });
-    </script>
-</body>
-</html> 

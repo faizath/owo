@@ -387,6 +387,35 @@ public class JavaScriptBridge {
         return "OwO Booking System v1.0";
     }
 
+    /** Screens the router is allowed to load. Anything else is refused. */
+    private static final List<String> SCREENS = List.of(
+            "LoginForm", "RegisterForm", "Pemesanan", "CekKetersediaanPesawat",
+            "CekKetersediaanHotel", "Pembayaran", "RiwayatPemesanan", "RefundForm");
+
+    /**
+     * Returns a screen fragment as markup.
+     *
+     * <p>Java reads it from the classpath rather than the page fetching it, because a
+     * packaged build is loaded over {@code jar:} where XHR does not work, and the plain
+     * {@code file:} origin used in development is treated as opaque. This is also why the
+     * name is matched against a fixed list instead of being used as a path.
+     */
+    public String getScreen(String name) {
+        if (!SCREENS.contains(name)) {
+            return error("Layar tidak dikenali", ERR_NOT_FOUND);
+        }
+        try (var in = getClass().getResourceAsStream("/com/owo/boundary/screens/" + name + ".html")) {
+            if (in == null) {
+                return error("Layar tidak ditemukan", ERR_NOT_FOUND);
+            }
+            String html = new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+            return success("Layar dimuat", Json.obj().put("name", name).put("html", html));
+        } catch (java.io.IOException e) {
+            System.err.println("Cannot read screen " + name + ": " + e.getMessage());
+            return error("Layar gagal dimuat", ERR_INTERNAL);
+        }
+    }
+
     public void showNotification(String message) {
         Platform.runLater(() -> {
             if (jsObject != null) {

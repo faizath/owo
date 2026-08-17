@@ -1,335 +1,153 @@
 /**
- * OwO Bridge - JavaScript API for communicating with Java backend
- * This file provides convenient methods for the frontend to interact with Java services
+ * Promise wrapper over the Java bridge.
+ *
+ * Every asynchronous Java method takes (argsJson, callbackName): WebView cannot pass a
+ * JavaScript function to Java, so the callback is registered on `window` under a
+ * generated name and Java calls it back by that name.
+ *
+ * There is deliberately no mock fallback. The previous version decided at parse time
+ * whether Java was present — before the bridge was injected, so the answer was always
+ * "no" — and then silently served fabricated data that looked like success.
  */
+(function () {
+  'use strict';
 
-// Check if we're running in JavaFX WebView with bridge available
-const isJavaFXContext = typeof window.owoBridge !== 'undefined';
+  let callbackCounter = 0;
 
-// Main OwO API object
-window.OwOAPI = {
-    
-    // Current user session
-    currentUser: null,
-    
-    /**
-     * Authentication Methods
-     */
-    auth: {
-        register: function(userData, callback) {
-            if (!isJavaFXContext) {
-                console.warn('Running in browser mode - using mock data');
-                callback && callback(JSON.stringify({
-                    success: true,
-                    message: 'Mock registration successful',
-                    data: { id: 1, nama: userData.nama, email: userData.email }
-                }));
-                return;
-            }
-            
-            console.log('Registering user:', userData);
-            window.owoAPI.register(userData.nama, userData.email, userData.password, callback);
-        },
-        
-        login: function(email, password, callback) {
-            if (!isJavaFXContext) {
-                console.warn('Running in browser mode - using mock data');
-                const mockUser = { id: 1, nama: 'Mock User', email: email };
-                window.OwOAPI.currentUser = mockUser;
-                callback && callback(JSON.stringify({
-                    success: true,
-                    message: 'Mock login successful',
-                    data: mockUser
-                }));
-                return;
-            }
-            
-            console.log('Logging in user:', email);
-            const responseCallback = function(response) {
-                try {
-                    const result = JSON.parse(response);
-                    if (result.success && result.data) {
-                        window.OwOAPI.currentUser = JSON.parse(result.data);
-                        console.log('User logged in:', window.OwOAPI.currentUser);
-                    }
-                } catch (e) {
-                    console.error('Error parsing login response:', e);
-                }
-                callback && callback(response);
-            };
-            
-            window.owoAPI.login(email, password, responseCallback);
-        },
-        
-        logout: function() {
-            window.OwOAPI.currentUser = null;
-            console.log('User logged out');
-        },
-        
-        getCurrentUser: function() {
-            return window.OwOAPI.currentUser;
-        }
-    },
-    
-    /**
-     * Booking Methods
-     */
-    booking: {
-        createHotelBooking: function(bookingData, callback) {
-            if (!isJavaFXContext) {
-                console.warn('Running in browser mode - mock hotel booking');
-                callback && callback(JSON.stringify({
-                    success: true,
-                    message: 'Mock hotel booking created',
-                    data: { id: Date.now(), transactionId: 'HTL' + Date.now(), ...bookingData }
-                }));
-                return;
-            }
-            
-            // Ensure customerId is set
-            if (!bookingData.customerId && window.OwOAPI.currentUser) {
-                bookingData.customerId = window.OwOAPI.currentUser.id;
-            }
-            
-            console.log('Creating hotel booking:', bookingData);
-            window.owoAPI.createHotelBooking(bookingData, callback);
-        },
-        
-        createFlightBooking: function(bookingData, callback) {
-            if (!isJavaFXContext) {
-                console.warn('Running in browser mode - mock flight booking');
-                callback && callback(JSON.stringify({
-                    success: true,
-                    message: 'Mock flight booking created',
-                    data: { id: Date.now(), transactionId: 'FLT' + Date.now(), ...bookingData }
-                }));
-                return;
-            }
-            
-            // Ensure customerId is set
-            if (!bookingData.customerId && window.OwOAPI.currentUser) {
-                bookingData.customerId = window.OwOAPI.currentUser.id;
-            }
-            
-            console.log('Creating flight booking:', bookingData);
-            window.owoAPI.createFlightBooking(bookingData, callback);
-        },
-        
-        getUserBookings: function(userId, callback) {
-            if (!isJavaFXContext) {
-                console.warn('Running in browser mode - mock bookings');
-                callback && callback(JSON.stringify({
-                    success: true,
-                    message: 'Mock bookings retrieved',
-                    data: []
-                }));
-                return;
-            }
-            
-            userId = userId || (window.OwOAPI.currentUser ? window.OwOAPI.currentUser.id : 1);
-            console.log('Getting bookings for user:', userId);
-            window.owoAPI.getUserBookings(userId, callback);
-        }
-    },
-    
-    /**
-     * Search Methods
-     */
-    search: {
-        flights: function(searchCriteria, callback) {
-            if (!isJavaFXContext) {
-                console.warn('Running in browser mode - returning mockup flights');
-                // Return mockup flights if available
-                if (typeof window.mockupData !== 'undefined') {
-                    const flights = window.mockupData.flights.filter(flight => {
-                        const originCode = flight.origin.match(/\(([^)]+)\)/)?.[1];
-                        const destCode = flight.destination.match(/\(([^)]+)\)/)?.[1];
-                        const matchesRoute = (!searchCriteria.origin || originCode === searchCriteria.origin) &&
-                                           (!searchCriteria.destination || destCode === searchCriteria.destination);
-                        return matchesRoute;
-                    });
-                    callback && callback(JSON.stringify({
-                        success: true,
-                        message: 'Mock flights found',
-                        data: flights
-                    }));
-                } else {
-                    callback && callback(JSON.stringify({
-                        success: true,
-                        message: 'No flights found',
-                        data: []
-                    }));
-                }
-                return;
-            }
-            
-            console.log('Searching flights:', searchCriteria);
-            window.owoAPI.searchFlights(searchCriteria, callback);
-        },
-        
-        hotels: function(searchCriteria, callback) {
-            if (!isJavaFXContext) {
-                console.warn('Running in browser mode - returning mockup hotels');
-                // Return mockup hotels if available
-                if (typeof window.mockupData !== 'undefined') {
-                    const hotels = window.mockupData.hotels.filter(hotel => {
-                        const matchesLocation = !searchCriteria.location || 
-                                              hotel.address.toLowerCase().includes(searchCriteria.location.toLowerCase());
-                        return matchesLocation;
-                    });
-                    callback && callback(JSON.stringify({
-                        success: true,
-                        message: 'Mock hotels found',
-                        data: hotels
-                    }));
-                } else {
-                    callback && callback(JSON.stringify({
-                        success: true,
-                        message: 'No hotels found',
-                        data: []
-                    }));
-                }
-                return;
-            }
-            
-            console.log('Searching hotels:', searchCriteria);
-            window.owoAPI.searchHotels(searchCriteria, callback);
-        }
-    },
-    
-    /**
-     * Refund Methods
-     */
-    refund: {
-        create: function(refundData, callback) {
-            if (!isJavaFXContext) {
-                console.warn('Running in browser mode - mock refund creation');
-                callback && callback(JSON.stringify({
-                    success: true,
-                    message: 'Mock refund created',
-                    data: { id: 'REF' + Date.now(), status: 'PENDING_REVIEW', ...refundData }
-                }));
-                return;
-            }
-            
-            console.log('Creating refund:', refundData);
-            window.owoAPI.createRefund(refundData, callback);
-        }
-    },
-    
-    /**
-     * Check-in Methods
-     */
-    checkin: {
-        perform: function(checkInData, callback) {
-            if (!isJavaFXContext) {
-                console.warn('Running in browser mode - mock check-in');
-                callback && callback(JSON.stringify({
-                    success: true,
-                    message: 'Mock check-in successful',
-                    data: { status: 'CHECKED_IN', checkInTime: new Date().toISOString(), ...checkInData }
-                }));
-                return;
-            }
-            
-            console.log('Performing check-in:', checkInData);
-            window.owoAPI.performCheckIn(checkInData, callback);
-        }
-    },
-    
-    /**
-     * Utility Methods
-     */
-    utils: {
-        showNotification: function(message) {
-            if (isJavaFXContext) {
-                window.owoAPI.showNotification(message);
-            } else {
-                console.log('Notification:', message);
-                // You could implement browser notifications here
-                if ('Notification' in window && Notification.permission === 'granted') {
-                    new Notification('OwO Booking', { body: message });
-                }
-            }
-        },
-        
-        getVersion: function() {
-            if (isJavaFXContext) {
-                return window.owoAPI.getVersion();
-            } else {
-                return 'OwO Browser Version 1.0';
-            }
-        },
-        
-        formatCurrency: function(amount) {
-            return new Intl.NumberFormat('id-ID', {
-                style: 'currency',
-                currency: 'IDR',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            }).format(amount);
-        },
-        
-        formatDate: function(dateString) {
-            if (!dateString) return 'N/A';
-            try {
-                const date = new Date(dateString);
-                return new Intl.DateTimeFormat('id-ID', {
-                    weekday: 'short',
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                }).format(date);
-            } catch (e) {
-                return dateString;
-            }
-        }
-    },
-    
-    /**
-     * Helper method to handle responses consistently
-     */
-    handleResponse: function(response, successCallback, errorCallback) {
+  /** Resolves once `window.owoBridge` exists. Java fires owo:bridge-ready after setMember. */
+  function whenReady() {
+    if (window.owoBridge) {
+      return Promise.resolve(window.owoBridge);
+    }
+    return new Promise(function (resolve, reject) {
+      const timer = setTimeout(function () {
+        reject(new Error('Bridge Java tidak tersedia.'));
+      }, 10000);
+
+      window.addEventListener('owo:bridge-ready', function onReady() {
+        clearTimeout(timer);
+        window.removeEventListener('owo:bridge-ready', onReady);
+        resolve(window.owoBridge);
+      });
+    });
+  }
+
+  /** Parses a bridge response, rejecting when it reports failure. */
+  function unwrap(raw) {
+    let response;
+    try {
+      response = JSON.parse(raw);
+    } catch (e) {
+      throw new Error('Respons dari server tidak dapat dibaca.');
+    }
+    if (!response.success) {
+      const error = new Error(response.message || 'Operasi gagal.');
+      error.code = response.code || 'ERR_UNKNOWN';
+      throw error;
+    }
+    return response.data;
+  }
+
+  /** Invokes an async bridge method and resolves with its `data`. */
+  function call(method, args) {
+    return whenReady().then(function (bridge) {
+      return new Promise(function (resolve, reject) {
+        const name = '__owoCallback' + ++callbackCounter;
+
+        window[name] = function (raw) {
+          delete window[name];
+          try {
+            resolve(unwrap(raw));
+          } catch (e) {
+            reject(e);
+          }
+        };
+
         try {
-            const result = JSON.parse(response);
-            if (result.success) {
-                console.log('Operation successful:', result.message);
-                if (successCallback) {
-                    const data = typeof result.data === 'string' ? JSON.parse(result.data) : result.data;
-                    successCallback(data, result.message);
-                }
-            } else {
-                console.error('Operation failed:', result.message);
-                if (errorCallback) {
-                    errorCallback(result.message);
-                } else {
-                    window.OwOAPI.utils.showNotification('Error: ' + result.message);
-                }
-            }
+          if (args === undefined) {
+            bridge[method](name);
+          } else {
+            bridge[method](JSON.stringify(args), name);
+          }
         } catch (e) {
-            console.error('Error parsing response:', e, response);
-            if (errorCallback) {
-                errorCallback('Invalid response format');
-            }
+          delete window[name];
+          reject(new Error('Tidak dapat memanggil ' + method + ': ' + e.message));
         }
-    }
-};
+      });
+    });
+  }
 
-// Initialize the API
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('OwO Bridge API initialized');
-    console.log('JavaFX Context:', isJavaFXContext);
-    console.log('Available API methods:', Object.keys(window.OwOAPI));
-    
-    // Set up auto user ID for testing if not in JavaFX context
-    if (!isJavaFXContext) {
-        window.OwOAPI.currentUser = { id: 1, nama: 'Test User', email: 'test@example.com' };
+  /** Invokes a synchronous bridge method that returns a response envelope. */
+  function callSync(method, arg) {
+    if (!window.owoBridge) {
+      throw new Error('Bridge Java tidak tersedia.');
     }
-});
+    return unwrap(arg === undefined ? window.owoBridge[method]()
+                                    : window.owoBridge[method](arg));
+  }
 
-// Export for module systems if needed
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = window.OwOAPI;
-} 
+  window.OwOAPI = {
+    whenReady: whenReady,
+
+    // Authentication
+    register: function (nama, email, password) {
+      return call('register', { nama: nama, email: email, password: password });
+    },
+    login: function (email, password) {
+      return call('login', { email: email, password: password });
+    },
+    logout: function () {
+      return call('logout');
+    },
+    /** @returns the session user, or null when not signed in */
+    getSession: function () {
+      try {
+        return callSync('getSession');
+      } catch (e) {
+        return null;
+      }
+    },
+
+    // Search
+    searchFlights: function (criteria) {
+      return call('searchFlights', criteria || {});
+    },
+    searchHotels: function (criteria) {
+      return call('searchHotels', criteria || {});
+    },
+
+    // Bookings
+    createBooking: function (tiketId) {
+      return call('createBooking', { tiketId: tiketId });
+    },
+    getUserBookings: function () {
+      return call('getUserBookings');
+    },
+    confirmPayment: function (pemesananId) {
+      return call('confirmPayment', { pemesananId: pemesananId });
+    },
+    cancelBooking: function (pemesananId) {
+      return call('cancelBooking', { pemesananId: pemesananId });
+    },
+    performCheckIn: function (pemesananId) {
+      return call('performCheckIn', { pemesananId: pemesananId });
+    },
+
+    // Refunds
+    quoteRefund: function (pemesananId) {
+      return call('quoteRefund', { pemesananId: pemesananId });
+    },
+    createRefund: function (details) {
+      return call('createRefund', details);
+    },
+
+    // Screens
+    getScreen: function (name) {
+      return callSync('getScreen', name);
+    },
+
+    getVersion: function () {
+      return window.owoBridge ? window.owoBridge.getVersion() : 'unavailable';
+    }
+  };
+})();

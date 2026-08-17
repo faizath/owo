@@ -1,0 +1,231 @@
+<style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .screen {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f3ff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #613DC1;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .search-details {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .detail-item {
+            background: #f5f3ff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .detail-item strong {
+            color: #613DC1;
+        }
+
+        .flight-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .flight-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .flight-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .flight-content {
+            padding: 20px;
+        }
+
+        .flight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .flight-title {
+            color: #613DC1;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .flight-details {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f6ff;
+            border-radius: 8px;
+        }
+
+        .flight-time {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .flight-duration {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: #6B7280;
+        }
+
+        .flight-path {
+            width: 100px;
+            height: 2px;
+            background: #e5e7eb;
+            position: relative;
+        }
+
+        .flight-path::before,
+        .flight-path::after {
+            content: "";
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #613DC1;
+            top: -2px;
+        }
+
+        .flight-path::before {
+            left: 0;
+        }
+
+        .flight-path::after {
+            right: 0;
+        }
+
+        .flight-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .flight-info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .flight-info-label {
+            color: #6B7280;
+            font-size: 14px;
+        }
+
+        .flight-info-value {
+            color: #111827;
+            font-weight: 500;
+        }
+
+        .flight-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .flight-price {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .price-amount {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .price-period {
+            color: #6B7280;
+            font-size: 14px;
+        }
+
+        .book-button {
+            background: #613DC1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .book-button:hover {
+            background: #4E148C;
+        }
+
+        .back-button {
+            background: #F3F4F6;
+            color: #374151;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .back-button:hover {
+            background: #E5E7EB;
+        }
+    
+</style>
+<div class="container">
+        <button class="back-button">← Kembali</button>
+        
+        <div class="header">
+            <h1>Hasil Pencarian Penerbangan</h1>
+            <div class="search-details" id="searchDetails">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="flight-list" id="flightList">
+            <!-- Will be populated by JavaScript -->
+        </div>
+    </div>
