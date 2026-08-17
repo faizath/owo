@@ -170,9 +170,10 @@ public class JavaScriptBridge {
             String origin = Json.optString(args, "origin", null);
             String destination = Json.optString(args, "destination", null);
             String kelas = Json.optString(args, "kelas", null);
+            int penumpang = optPartySize(args, "penumpang");
 
             List<TiketPesawat> flights =
-                    TiketDAO.searchTiketPesawat(origin, destination, kelas, true);
+                    TiketDAO.searchTiketPesawat(origin, destination, kelas, true, penumpang);
 
             Json.Arr items = Json.arr();
             for (TiketPesawat flight : flights) {
@@ -190,9 +191,10 @@ public class JavaScriptBridge {
             String hotelName = Json.optString(args, "hotelName", null);
             LocalDate checkIn = optDate(args, "checkin");
             LocalDate checkOut = optDate(args, "checkout");
+            int tamu = optPartySize(args, "tamu");
 
             List<TiketHotel> hotels =
-                    TiketDAO.searchTiketHotel(location, checkIn, checkOut, hotelName, true);
+                    TiketDAO.searchTiketHotel(location, checkIn, checkOut, hotelName, true, tamu);
 
             Json.Arr items = Json.arr();
             for (TiketHotel hotel : hotels) {
@@ -201,6 +203,24 @@ public class JavaScriptBridge {
             return success(hotels.isEmpty() ? "Tidak ada hotel yang cocok" : "Hotel ditemukan", items);
         });
     }
+
+    /**
+     * Reads a party size, defaulting to one when the field is absent.
+     *
+     * <p>Bounded because it reaches the search as a filter and the booking as a stored
+     * value; an absurd figure is a client error, not something to pass through.
+     */
+    private static int optPartySize(Map<String, Object> args, String key) {
+        int value = Json.optInt(args, key, 1);
+        if (value < 1 || value > MAX_PESERTA) {
+            throw new Json.JsonException(
+                    "Field '" + key + "' harus antara 1 dan " + MAX_PESERTA);
+        }
+        return value;
+    }
+
+    /** Upper bound on a party size the client may request. */
+    private static final int MAX_PESERTA = 20;
 
     private static LocalDate optDate(Map<String, Object> args, String key) {
         String raw = Json.optString(args, key, null);
@@ -224,6 +244,7 @@ public class JavaScriptBridge {
                 .put("kelas", flight.getKelas())
                 .put("price", (double) flight.getHarga())
                 .put("departure", SqlDates.format(flight.getWaktuKeberangkatan()))
+                .put("kapasitas", flight.getKapasitas())
                 .put("tersedia", flight.isTersedia());
     }
 
@@ -236,6 +257,7 @@ public class JavaScriptBridge {
                 .put("price", (double) hotel.getHarga())
                 .put("checkin", SqlDates.format(hotel.getCheckIn()))
                 .put("checkout", SqlDates.format(hotel.getCheckOut()))
+                .put("kapasitas", hotel.getKapasitas())
                 .put("tersedia", hotel.isTersedia());
     }
 
@@ -246,6 +268,7 @@ public class JavaScriptBridge {
         run(callbackName, () -> withSession(userId -> {
             Map<String, Object> args = Json.parseObject(argsJson);
             int tiketId = Json.requireInt(args, "tiketId");
+            int jumlahPeserta = optPartySize(args, "jumlahPeserta");
 
             Tiket tiket = TiketDAO.getTiketById(tiketId);
             if (tiket == null) {
@@ -253,7 +276,8 @@ public class JavaScriptBridge {
             }
 
             try {
-                Pemesanan pemesanan = pemesananController.createPemesanan(userId, tiket);
+                Pemesanan pemesanan =
+                        pemesananController.createPemesanan(userId, tiket, jumlahPeserta);
                 return success("Pemesanan dibuat", bookingJson(pemesanan));
             } catch (PemesananController.PemesananException e) {
                 return error(e.getMessage(), ERR_INVALID_INPUT);
@@ -372,6 +396,7 @@ public class JavaScriptBridge {
                 .put("id", pemesanan.getId())
                 .put("status", pemesanan.getStatus())
                 .put("tanggalPesan", SqlDates.format(pemesanan.getTanggalPesan()))
+                .put("jumlahPeserta", pemesanan.getJumlahPeserta())
                 .put("transactionId", "TXN" + pemesanan.getId());
 
         Tiket tiket = pemesanan.getTiket();
