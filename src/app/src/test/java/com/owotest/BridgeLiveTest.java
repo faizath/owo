@@ -10,6 +10,7 @@ import com.owo.entity.Refund;
 import com.owo.entity.PemesananStatus;
 import com.owo.utils.BridgeInstaller;
 import com.owo.utils.Json;
+import com.owo.utils.NotifikasiHelper;
 import com.owo.utils.JavaScriptBridge;
 import com.owotest.support.Fixtures;
 import com.owotest.support.TempDatabase;
@@ -127,6 +128,11 @@ class BridgeLiveTest {
         if (bridge != null) {
             BridgeInstaller.shutdown(bridge);
         }
+        // These tests sign in and never sign out, and the notification poller is a static
+        // singleton that only logout stops. Left running, it polls the database this line
+        // is about to delete, once a second, for the rest of the suite — which showed up
+        // as a later test timing out waiting for the shell rather than as a failure here.
+        NotifikasiHelper.stop();
         db.close();
     }
 
