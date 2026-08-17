@@ -20,14 +20,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Queueing and lifecycle of {@link NotificationBridge}.
  *
- * <p>Delivery itself is deliberately <strong>not</strong> covered here. It runs through
- * {@code Platform.runLater} and calls {@code window.showNotification} on a real
- * {@code WebEngine}, neither of which exists without a JavaFX toolkit and a display. The
- * retry-then-drop path around {@code MAX_DELIVERY_ATTEMPTS} is only reachable once a script
- * call can actually fail, so it belongs to {@code BridgeLiveTest} (opt-in via
- * {@code -Powo.live=true}). What is testable headlessly is everything before the engine hand-off:
- * that a message raised before the page exists survives, and that connect/disconnect/shutdown
- * do not silently discard the queue.
+ * <p>The retry-then-drop path around {@code MAX_DELIVERY_ATTEMPTS} used to be deferred to
+ * {@code BridgeLiveTest} on the grounds that a script call can only fail against a real
+ * {@code WebEngine} — a promise the live suite never kept, because none of its tests touch
+ * notification delivery. The thread hop and the script call now sit behind
+ * {@link NotificationBridge.Dispatcher}, so the policy can be driven headlessly with a
+ * dispatcher that fails on demand.
  *
  * <p>Every behavioural test runs against its own instance built through the private
  * constructor. The singleton starts a one-second scheduler that lives for the whole JVM, so
@@ -178,5 +176,119 @@ class NotificationBridgeTest {
         // App.stop() and an explicit teardown can both reach this; the second call must not
         // throw or block for the five-second termination wait.
         assertTrue(schedulerIsShutdown(bridge));
+    }
+
+    // -------------------------------------------------------- retry and drop
+
+    /**
+     * A dispatcher that runs inline and fails the first {@code failures} deliveries.
+     *
+     * <p>Inline rather than on another thread so one {@code sendNotification} drives the
+     * whole retry cycle. In production the hop is asynchronous and each retry waits for
+     * the next scheduler tick; the policy being exercised is the same either way.
+     */
+    private static final class FlakyDispatcher implements NotificationBridge.Dispatcher {
+        private final int failures;
+        private final boolean ready;
+        private int attempts;
+        private final List<String> delivered = new ArrayList<>();
+
+        FlakyDispatcher(int failures) {
+            this(failures, true);
+        }
+
+        FlakyDispatcher(int failures, boolean ready) {
+            this.failures = failures;
+            this.ready = ready;
+        }
+
+        @Override
+        public boolean isReady() {
+            return ready;
+        }
+
+        @Override
+        public void onDeliveryThread(Runnable task) {
+            task.run();
+        }
+
+        @Override
+        public void deliver(String message) throws Exception {
+            attempts++;
+            if (attempts <= failures) {
+                throw new IllegalStateException("page not reachable");
+            }
+            delivered.add(message);
+        }
+    }
+
+    @Test
+    void aFailedDeliveryIsRetried() throws Exception {
+        NotificationBridge bridge = freshBridge();
+        FlakyDispatcher dispatcher = new FlakyDispatcher(1);
+        bridge.setDispatcher(dispatcher);
+
+        bridge.sendNotification("Refund Anda telah disetujui");
+
+        // The page is often not ready for the first message after login; giving up on the
+        // first failure would lose exactly those.
+        assertEquals(2, dispatcher.attempts);
+        assertEquals(List.of("Refund Anda telah disetujui"), dispatcher.delivered);
+        assertEquals(0, bridge.getQueueSize());
+    }
+
+    @Test
+    void deliveryIsAbandonedAfterThreeAttempts() throws Exception {
+        NotificationBridge bridge = freshBridge();
+        FlakyDispatcher dispatcher = new FlakyDispatcher(Integer.MAX_VALUE);
+        bridge.setDispatcher(dispatcher);
+
+        bridge.sendNotification("Refund Anda telah disetujui");
+
+        // Re-queueing without a limit spins against a one-second scheduler for as long as
+        // the process lives, and the message is never delivered anyway.
+        assertEquals(3, dispatcher.attempts);
+        assertEquals(0, bridge.getQueueSize());
+    }
+
+    @Test
+    void aDroppedMessageDoesNotBlockTheOnesBehindIt() throws Exception {
+        NotificationBridge bridge = freshBridge();
+        FlakyDispatcher dispatcher = new FlakyDispatcher(3);
+        bridge.setDispatcher(dispatcher);
+
+        bridge.sendNotification("Pertama");
+        bridge.sendNotification("Kedua");
+
+        // The first message exhausts its three attempts and is discarded; the second must
+        // still get through rather than being stuck behind it.
+        assertEquals(List.of("Kedua"), dispatcher.delivered);
+        assertEquals(0, bridge.getQueueSize());
+    }
+
+    @Test
+    void aDispatcherThatIsNotReadyLeavesTheQueueAlone() throws Exception {
+        NotificationBridge bridge = freshBridge();
+        FlakyDispatcher dispatcher = new FlakyDispatcher(0, false);
+        bridge.setDispatcher(dispatcher);
+
+        bridge.sendNotification("Pemesanan berhasil dikonfirmasi");
+
+        // Draining into a target that cannot deliver would burn all three attempts before
+        // the page ever existed.
+        assertEquals(0, dispatcher.attempts);
+        assertEquals(1, bridge.getQueueSize());
+    }
+
+    @Test
+    void attachingADispatcherFlushesWhatWasWaiting() throws Exception {
+        NotificationBridge bridge = freshBridge();
+        bridge.sendNotification("Pemesanan berhasil dikonfirmasi");
+
+        FlakyDispatcher dispatcher = new FlakyDispatcher(0);
+        bridge.setDispatcher(dispatcher);
+
+        assertEquals(List.of("Pemesanan berhasil dikonfirmasi"), dispatcher.delivered);
+        assertEquals(0, bridge.getQueueSize());
     }
 }
