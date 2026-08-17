@@ -9,12 +9,15 @@ public class Pemesanan {
     private LocalDateTime tanggalPesan;
     private String status;
 
+    /** Party size this booking was made for; never more than the ticket's capacity. */
+    private int jumlahPeserta = 1;
+
     public Pemesanan(int id, String customerId, Tiket tiket) {
         this.id = id;
         this.customerId = customerId;
         this.tiket = tiket;
         this.tanggalPesan = LocalDateTime.now();
-        this.status = "PENDING";    
+        this.status = "PENDING";
     }
 
     public int getId() {
@@ -55,6 +58,19 @@ public class Pemesanan {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public int getJumlahPeserta() {
+        return jumlahPeserta;
+    }
+
+    /** @throws IllegalArgumentException if the party size is not at least one */
+    public void setJumlahPeserta(int jumlahPeserta) {
+        if (jumlahPeserta < 1) {
+            throw new IllegalArgumentException(
+                    "Jumlah peserta minimal 1, bukan " + jumlahPeserta);
+        }
+        this.jumlahPeserta = jumlahPeserta;
     }
 
 }

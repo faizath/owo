@@ -18,24 +18,35 @@ import java.util.ArrayList;
 /**
  * Ticket persistence and search.
  *
- * <p>Search takes no passenger or guest count. The schema models one ticket as one
- * bookable unit and has no capacity column, so those arguments used to be accepted and
- * then silently dropped into an empty {@code if} block — a filter the caller believed was
- * applied. The UI still asks how many people are travelling, for the booking summary; it
- * is not a search filter until capacity is modelled.
+ * <p>One {@code tiket} row is one bookable unit, and {@code kapasitas} says how many people
+ * that unit holds. Search filters on it, so a party of four never sees a listing that seats
+ * two. The count used to be accepted by these methods and dropped into an empty {@code if}
+ * block — a filter the caller believed was applied.
  */
 public class TiketDAO {
+    /** Capacity assumed when a caller does not state one. */
+    private static final int KAPASITAS_DEFAULT = 1;
+
     public static TiketPesawat createTiketPesawat(float harga, boolean tersedia, String flightNumber,
             String origin, String destination, String maskapai, String kelas, LocalDateTime waktuKeberangkatan)
             throws SQLException {
-        String tiketSql = "INSERT INTO tiket (harga, tersedia, tipe) VALUES (?, ?, 'PESAWAT')";
+        return createTiketPesawat(harga, tersedia, flightNumber, origin, destination, maskapai,
+                kelas, waktuKeberangkatan, KAPASITAS_DEFAULT);
+    }
+
+    public static TiketPesawat createTiketPesawat(float harga, boolean tersedia, String flightNumber,
+            String origin, String destination, String maskapai, String kelas,
+            LocalDateTime waktuKeberangkatan, int kapasitas)
+            throws SQLException {
+        String tiketSql =
+                "INSERT INTO tiket (harga, tersedia, tipe, kapasitas) VALUES (?, ?, 'PESAWAT', ?)";
         String pesawatSql = "INSERT INTO tiket_pesawat (tiket_id, flight_number, maskapai, origin, "
                 + "destination, kelas, waktu_keberangkatan) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DBHelper.getConnection()) {
             conn.setAutoCommit(false);
             try {
-                int tiketId = insertTiket(conn, tiketSql, harga, tersedia);
+                int tiketId = insertTiket(conn, tiketSql, harga, tersedia, kapasitas);
 
                 try (PreparedStatement pesawatStmt = conn.prepareStatement(pesawatSql)) {
                     pesawatStmt.setInt(1, tiketId);
@@ -50,7 +61,7 @@ public class TiketDAO {
                 }
 
                 conn.commit();
-                return TiketPesawat.builder()
+                TiketPesawat tiket = TiketPesawat.builder()
                         .id(tiketId)
                         .harga(harga)
                         .tersedia(tersedia)
@@ -61,6 +72,8 @@ public class TiketDAO {
                         .kelas(kelas)
                         .waktuKeberangkatan(waktuKeberangkatan)
                         .build();
+                tiket.setKapasitas(kapasitas);
+                return tiket;
             } catch (SQLException e) {
                 conn.rollback();
                 throw e;
@@ -70,14 +83,22 @@ public class TiketDAO {
 
     public static TiketHotel createTiketHotel(float harga, boolean tersedia, LocalDate checkIn,
             LocalDate checkOut, String hotelName, String roomNumber, String address) throws SQLException {
-        String tiketSql = "INSERT INTO tiket (harga, tersedia, tipe) VALUES (?, ?, 'HOTEL')";
+        return createTiketHotel(harga, tersedia, checkIn, checkOut, hotelName, roomNumber, address,
+                KAPASITAS_DEFAULT);
+    }
+
+    public static TiketHotel createTiketHotel(float harga, boolean tersedia, LocalDate checkIn,
+            LocalDate checkOut, String hotelName, String roomNumber, String address, int kapasitas)
+            throws SQLException {
+        String tiketSql =
+                "INSERT INTO tiket (harga, tersedia, tipe, kapasitas) VALUES (?, ?, 'HOTEL', ?)";
         String hotelSql = "INSERT INTO tiket_hotel (tiket_id, check_in, check_out, hotel_name, "
                 + "room_number, address) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DBHelper.getConnection()) {
             conn.setAutoCommit(false);
             try {
-                int tiketId = insertTiket(conn, tiketSql, harga, tersedia);
+                int tiketId = insertTiket(conn, tiketSql, harga, tersedia, kapasitas);
 
                 try (PreparedStatement hotelStmt = conn.prepareStatement(hotelSql)) {
                     hotelStmt.setInt(1, tiketId);
@@ -91,8 +112,10 @@ public class TiketDAO {
                 }
 
                 conn.commit();
-                return new TiketHotel(tiketId, harga, tersedia, checkIn, checkOut,
+                TiketHotel tiket = new TiketHotel(tiketId, harga, tersedia, checkIn, checkOut,
                         hotelName, roomNumber, address);
+                tiket.setKapasitas(kapasitas);
+                return tiket;
             } catch (SQLException e) {
                 conn.rollback();
                 throw e;
@@ -101,11 +124,15 @@ public class TiketDAO {
     }
 
     /** Inserts the base row and returns its generated id. Runs inside the caller's transaction. */
-    private static int insertTiket(Connection conn, String sql, float harga, boolean tersedia)
-            throws SQLException {
+    private static int insertTiket(Connection conn, String sql, float harga, boolean tersedia,
+            int kapasitas) throws SQLException {
+        if (kapasitas < 1) {
+            throw new SQLException("Kapasitas tiket minimal 1, bukan " + kapasitas);
+        }
         try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setFloat(1, harga);
             pstmt.setInt(2, tersedia ? 1 : 0);
+            pstmt.setInt(3, kapasitas);
 
             if (pstmt.executeUpdate() == 0) {
                 throw new SQLException("Creating tiket failed, no rows affected.");
@@ -135,6 +162,7 @@ public class TiketDAO {
                     String tipe = rs.getString("tipe");
                     float harga = rs.getFloat("harga");
                     boolean tersedia = rs.getInt("tersedia") == 1;
+                    int kapasitas = rs.getInt("kapasitas");
 
                     if ("PESAWAT".equals(tipe)) {
                         String flightNumber = rs.getString("flight_number");
@@ -145,7 +173,7 @@ public class TiketDAO {
                         LocalDateTime waktuKeberangkatan =
                             SqlDates.parseDateTime(rs.getString("waktu_keberangkatan"), "waktu_keberangkatan");
 
-                        return TiketPesawat.builder()
+                        TiketPesawat pesawat = TiketPesawat.builder()
                         .id(id)
                         .harga(harga)
                         .tersedia(tersedia)
@@ -156,6 +184,8 @@ public class TiketDAO {
                         .kelas(kelas)
                         .waktuKeberangkatan(waktuKeberangkatan)
                         .build();
+                        pesawat.setKapasitas(kapasitas);
+                        return pesawat;
                     } else if ("HOTEL".equals(tipe)) {
                         LocalDate checkIn = SqlDates.parseDate(rs.getString("check_in"), "check_in");
                         LocalDate checkOut = SqlDates.parseDate(rs.getString("check_out"), "check_out");
@@ -163,8 +193,10 @@ public class TiketDAO {
                         String roomNumber = rs.getString("room_number");
                         String address = rs.getString("address");
 
-                        return new TiketHotel(id, harga, tersedia, checkIn, checkOut,
+                        TiketHotel hotel = new TiketHotel(id, harga, tersedia, checkIn, checkOut,
                                 hotelName, roomNumber, address);
+                        hotel.setKapasitas(kapasitas);
+                        return hotel;
                     }
                     // A row exists but carries a tipe this code cannot map. Returning null here
                     // used to surface much later as an NPE on Pemesanan.getTiket().
@@ -219,6 +251,14 @@ public class TiketDAO {
      */
     public static List<TiketPesawat> searchTiketPesawat(String origin, String destination,
             String kelas, boolean tersediaOnly) throws SQLException {
+        return searchTiketPesawat(origin, destination, kelas, tersediaOnly, KAPASITAS_DEFAULT);
+    }
+
+    /**
+     * @param minKapasitas the party size that must fit; rows seating fewer are excluded
+     */
+    public static List<TiketPesawat> searchTiketPesawat(String origin, String destination,
+            String kelas, boolean tersediaOnly, int minKapasitas) throws SQLException {
         List<TiketPesawat> results = new ArrayList<>();
         
         // Build dynamic SQL query
@@ -248,8 +288,12 @@ public class TiketDAO {
         if (tersediaOnly) {
             sqlBuilder.append(" AND t.tersedia = 1");
         }
-        
-        
+
+        if (minKapasitas > 1) {
+            sqlBuilder.append(" AND t.kapasitas >= ?");
+            parameters.add(minKapasitas);
+        }
+
         sqlBuilder.append(" ORDER BY tp.waktu_keberangkatan ASC, t.harga ASC");
         
         try (Connection conn = DBHelper.getConnection();
@@ -284,6 +328,7 @@ public class TiketDAO {
                         .kelas(rsKelas)
                         .waktuKeberangkatan(waktuKeberangkatan)
                         .build();
+                    tiket.setKapasitas(rs.getInt("kapasitas"));
                     results.add(tiket);
                 }
             }
@@ -303,6 +348,17 @@ public class TiketDAO {
      */
     public static List<TiketHotel> searchTiketHotel(String location, LocalDate checkIn,
             LocalDate checkOut, String hotelName, boolean tersediaOnly) throws SQLException {
+        return searchTiketHotel(location, checkIn, checkOut, hotelName, tersediaOnly,
+                KAPASITAS_DEFAULT);
+    }
+
+    /**
+     * @param minKapasitas the number of guests that must fit in one room; rooms holding
+     *     fewer are excluded
+     */
+    public static List<TiketHotel> searchTiketHotel(String location, LocalDate checkIn,
+            LocalDate checkOut, String hotelName, boolean tersediaOnly, int minKapasitas)
+            throws SQLException {
         List<TiketHotel> results = new ArrayList<>();
         
         // Build dynamic SQL query
@@ -338,8 +394,12 @@ public class TiketDAO {
         if (tersediaOnly) {
             sqlBuilder.append(" AND t.tersedia = 1");
         }
-        
-        
+
+        if (minKapasitas > 1) {
+            sqlBuilder.append(" AND t.kapasitas >= ?");
+            parameters.add(minKapasitas);
+        }
+
         sqlBuilder.append(" ORDER BY th.check_in ASC, t.harga ASC");
         
         try (Connection conn = DBHelper.getConnection();
@@ -361,8 +421,9 @@ public class TiketDAO {
                     String roomNumber = rs.getString("room_number");
                     String address = rs.getString("address");
                     
-                    TiketHotel tiket = new TiketHotel(id, harga, tersedia, rsCheckIn, rsCheckOut, 
+                    TiketHotel tiket = new TiketHotel(id, harga, tersedia, rsCheckIn, rsCheckOut,
                             rsHotelName, roomNumber, address);
+                    tiket.setKapasitas(rs.getInt("kapasitas"));
                     results.add(tiket);
                 }
             }

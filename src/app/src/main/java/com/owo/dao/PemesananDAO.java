@@ -25,17 +25,39 @@ public class PemesananDAO {
      * @throws SQLException if the ticket is no longer available
      */
     public static Pemesanan createPemesanan(int customerId, Tiket tiket) throws SQLException {
-        String claimSql = "UPDATE tiket SET tersedia = 0 WHERE id = ? AND tersedia = 1";
-        String insertSql = "INSERT INTO pemesanan (customer_id, tiket_id, tanggal_pesan, status) "
-                + "VALUES (?, ?, ?, ?)";
+        return createPemesanan(customerId, tiket, 1);
+    }
+
+    /**
+     * As {@link #createPemesanan(int, Tiket)}, for a stated party size.
+     *
+     * <p>The claim is conditional on capacity as well as availability, so a party larger
+     * than the unit holds is rejected by the database rather than by a check the caller
+     * could skip.
+     *
+     * @throws SQLException if the ticket is unavailable or too small for the party
+     */
+    public static Pemesanan createPemesanan(int customerId, Tiket tiket, int jumlahPeserta)
+            throws SQLException {
+        if (jumlahPeserta < 1) {
+            throw new SQLException("Jumlah peserta minimal 1, bukan " + jumlahPeserta);
+        }
+
+        String claimSql =
+                "UPDATE tiket SET tersedia = 0 WHERE id = ? AND tersedia = 1 AND kapasitas >= ?";
+        String insertSql = "INSERT INTO pemesanan "
+                + "(customer_id, tiket_id, tanggal_pesan, status, jumlah_peserta) "
+                + "VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = DBHelper.getConnection()) {
             conn.setAutoCommit(false);
             try {
                 try (PreparedStatement claim = conn.prepareStatement(claimSql)) {
                     claim.setInt(1, tiket.getId());
+                    claim.setInt(2, jumlahPeserta);
                     if (claim.executeUpdate() == 0) {
-                        throw new SQLException("Tiket " + tiket.getId() + " is no longer available");
+                        throw new SQLException("Tiket " + tiket.getId()
+                                + " is no longer available, or cannot seat " + jumlahPeserta);
                     }
                 }
 
@@ -45,6 +67,7 @@ public class PemesananDAO {
                     pstmt.setInt(2, tiket.getId());
                     pstmt.setString(3, SqlDates.format(LocalDateTime.now()));
                     pstmt.setString(4, PemesananStatus.PENDING.dbValue());
+                    pstmt.setInt(5, jumlahPeserta);
 
                     if (pstmt.executeUpdate() == 0) {
                         throw new SQLException("Creating pemesanan failed, no rows affected.");
@@ -56,8 +79,10 @@ public class PemesananDAO {
                         }
                         conn.commit();
                         tiket.setTersedia(false);
-                        return new Pemesanan(generatedKeys.getInt(1),
+                        Pemesanan pemesanan = new Pemesanan(generatedKeys.getInt(1),
                                 String.valueOf(customerId), tiket);
+                        pemesanan.setJumlahPeserta(jumlahPeserta);
+                        return pemesanan;
                     }
                 }
             } catch (SQLException e) {
@@ -82,7 +107,7 @@ public class PemesananDAO {
         // Both tables have an id column; alias explicitly rather than relying on
         // findColumn picking the "first" match, which is driver-dependent.
         String sql = "SELECT p.id AS pemesanan_id, p.customer_id, p.tiket_id, "
-                + "p.tanggal_pesan, p.status FROM pemesanan p "
+                + "p.tanggal_pesan, p.status, p.jumlah_peserta FROM pemesanan p "
                 + "JOIN tiket t ON p.tiket_id = t.id "
                 + "WHERE p.id = ?";
         try (Connection conn = DBHelper.getConnection();
@@ -100,6 +125,7 @@ public class PemesananDAO {
                     Pemesanan pemesanan = new Pemesanan(id, customerId, tiket);
                     pemesanan.setTanggalPesan(tanggalPesan);
                     pemesanan.setStatus(status);
+                    pemesanan.setJumlahPeserta(rs.getInt("jumlah_peserta"));
                     return pemesanan;
                 }
             }
@@ -109,7 +135,7 @@ public class PemesananDAO {
 
     public static List<Pemesanan> getPemesananByCustomerId(int customerId) throws SQLException {
         String sql = "SELECT p.id AS pemesanan_id, p.customer_id, p.tiket_id, "
-                + "p.tanggal_pesan, p.status FROM pemesanan p "
+                + "p.tanggal_pesan, p.status, p.jumlah_peserta FROM pemesanan p "
                 + "JOIN tiket t ON p.tiket_id = t.id "
                 + "WHERE p.customer_id = ?";
         List<Pemesanan> pemesananList = new ArrayList<>();
@@ -125,10 +151,13 @@ public class PemesananDAO {
                     LocalDateTime tanggalPesan = SqlDates.parseDateTime(rs.getString("tanggal_pesan"), "tanggal_pesan");
                     String status = rs.getString("status");
                     
+                    int jumlahPeserta = rs.getInt("jumlah_peserta");
+
                     Tiket tiket = TiketDAO.getTiketById(tiketId);
                     Pemesanan pemesanan = new Pemesanan(id, String.valueOf(customerId), tiket);
                     pemesanan.setTanggalPesan(tanggalPesan);
                     pemesanan.setStatus(status);
+                    pemesanan.setJumlahPeserta(jumlahPeserta);
                     pemesananList.add(pemesanan);
                 }
             }
