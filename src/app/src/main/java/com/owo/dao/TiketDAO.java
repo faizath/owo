@@ -190,16 +190,6 @@ public class TiketDAO {
         }
     }
 
-    public static void updateTiketAvailability(int id, boolean tersedia) throws SQLException {
-        String sql = "UPDATE tiket SET tersedia = ? WHERE id = ?";
-        try (Connection conn = DBHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setInt(1, tersedia ? 1 : 0);
-            pstmt.setInt(2, id);
-            pstmt.executeUpdate();
-        }
-    }
 
     /**
      * Search for flight tickets with filters
