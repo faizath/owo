@@ -1,10 +1,8 @@
 package com.owo.entity;
 
-import java.util.ArrayList;
 import java.time.LocalDateTime;
 
 public class Notifikasi {
-    private static ArrayList<Notifikasi> allNotifikasi = new ArrayList<>();
     private int ID;
     private int userID;
     private String pesan;
@@ -17,7 +15,6 @@ public class Notifikasi {
         this.pesan = pesan;
         this.waktu = LocalDateTime.now();
         this.terkirm = false;
-        allNotifikasi.add(this);
     }
 
     public Notifikasi(int ID, int userID, String pesan, LocalDateTime waktu) {
@@ -49,12 +46,4 @@ public class Notifikasi {
         this.terkirm = true;
     }
 
-    public static Notifikasi getNotifikasiByID(int ID) {
-        for (Notifikasi notifikasi : allNotifikasi) {
-            if (notifikasi.getID() == ID) {
-                return notifikasi;
-            }
-        }
-        return null;
-    }
 }

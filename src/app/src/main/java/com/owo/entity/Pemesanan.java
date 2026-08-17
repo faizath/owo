@@ -1,10 +1,8 @@
 package com.owo.entity;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 
 public class Pemesanan {
-    private static ArrayList<Pemesanan> allPemesanan = new ArrayList<>();
     private int id;
     private String customerId;
     private Tiket tiket;
@@ -17,7 +15,6 @@ public class Pemesanan {
         this.tiket = tiket;
         this.tanggalPesan = LocalDateTime.now();
         this.status = "PENDING";    
-        allPemesanan.add(this);
     }
 
     public int getId() {
@@ -60,12 +57,4 @@ public class Pemesanan {
         this.status = status;
     }
 
-    public static Pemesanan getPemesananByID(int ID) {
-        for (Pemesanan pemesanan : allPemesanan) {
-            if (pemesanan.getId() == ID) {
-                return pemesanan;
-            }
-        }
-        return null;
-    }
 }
