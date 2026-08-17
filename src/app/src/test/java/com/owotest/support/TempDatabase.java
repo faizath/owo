@@ -1,6 +1,7 @@
 package com.owotest.support;
 
 import com.owo.utils.DBHelper;
+import com.owo.utils.NotifikasiHelper;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,6 +28,12 @@ public final class TempDatabase implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
+        // The notification poller is a static singleton started by any login, and only
+        // logout stops it. Tests run sequentially in one JVM, so one left running polls
+        // whichever database the *next* test installs — reading and writing a file that
+        // test never populated, and contending for its lock. Stopping it here covers every
+        // test rather than relying on each one to remember.
+        NotifikasiHelper.stop();
         DBHelper.setDatabasePath(null);
         Files.deleteIfExists(file);
     }
