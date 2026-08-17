@@ -9,6 +9,7 @@ import com.owo.entity.Refund.RefundStatus;
 import com.owo.entity.Tiket;
 import com.owo.entity.TiketHotel;
 import com.owo.entity.TiketPesawat;
+import com.owo.utils.NotifikasiHelper;
 
 import java.sql.SQLException;
 import java.time.Duration;
@@ -122,6 +123,9 @@ public class RefundController {
 
         RefundDAO.createRefund(refund);
         pemesananController.transition(pemesanan, PemesananStatus.REFUND_IN_PROGRESS);
+
+        NotifikasiHelper.catat(customerId, "Pengajuan refund " + refundId + " untuk pemesanan "
+                + pemesanan.getKodeBooking() + " diterima dan menunggu peninjauan.");
 
         return refund;
     }
@@ -291,6 +295,36 @@ public class RefundController {
 
         refund.setStatus(decision);
         pemesanan.setStatus(bookingStatus.dbValue());
+
+        beritahuPelanggan(pemesanan, pesanKeputusan(refund, decision));
+    }
+
+    /** The customer-facing wording for a decision that has already been committed. */
+    private static String pesanKeputusan(Refund refund, RefundStatus decision) {
+        if (decision == RefundStatus.APPROVED) {
+            return "Refund " + refund.getId() + " disetujui. Dana sebesar Rp "
+                    + String.format(java.util.Locale.ROOT, "%,.0f", refund.getJumlahRefund())
+                    + " akan diproses ke rekening tujuan.";
+        }
+        return "Refund " + refund.getId()
+                + " ditolak. Pemesanan Anda dikembalikan ke status sebelumnya.";
+    }
+
+    /**
+     * Tells the booking's owner what happened to their refund.
+     *
+     * <p>The reviewer is an administrator, so the session user is the wrong recipient —
+     * the notification has to go to whoever owns the booking. A booking whose customer id
+     * is not a number predates the account table and simply gets no notification rather
+     * than failing a decision that is already committed.
+     */
+    private static void beritahuPelanggan(Pemesanan pemesanan, String pesan) {
+        try {
+            NotifikasiHelper.catat(Integer.parseInt(pemesanan.getCustomerId()), pesan);
+        } catch (NumberFormatException e) {
+            System.err.println("Cannot notify owner of pemesanan " + pemesanan.getId()
+                    + ": customer id is not numeric");
+        }
     }
 
     private LocalDateTime getWaktuKeberangkatan(Tiket tiket) {

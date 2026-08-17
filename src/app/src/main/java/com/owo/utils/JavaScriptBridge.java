@@ -481,7 +481,7 @@ public class JavaScriptBridge {
                 .put("status", pemesanan.getStatus())
                 .put("tanggalPesan", SqlDates.format(pemesanan.getTanggalPesan()))
                 .put("jumlahPeserta", pemesanan.getJumlahPeserta())
-                .put("transactionId", "TXN" + pemesanan.getId());
+                .put("transactionId", pemesanan.getKodeBooking());
 
         Tiket tiket = pemesanan.getTiket();
         if (tiket instanceof TiketPesawat flight) {

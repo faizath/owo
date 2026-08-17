@@ -60,6 +60,16 @@ public class Pemesanan {
         this.status = status;
     }
 
+    /**
+     * The booking reference the customer sees.
+     *
+     * <p>Lives here so a notification and the screen that shows the booking name it the
+     * same way; the two used to be able to drift because the boundary built it itself.
+     */
+    public String getKodeBooking() {
+        return "TXN" + id;
+    }
+
     public int getJumlahPeserta() {
         return jumlahPeserta;
     }

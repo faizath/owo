@@ -4,6 +4,7 @@ import com.owo.dao.PemesananDAO;
 import com.owo.entity.Pemesanan;
 import com.owo.entity.PemesananStatus;
 import com.owo.entity.Tiket;
+import com.owo.utils.NotifikasiHelper;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -52,7 +53,10 @@ public class PemesananController {
         }
 
         try {
-            return PemesananDAO.createPemesanan(customerId, tiket, jumlahPeserta);
+            Pemesanan pemesanan = PemesananDAO.createPemesanan(customerId, tiket, jumlahPeserta);
+            NotifikasiHelper.catat(customerId, "Pemesanan " + pemesanan.getKodeBooking()
+                    + " dibuat. Selesaikan pembayaran agar tidak dibatalkan.");
+            return pemesanan;
         } catch (SQLException e) {
             // The conditional claim lost a race with another booking, or the row's capacity
             // no longer matches the copy this call was validated against.
@@ -85,6 +89,8 @@ public class PemesananController {
             throws PemesananException, SQLException {
         Pemesanan pemesanan = getOwnedPemesanan(pemesananId, customerId);
         transition(pemesanan, PemesananStatus.CONFIRMED);
+        NotifikasiHelper.catat(customerId, "Pembayaran pemesanan " + pemesanan.getKodeBooking()
+                + " berhasil. Pemesanan Anda sudah aktif.");
         return pemesanan;
     }
 
@@ -113,6 +119,8 @@ public class PemesananController {
         if (tiket != null) {
             tiket.setTersedia(true);
         }
+        NotifikasiHelper.catat(customerId,
+                "Pemesanan " + pemesanan.getKodeBooking() + " telah dibatalkan.");
         return pemesanan;
     }
 

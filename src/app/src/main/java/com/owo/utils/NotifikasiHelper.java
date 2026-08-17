@@ -41,6 +41,23 @@ public class NotifikasiHelper {
                 NotifikasiHelper::checkAndShowNotifications, 0, POLL_SECONDS, TimeUnit.SECONDS);
     }
 
+    /**
+     * Records a notification for a user without letting it fail the caller.
+     *
+     * <p>Every producer calls this once the operation the message describes has already
+     * been committed. Propagating a failure here would report an error for work that did
+     * happen and cannot be undone, so it is logged and dropped instead. The poller picks
+     * the row up on its next pass and delivers it.
+     */
+    public static void catat(int userId, String pesan) {
+        try {
+            NotifikasiDAO.createNotifikasi(userId, pesan);
+        } catch (Exception e) {
+            System.err.println("Cannot record notification for user " + userId + ": "
+                    + e.getMessage());
+        }
+    }
+
     private static void checkAndShowNotifications() {
         // Catches Exception, not SQLException: anything escaping this method silently
         // cancels all future runs of the scheduled task.

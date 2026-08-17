@@ -5,6 +5,7 @@ import com.owo.entity.PemesananStatus;
 import com.owo.entity.Tiket;
 import com.owo.entity.TiketHotel;
 import com.owo.entity.TiketPesawat;
+import com.owo.utils.NotifikasiHelper;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -54,6 +55,8 @@ public class CheckInController {
         Pemesanan pemesanan = pemesananController.getOwnedPemesanan(pemesananId, customerId);
         assertCheckInAllowed(pemesanan);
         pemesananController.transition(pemesanan, PemesananStatus.CHECKED_IN);
+        NotifikasiHelper.catat(customerId, "Check-in untuk pemesanan "
+                + pemesanan.getKodeBooking() + " berhasil.");
         return pemesanan;
     }
 
