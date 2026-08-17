@@ -48,9 +48,9 @@ public class NotifikasiHelper {
             List<Notifikasi> notifications = NotifikasiDAO.getNotifikasiByUserId(currentUserId);
 
             for (Notifikasi notifikasi : notifications) {
-                if (!notifikasi.isTerkirm()) {
+                if (!notifikasi.isTerkirim()) {
                     NotificationBridge.getInstance().sendNotification(notifikasi.getPesan());
-                    NotifikasiDAO.markAsTerkirm(notifikasi.getID());
+                    NotifikasiDAO.markAsTerkirim(notifikasi.getID());
                 }
             }
         } catch (Exception e) {

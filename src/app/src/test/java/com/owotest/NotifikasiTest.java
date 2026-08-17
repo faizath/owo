@@ -28,7 +28,7 @@ public class NotifikasiTest {
         assertEquals(TEST_USER_ID, notifikasi.getUserID());
         assertEquals(TEST_PESAN, notifikasi.getPesan());
         assertEquals(TEST_WAKTU, notifikasi.getWaktu());
-        assertFalse(notifikasi.isTerkirm());
+        assertFalse(notifikasi.isTerkirim());
     }
 
     @Test
@@ -56,16 +56,16 @@ public class NotifikasiTest {
     }
 
     @Test
-    @DisplayName("Test isTerkirm method initial state")
-    void testIsTerkirmInitial() {
-        assertFalse(notifikasi.isTerkirm());
+    @DisplayName("Test isTerkirim method initial state")
+    void testIsTerkirimInitial() {
+        assertFalse(notifikasi.isTerkirim());
     }
 
     @Test
-    @DisplayName("Test setTerkirm method")
-    void testSetTerkirm() {
-        notifikasi.setTerkirm();
-        assertTrue(notifikasi.isTerkirm());
+    @DisplayName("Test setTerkirim method")
+    void testSetTerkirim() {
+        notifikasi.setTerkirim();
+        assertTrue(notifikasi.isTerkirim());
     }
 
     @Test

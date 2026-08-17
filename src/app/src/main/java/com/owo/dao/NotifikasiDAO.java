@@ -14,7 +14,7 @@ import java.util.List;
 
 public class NotifikasiDAO {
     public static Notifikasi createNotifikasi(int userID, String pesan) throws SQLException {
-        String sql = "INSERT INTO notifikasi (user_id, pesan, waktu, terkirm) VALUES (?, ?, ?, 0)";
+        String sql = "INSERT INTO notifikasi (user_id, pesan, waktu, terkirim) VALUES (?, ?, ?, 0)";
         try (Connection conn = DBHelper.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
@@ -49,11 +49,11 @@ public class NotifikasiDAO {
                     int userID = rs.getInt("user_id");
                     String pesan = rs.getString("pesan");
                     LocalDateTime waktu = SqlDates.parseDateTime(rs.getString("waktu"), "waktu");
-                    boolean terkirm = rs.getInt("terkirm") == 1;
+                    boolean terkirim = rs.getInt("terkirim") == 1;
                     
                     Notifikasi notifikasi = new Notifikasi(id, userID, pesan, waktu);
-                    if (terkirm) {
-                        notifikasi.setTerkirm();
+                    if (terkirim) {
+                        notifikasi.setTerkirim();
                     }
                     return notifikasi;
                 }
@@ -75,11 +75,11 @@ public class NotifikasiDAO {
                     int id = rs.getInt("id");
                     String pesan = rs.getString("pesan");
                     LocalDateTime waktu = SqlDates.parseDateTime(rs.getString("waktu"), "waktu");
-                    boolean terkirm = rs.getInt("terkirm") == 1;
+                    boolean terkirim = rs.getInt("terkirim") == 1;
                     
                     Notifikasi notifikasi = new Notifikasi(id, userID, pesan, waktu);
-                    if (terkirm) {
-                        notifikasi.setTerkirm();
+                    if (terkirim) {
+                        notifikasi.setTerkirim();
                     }
                     notifikasiList.add(notifikasi);
                 }
@@ -88,8 +88,8 @@ public class NotifikasiDAO {
         return notifikasiList;
     }
 
-    public static void markAsTerkirm(int id) throws SQLException {
-        String sql = "UPDATE notifikasi SET terkirm = 1 WHERE id = ?";
+    public static void markAsTerkirim(int id) throws SQLException {
+        String sql = "UPDATE notifikasi SET terkirim = 1 WHERE id = ?";
         try (Connection conn = DBHelper.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             

@@ -7,14 +7,14 @@ public class Notifikasi {
     private int userID;
     private String pesan;
     private LocalDateTime waktu;
-    private boolean terkirm;
+    private boolean terkirim;
 
     public Notifikasi(int ID, int userID, String pesan) {
         this.ID = ID;
         this.userID = userID;
         this.pesan = pesan;
         this.waktu = LocalDateTime.now();
-        this.terkirm = false;
+        this.terkirim = false;
     }
 
     public Notifikasi(int ID, int userID, String pesan, LocalDateTime waktu) {
@@ -38,12 +38,12 @@ public class Notifikasi {
         return waktu;
     }
 
-    public boolean isTerkirm() {
-        return terkirm;
+    public boolean isTerkirim() {
+        return terkirim;
     }
     
-    public void setTerkirm() {
-        this.terkirm = true;
+    public void setTerkirim() {
+        this.terkirim = true;
     }
 
 }

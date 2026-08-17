@@ -158,13 +158,38 @@ public class DBHelper {
                     user_id INTEGER NOT NULL,
                     pesan TEXT NOT NULL,
                     waktu TEXT NOT NULL,
-                    terkirm INTEGER NOT NULL,
+                    terkirim INTEGER NOT NULL,
                     FOREIGN KEY (user_id) REFERENCES akun(id)
                 )
             """);
 
             migrateRefundTable(conn, stmt);
+            migrateNotifikasiTable(conn, stmt);
         }
+    }
+
+    /**
+     * Renames the misspelled {@code terkirm} column on databases created before the fix.
+     *
+     * <p>The typo was mirrored in the entity and the DAO, so it was self-consistent and
+     * harmless, but it is the kind of thing that gets half-corrected later and breaks
+     * silently. Renaming both sides at once removes that.
+     */
+    private static void migrateNotifikasiTable(Connection conn, Statement stmt) throws SQLException {
+        boolean hasTypo = false;
+        try (var rs = stmt.executeQuery("PRAGMA table_info(notifikasi)")) {
+            while (rs.next()) {
+                if ("terkirm".equals(rs.getString("name"))) {
+                    hasTypo = true;
+                }
+            }
+        }
+        if (!hasTypo) {
+            return;
+        }
+
+        System.out.println("Migrating notifikasi table: renaming terkirm to terkirim.");
+        stmt.execute("ALTER TABLE notifikasi RENAME COLUMN terkirm TO terkirim");
     }
 
     /**
