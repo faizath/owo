@@ -54,7 +54,16 @@ public class NotificationBridge {
 
     private NotificationBridge() {
         this.notificationQueue = new ConcurrentLinkedQueue<>();
-        this.scheduler = Executors.newSingleThreadScheduledExecutor();
+        // Daemon, as NotifikasiHelper's poller already is. The default factory produces a
+        // non-daemon thread, and this singleton is created lazily by the first
+        // notification poll — so anything that signs in and does not call shutdown()
+        // never exits. ScreenshotTool did exactly that: it wrote all nine images and then
+        // hung, which looks like a broken tool rather than a stray thread.
+        this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "owo-notifikasi-delivery");
+            t.setDaemon(true);
+            return t;
+        });
         this.isConnected = false;
 
         // Start a scheduler to process notifications periodically
