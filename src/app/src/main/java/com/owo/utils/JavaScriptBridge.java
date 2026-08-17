@@ -75,11 +75,17 @@ public class JavaScriptBridge {
         }
     });
 
-    public void setJSObject(JSObject jsObject) {
+    /**
+     * Package-private on purpose: WebView exposes <em>every</em> public method of the
+     * object handed to {@code setMember}, so lifecycle methods must not be public or the
+     * page could rebind the callback target or stop the executor. {@link BridgeInstaller}
+     * is the supported way to wire this up.
+     */
+    void setJSObject(JSObject jsObject) {
         this.jsObject = jsObject;
     }
 
-    public void shutdown() {
+    void shutdown() {
         executor.shutdownNow();
     }
 

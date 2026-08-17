@@ -85,8 +85,7 @@ class JavaScriptBridgeContractTest {
         // Every void method must end with a String callback name, since it cannot return
         // its result and cannot accept a function.
         for (Method method : publicBridgeMethods()) {
-            if (method.getReturnType() != void.class || method.getName().equals("shutdown")
-                    || method.getName().equals("setJSObject")
+            if (method.getReturnType() != void.class
                     || method.getName().equals("showNotification")) {
                 continue;
             }
@@ -132,6 +131,21 @@ class JavaScriptBridgeContractTest {
         assertEquals("ERR_UNAUTHENTICATED", response.get("code"));
         // The UI branches on the code, never on the human-readable message.
         assertTrue(response.containsKey("message"));
+    }
+
+    @Test
+    void noLifecycleMethodIsExposedToJavaScript() {
+        // WebView exposes every public method of the object handed to setMember, so a
+        // public setJSObject or shutdown would let the page rebind the callback target
+        // or stop the executor.
+        List<String> exposed = new ArrayList<>();
+        for (Method method : publicBridgeMethods()) {
+            if (method.getName().equals("setJSObject") || method.getName().equals("shutdown")) {
+                exposed.add(method.getName());
+            }
+        }
+
+        assertTrue(exposed.isEmpty(), "lifecycle methods reachable from JavaScript: " + exposed);
     }
 
     @Test

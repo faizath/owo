@@ -1,5 +1,6 @@
 package com.owotest;
 
+import com.owo.utils.BridgeInstaller;
 import com.owo.utils.JavaScriptBridge;
 import com.owotest.support.Fixtures;
 import com.owotest.support.TempDatabase;
@@ -10,8 +11,6 @@ import javafx.scene.Scene;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
-
-import netscape.javascript.JSObject;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -87,10 +86,9 @@ class BridgeLiveTest {
 
             engine.getLoadWorker().stateProperty().addListener((obs, old, state) -> {
                 if (state == Worker.State.SUCCEEDED) {
-                    JSObject window = (JSObject) engine.executeScript("window");
-                    bridge.setJSObject(window);
-                    window.setMember("owoBridge", bridge);
-                    engine.executeScript("window.dispatchEvent(new Event('owo:bridge-ready'))");
+                    // The same wiring the application uses, so the test cannot pass
+                    // against a setup the real App never performs.
+                    BridgeInstaller.install(engine, bridge);
                     loaded.countDown();
                 } else if (state == Worker.State.FAILED) {
                     failure.set(engine.getLoadWorker().getException());
@@ -118,7 +116,7 @@ class BridgeLiveTest {
             stage = null;
         }
         if (bridge != null) {
-            bridge.shutdown();
+            BridgeInstaller.shutdown(bridge);
         }
         db.close();
     }
