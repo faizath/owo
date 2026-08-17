@@ -91,6 +91,26 @@ tasks.named('test') {
     // The reflective bridge contract test runs unconditionally.
     if (project.hasProperty('owo.live')) {
         systemProperty 'owo.live', 'true'
+
+        // Asking for the live tests and getting a green run without them is the failure
+        // that matters. They are skipped rather than failed when the toolkit cannot
+        // start, so a CI runner missing a display or a WebKit library produces a passing
+        // job with eighteen fewer tests in it — and nobody counts tests on a green run.
+        def liveTestsRan = new java.util.concurrent.atomic.AtomicInteger()
+        afterTest { descriptor, result ->
+            if (descriptor.className == 'com.owotest.BridgeLiveTest'
+                    && result.resultType.toString() != 'SKIPPED') {
+                liveTestsRan.incrementAndGet()
+            }
+        }
+        doLast {
+            if (liveTestsRan.get() == 0) {
+                throw new GradleException('-Powo.live=true was requested but no '
+                        + 'BridgeLiveTest test ran. The WebView tests were skipped, which '
+                        + 'usually means no display (run under xvfb-run) or a missing '
+                        + 'WebKit dependency. Passing without them is not a pass.')
+            }
+        }
     }
 }
 

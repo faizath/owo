@@ -33,9 +33,14 @@ jobs:
           cache: gradle
 
       # BridgeLiveTest drives a real WebView, so it needs a display and the GTK/GL
-      # libraries JavaFX's WebKit links against. Without them the live tests are
-      # skipped rather than failed — and they are the only layer that exercises the
-      # page through the controls a user actually has.
+      # libraries JavaFX's WebKit links against — they are the only layer that
+      # exercises the page through the controls a user actually has.
+      #
+      # This package list cannot be verified anywhere but on the runner. If it is
+      # short, the build fails loudly rather than skipping the live tests quietly:
+      # `test` refuses to succeed when -Powo.live=true was asked for and no
+      # BridgeLiveTest ran. Fix a failure here by extending the list, never by
+      # dropping the flag.
       - name: Install a virtual display
         run: |
           sudo apt-get update
