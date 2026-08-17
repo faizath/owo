@@ -130,6 +130,86 @@ public class RefundController {
         return RefundDAO.getRefundByPemesananId(pemesananId);
     }
 
+    /** Every refund the customer has filed, across all of their bookings. */
+    public List<Refund> getRefundsForCustomer(int customerId) throws SQLException {
+        return RefundDAO.getRefundsByCustomerId(customerId);
+    }
+
+    /** The review queue: refunds waiting for an administrator to decide. */
+    public List<Refund> getRefundsMenungguPeninjauan() throws SQLException {
+        return RefundDAO.getRefundsByStatus(RefundStatus.PENDING_REVIEW);
+    }
+
+    /**
+     * Corrects where an unreviewed refund pays out.
+     *
+     * <p>Only the customer who filed it may change it, and only while it is still awaiting
+     * review — once a decision is made the payee is part of the record.
+     *
+     * @throws PemesananController.PemesananException if the refund is not the caller's, has
+     *     already been decided, or the new details are blank
+     */
+    public Refund perbaruiDetailPencairan(String refundId, int customerId, String namaPenerima,
+            String rekeningTujuan)
+            throws PemesananController.PemesananException, SQLException {
+
+        if (namaPenerima == null || namaPenerima.trim().isEmpty()) {
+            throw new PemesananController.PemesananException("Nama penerima tidak boleh kosong.");
+        }
+        if (rekeningTujuan == null || rekeningTujuan.trim().isEmpty()) {
+            throw new PemesananController.PemesananException("Rekening tujuan tidak boleh kosong.");
+        }
+
+        Refund refund = getOwnedRefund(refundId, customerId);
+        if (refund.getStatus() != RefundStatus.PENDING_REVIEW) {
+            throw new PemesananController.PemesananException(
+                    "Detail pencairan hanya dapat diubah selama refund menunggu peninjauan.");
+        }
+
+        RefundDAO.updateDetailPencairan(refundId, namaPenerima.trim(), rekeningTujuan.trim());
+        refund.setDetailPencairan(namaPenerima.trim(), rekeningTujuan.trim());
+        return refund;
+    }
+
+    /**
+     * Loads a refund the customer owns.
+     *
+     * <p>A refund that does not exist and one belonging to somebody else produce the same
+     * message, so the reply cannot be used to discover which ids are real.
+     */
+    public Refund getOwnedRefund(String refundId, int customerId)
+            throws PemesananController.PemesananException, SQLException {
+        Refund refund = refundId == null ? null : RefundDAO.getRefundById(refundId);
+        if (refund != null) {
+            // Throws with the same wording if the booking is not the caller's.
+            pemesananController.getOwnedPemesanan(refund.getPemesananID(), customerId);
+            return refund;
+        }
+        throw new PemesananController.PemesananException("Refund tidak ditemukan.");
+    }
+
+    /** Approves by id, loading the current row rather than trusting a client-held copy. */
+    public Refund setujuiRefund(String refundId)
+            throws PemesananController.PemesananException, SQLException {
+        Refund refund = refundId == null ? null : RefundDAO.getRefundById(refundId);
+        if (refund == null) {
+            throw new PemesananController.PemesananException("Refund tidak ditemukan.");
+        }
+        setujuiRefund(refund);
+        return refund;
+    }
+
+    /** Rejects by id, loading the current row rather than trusting a client-held copy. */
+    public Refund tolakRefund(String refundId)
+            throws PemesananController.PemesananException, SQLException {
+        Refund refund = refundId == null ? null : RefundDAO.getRefundById(refundId);
+        if (refund == null) {
+            throw new PemesananController.PemesananException("Refund tidak ditemukan.");
+        }
+        tolakRefund(refund);
+        return refund;
+    }
+
     public void setujuiRefund(Refund refund)
             throws PemesananController.PemesananException, SQLException {
         if (refund == null || refund.getStatus() != RefundStatus.PENDING_REVIEW) {

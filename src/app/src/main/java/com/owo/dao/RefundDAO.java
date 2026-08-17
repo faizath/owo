@@ -74,6 +74,50 @@ public class RefundDAO {
         return refundList;
     }
 
+    /**
+     * Every refund filed against a booking the customer owns, newest bookings last.
+     *
+     * <p>Scoped by joining {@code pemesanan}, so ownership is decided by the query rather
+     * than by filtering rows the caller was never entitled to read.
+     */
+    public static List<Refund> getRefundsByCustomerId(int customerId) throws SQLException {
+        String sql = "SELECT r.* FROM refund r "
+                + "JOIN pemesanan p ON r.pemesanan_id = p.id "
+                + "WHERE p.customer_id = ? "
+                + "ORDER BY r.pemesanan_id ASC";
+        List<Refund> refundList = new ArrayList<>();
+
+        try (Connection conn = DBHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, customerId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    refundList.add(mapRefund(rs, rs.getString("id"), rs.getInt("pemesanan_id")));
+                }
+            }
+        }
+        return refundList;
+    }
+
+    /** The review queue: every refund currently in one status. */
+    public static List<Refund> getRefundsByStatus(Refund.RefundStatus status) throws SQLException {
+        String sql = "SELECT * FROM refund WHERE status = ? ORDER BY pemesanan_id ASC";
+        List<Refund> refundList = new ArrayList<>();
+
+        try (Connection conn = DBHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, status.name());
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    refundList.add(mapRefund(rs, rs.getString("id"), rs.getInt("pemesanan_id")));
+                }
+            }
+        }
+        return refundList;
+    }
+
     private static Refund mapRefund(ResultSet rs, String id, int pemesananID) throws SQLException {
         String alasan = rs.getString("alasan");
         double jumlahRefund = rs.getDouble("jumlah_refund");
