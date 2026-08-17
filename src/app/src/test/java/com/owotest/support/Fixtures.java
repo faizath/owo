@@ -31,6 +31,29 @@ public final class Fixtures {
         return AkunDAO.createAkun("Pengguna " + n, "user" + n + "@example.com", "password123");
     }
 
+    /** An account flagged as an administrator, which only seeding can otherwise produce. */
+    public static Akun admin() throws Exception {
+        int n = COUNTER.incrementAndGet();
+        return AkunDAO.createAkun("Admin " + n, "admin" + n + "@example.com", "password123", true);
+    }
+
+    /** A flight seating {@code kapasitas} people, for capacity filtering. */
+    public static TiketPesawat flightSeating(int daysAhead, int kapasitas) throws Exception {
+        int n = COUNTER.incrementAndGet();
+        return TiketDAO.createTiketPesawat(1_500_000f, true, "GA" + (400 + n),
+                "Jakarta (CGK)", "Denpasar (DPS)", "Garuda Indonesia", "Ekonomi",
+                LocalDate.now().plusDays(daysAhead).atTime(9, 0), kapasitas);
+    }
+
+    /** A hotel room holding {@code kapasitas} guests. */
+    public static TiketHotel hotelSeating(int checkInDaysAhead, int kapasitas) throws Exception {
+        int n = COUNTER.incrementAndGet();
+        return TiketDAO.createTiketHotel(750_000f, true,
+                LocalDate.now().plusDays(checkInDaysAhead),
+                LocalDate.now().plusDays(checkInDaysAhead + 3),
+                "Hotel " + n, "10" + n, "Ubud, Bali", kapasitas);
+    }
+
     /** A flight departing {@code daysAhead} days from now at 09:00. */
     public static TiketPesawat flight(int daysAhead) throws Exception {
         return flight(daysAhead, 1_500_000f);

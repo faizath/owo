@@ -1,6 +1,13 @@
 package com.owotest;
 
+import com.owo.controller.AuthController;
+import com.owo.controller.RefundController;
+import com.owo.dao.PemesananDAO;
+import com.owo.entity.Akun;
+import com.owo.entity.Pemesanan;
+import com.owo.entity.PemesananStatus;
 import com.owo.utils.BridgeInstaller;
+import com.owo.utils.Json;
 import com.owo.utils.JavaScriptBridge;
 import com.owotest.support.Fixtures;
 import com.owotest.support.TempDatabase;
@@ -293,5 +300,189 @@ class BridgeLiveTest {
         await("window.__result");
         assertEquals(Boolean.FALSE, eval("window.__result.ok"));
         assertEquals("ERR_UNAUTHENTICATED", eval("window.__result.code"));
+    }
+
+    // ------------------------------------------------------------ hotel & payment
+
+    /** Signs the given account in through the login screen and waits for the home screen. */
+    private void signIn(String email, String password) throws Exception {
+        await("window.App && document.getElementById('loginForm')");
+        runOnFxThread(() -> engine.executeScript(
+                "document.getElementById('email').value = " + Json.quote(email) + ";"
+                        + "document.getElementById('password').value = " + Json.quote(password) + ";"
+                        + "document.getElementById('loginForm')"
+                        + "  .dispatchEvent(new Event('submit', {cancelable: true}));"));
+        await("document.getElementById('flightForm')");
+    }
+
+    private void submitHotelSearch() throws Exception {
+        runOnFxThread(() -> engine.executeScript(
+                "document.getElementById('hotelForm')"
+                        + "  .dispatchEvent(new Event('submit', {cancelable: true}));"));
+    }
+
+    @Test
+    void selectingAHotelBooksItAndOpensPayment() throws Exception {
+        AuthController.register("Sari", "sari@example.com", "password123");
+        // The form defaults to a stay of today+1 to today+3, and the search
+        // requires the listing window to contain it, so the room opens today.
+        Fixtures.hotel(0);
+
+        signIn("sari@example.com", "password123");
+        submitHotelSearch();
+
+        await("document.querySelectorAll('#hotelList .select-button').length === 1");
+        runOnFxThread(() -> engine.executeScript(
+                "document.querySelector('#hotelList .select-button').click()"));
+
+        // The hotel path had no live coverage at all: search, selection by primary key,
+        // and the hand-off to payment were only ever reasoned about.
+        await("document.getElementById('payment-button')");
+        assertEquals("1 orang", eval("document.getElementById('guestParty').textContent"));
+        assertEquals("Sari", eval("document.getElementById('guestName').textContent"));
+    }
+
+    @Test
+    void theHotelSearchHidesRoomsTooSmallForTheParty() throws Exception {
+        AuthController.register("Rian", "rian@example.com", "password123");
+        Fixtures.hotelSeating(0, 1);
+        Fixtures.hotelSeating(0, 4);
+
+        signIn("rian@example.com", "password123");
+
+        runOnFxThread(() -> engine.executeScript(
+                "document.getElementById('guests-input').value = '4';"));
+        submitHotelSearch();
+
+        // Only the four-guest room can hold the party. Before capacity was modelled the
+        // count was discarded and both rooms were offered.
+        await("document.querySelectorAll('#hotelList .select-button').length === 1");
+    }
+
+    @Test
+    void paymentRefusesACardNumberThatFailsTheChecksum() throws Exception {
+        AuthController.register("Bayu", "bayu@example.com", "password123");
+        Fixtures.flight(3);
+
+        signIn("bayu@example.com", "password123");
+        runOnFxThread(() -> engine.executeScript(
+                "document.getElementById('flightForm')"
+                        + "  .dispatchEvent(new Event('submit', {cancelable: true}));"));
+        await("document.querySelectorAll('#flightList .select-button').length === 1");
+        runOnFxThread(() -> engine.executeScript(
+                "document.querySelector('#flightList .select-button').click()"));
+        await("document.getElementById('payment-button')");
+
+        // 4111111111111112 is 4111111111111111 with the check digit broken: the right
+        // length and all digits, so only the Luhn check rejects it.
+        runOnFxThread(() -> engine.executeScript(
+                "document.getElementById('cardName').value = 'Bayu';"
+                        + "document.getElementById('cardNumber').value = '4111111111111112';"
+                        + "document.getElementById('cvv').value = '123';"
+                        + "document.getElementById('expiryMonth').value = '12';"
+                        + "document.getElementById('expiryYear').value = '"
+                        + (java.time.Year.now().getValue() + 2) + "';"
+                        + "document.getElementById('payment-button').click();"));
+
+        await("document.getElementById('screenError')"
+                + " && !document.getElementById('screenError').classList.contains('hidden')");
+        assertEquals("Nomor kartu tidak valid.",
+                eval("document.getElementById('screenError').textContent"));
+    }
+
+    @Test
+    void aValidCardConfirmsTheBookingAndReachesHistory() throws Exception {
+        AuthController.register("Nadia", "nadia@example.com", "password123");
+        Fixtures.flight(3);
+
+        signIn("nadia@example.com", "password123");
+        runOnFxThread(() -> engine.executeScript(
+                "document.getElementById('flightForm')"
+                        + "  .dispatchEvent(new Event('submit', {cancelable: true}));"));
+        await("document.querySelectorAll('#flightList .select-button').length === 1");
+        runOnFxThread(() -> engine.executeScript(
+                "document.querySelector('#flightList .select-button').click()"));
+        await("document.getElementById('payment-button')");
+
+        runOnFxThread(() -> engine.executeScript(
+                "document.getElementById('cardName').value = 'Nadia';"
+                        + "document.getElementById('cardNumber').value = '4111111111111111';"
+                        + "document.getElementById('cvv').value = '123';"
+                        + "document.getElementById('expiryMonth').value = '12';"
+                        + "document.getElementById('expiryYear').value = '"
+                        + (java.time.Year.now().getValue() + 2) + "';"
+                        + "document.getElementById('payment-button').click();"));
+
+        await("document.getElementById('bookingList')");
+        await("document.querySelectorAll('#bookingList .booking-card').length === 1");
+    }
+
+    // -------------------------------------------------------------- refund review
+
+    @Test
+    void aFiledRefundIsVisibleToTheCustomerWhoFiledIt() throws Exception {
+        Akun customer = AuthController.register("Tio", "tio@example.com", "password123");
+        Pemesanan booking = Fixtures.booking(customer, Fixtures.flight(20),
+                PemesananStatus.CONFIRMED);
+        new RefundController().ajukanRefund(booking.getId(), customer.getID(),
+                "Perubahan rencana", "Tio", "1234567890");
+
+        signIn("tio@example.com", "password123");
+        runOnFxThread(() -> engine.executeScript("window.App.navigate('RefundForm')"));
+
+        // Filing a refund used to be the end of it: nothing could read one back, so the
+        // status panel stayed the placeholder markup it shipped as.
+        await("document.querySelectorAll('#refundStatusList .refund-card').length === 1");
+        assertEquals(Boolean.TRUE,
+                eval("document.querySelector('#refundStatusList .refund-card')"
+                        + "  .textContent.indexOf('Menunggu peninjauan') >= 0"));
+    }
+
+    @Test
+    void theReviewQueueIsRefusedToAnOrdinaryCustomer() throws Exception {
+        AuthController.register("Lina", "lina@example.com", "password123");
+        signIn("lina@example.com", "password123");
+
+        runOnFxThread(() -> engine.executeScript(
+                "window.__result = null;"
+                        + "window.OwOAPI.getPendingRefunds()"
+                        + "  .then(function () { window.__result = {ok: true}; })"
+                        + "  .catch(function (e) { window.__result = {ok: false, code: e.code}; });"));
+
+        await("window.__result");
+        assertEquals(Boolean.FALSE, eval("window.__result.ok"));
+        assertEquals("ERR_FORBIDDEN", eval("window.__result.code"));
+        // The entry point is not offered either, but that is presentation; the refusal
+        // above is what actually protects the operation.
+        assertEquals(Boolean.TRUE,
+                eval("document.getElementById('reviewButton').classList.contains('hidden')"));
+    }
+
+    @Test
+    void anAdministratorApprovesAFiledRefundFromTheQueue() throws Exception {
+        Akun customer = Fixtures.customer();
+        Pemesanan booking = Fixtures.booking(customer, Fixtures.flight(20),
+                PemesananStatus.CONFIRMED);
+        new RefundController().ajukanRefund(booking.getId(), customer.getID(),
+                "Perubahan rencana", "Penerima", "1234567890");
+
+        Akun admin = Fixtures.admin();
+        signIn(admin.getEmail(), "password123");
+
+        assertEquals(Boolean.FALSE,
+                eval("document.getElementById('reviewButton').classList.contains('hidden')"));
+        runOnFxThread(() -> engine.executeScript(
+                "document.getElementById('reviewButton').click()"));
+
+        await("document.querySelectorAll('#refundQueue .review-card').length === 1");
+        runOnFxThread(() -> engine.executeScript(
+                "document.querySelector('#refundQueue [data-decision=\"approve\"]').click()"));
+
+        // The queue empties because the refund left PENDING_REVIEW, which is the whole
+        // point: approval had tested rules and no way to reach them.
+        await("document.querySelectorAll('#refundQueue .review-card').length === 0");
+        assertEquals(PemesananStatus.REFUNDED,
+                PemesananStatus.fromDb(
+                        PemesananDAO.getPemesananById(booking.getId()).getStatus()));
     }
 }
