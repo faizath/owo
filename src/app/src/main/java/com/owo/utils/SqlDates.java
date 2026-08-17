@@ -52,6 +52,19 @@ public final class SqlDates {
     }
 
     /**
+     * As {@link #parseDateTime}, but an absent value is a legitimate answer.
+     *
+     * <p>For columns that are genuinely optional — a review timestamp on a refund nobody
+     * has decided yet — rather than columns that should always hold something.
+     *
+     * @return null when the column is empty
+     */
+    public static LocalDateTime parseNullableDateTime(String value, String column)
+            throws SQLException {
+        return value == null || value.isBlank() ? null : parseDateTime(value, column);
+    }
+
+    /**
      * @param column the column name, used only to make the failure message actionable
      * @throws SQLException if the value is absent or in no recognised format
      */

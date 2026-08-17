@@ -142,6 +142,11 @@ public class RefundDAO {
         }
 
         refund.setDetailPencairan(rs.getString("nama_penerima"), rs.getString("rekening_tujuan"));
+
+        int reviewer = rs.getInt("direview_oleh");
+        refund.setReview(rs.wasNull() ? null : reviewer,
+                com.owo.utils.SqlDates.parseNullableDateTime(
+                        rs.getString("waktu_review"), "waktu_review"));
         return refund;
     }
 
@@ -156,14 +161,20 @@ public class RefundDAO {
      * <p>The refund update is conditional on the status it was read at, so two
      * administrators deciding at once cannot both succeed.
      *
+     * <p>The reviewer and the moment of the decision are written in the same statement as
+     * the status, so a decided refund can never exist without a record of who decided it.
+     *
      * @param releaseTiketId ticket to return to the catalogue, or null to leave it claimed
+     * @param reviewerId the administrator making the decision
      * @return false if the refund was no longer awaiting review
      */
     public static boolean applyDecision(String refundId, Refund.RefundStatus from,
             Refund.RefundStatus to, int pemesananId, PemesananStatus bookingStatus,
-            Integer releaseTiketId) throws SQLException {
+            Integer releaseTiketId, int reviewerId, java.time.LocalDateTime waktuReview)
+            throws SQLException {
 
-        String decideSql = "UPDATE refund SET status = ? WHERE id = ? AND status = ?";
+        String decideSql = "UPDATE refund SET status = ?, direview_oleh = ?, waktu_review = ? "
+                + "WHERE id = ? AND status = ?";
         String bookingSql = "UPDATE pemesanan SET status = ? WHERE id = ?";
         String releaseSql = "UPDATE tiket SET tersedia = 1 WHERE id = ?";
 
@@ -172,8 +183,10 @@ public class RefundDAO {
             try {
                 try (PreparedStatement decide = conn.prepareStatement(decideSql)) {
                     decide.setString(1, to.name());
-                    decide.setString(2, refundId);
-                    decide.setString(3, from.name());
+                    decide.setInt(2, reviewerId);
+                    decide.setString(3, com.owo.utils.SqlDates.format(waktuReview));
+                    decide.setString(4, refundId);
+                    decide.setString(5, from.name());
                     if (decide.executeUpdate() == 0) {
                         conn.rollback();
                         return false;

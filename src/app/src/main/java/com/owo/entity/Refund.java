@@ -24,6 +24,15 @@ public class Refund {
      */
     private PemesananStatus statusSebelumnya;
 
+    /**
+     * Who approved or rejected this refund, and when. Null until it is decided.
+     *
+     * <p>The table recorded neither, so a payout could not be traced to the person who
+     * authorised it.
+     */
+    private Integer direviewOleh;
+    private java.time.LocalDateTime waktuReview;
+
     public Refund(String id, int pemesananID, String alasan, double jumlahRefund) {
         this.id = id;
         this.pemesananID = pemesananID;
@@ -70,6 +79,20 @@ public class Refund {
 
     public void setStatusSebelumnya(PemesananStatus statusSebelumnya) {
         this.statusSebelumnya = statusSebelumnya;
+    }
+
+    public Integer getDireviewOleh() {
+        return direviewOleh;
+    }
+
+    public java.time.LocalDateTime getWaktuReview() {
+        return waktuReview;
+    }
+
+    /** Records who decided this refund and when. */
+    public void setReview(Integer direviewOleh, java.time.LocalDateTime waktuReview) {
+        this.direviewOleh = direviewOleh;
+        this.waktuReview = waktuReview;
     }
 
     /**

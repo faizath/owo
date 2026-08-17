@@ -36,6 +36,7 @@ class RefundDisbursementTest {
     private PemesananController pemesanan;
     private RefundController refund;
     private Akun customer;
+    private Akun reviewer;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -43,6 +44,7 @@ class RefundDisbursementTest {
         pemesanan = new PemesananController();
         refund = new RefundController(pemesanan);
         customer = Fixtures.customer();
+        reviewer = Fixtures.admin();
     }
 
     @AfterEach
@@ -56,7 +58,7 @@ class RefundDisbursementTest {
                 PemesananStatus.CONFIRMED);
         Refund filed = refund.ajukanRefund(booking.getId(), customer.getID(),
                 "Berhalangan hadir", "Faiz A", "1234567890");
-        return refund.setujuiRefund(filed.getId());
+        return refund.setujuiRefund(filed.getId(), reviewer.getID());
     }
 
     private RefundStatus stored(String refundId) throws Exception {
@@ -143,7 +145,7 @@ class RefundDisbursementTest {
         Refund filed = refund.ajukanRefund(booking.getId(), customer.getID(),
                 "Berhalangan hadir", "Faiz A", "1234567890");
 
-        refund.tolakRefund(filed.getId());
+        refund.tolakRefund(filed.getId(), reviewer.getID());
 
         assertFalse(ids(refund.getRefundsAktif()).contains(filed.getId()));
     }

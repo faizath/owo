@@ -21,6 +21,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -39,12 +40,16 @@ class RefundReviewTest {
     private Akun customer;
     private Akun stranger;
 
+    /** Deciding is now recorded against a reviewer, and may not be the booking's owner. */
+    private Akun reviewer;
+
     @BeforeEach
     void setUp() throws Exception {
         db = new TempDatabase();
         refundController = new RefundController();
         customer = Fixtures.customer();
         stranger = Fixtures.customer();
+        reviewer = Fixtures.admin();
     }
 
     @AfterEach
@@ -102,7 +107,7 @@ class RefundReviewTest {
     void getRefundsByStatus_isTheReviewQueue() throws Exception {
         Refund waiting = fileRefund(customer, "Budi Santoso");
         Refund decided = fileRefund(stranger, "Siti Rahayu");
-        refundController.setujuiRefund(decided.getId());
+        refundController.setujuiRefund(decided.getId(), reviewer.getID());
 
         List<Refund> queue = RefundDAO.getRefundsByStatus(Refund.RefundStatus.PENDING_REVIEW);
 
@@ -124,7 +129,7 @@ class RefundReviewTest {
     void getRefundsMenungguPeninjauan_dropsARefundOnceItIsDecided() throws Exception {
         Refund refund = fileRefund(customer, "Budi Santoso");
 
-        refundController.tolakRefund(refund.getId());
+        refundController.tolakRefund(refund.getId(), reviewer.getID());
 
         // A rejected refund left in the queue would be decided twice.
         assertTrue(refundController.getRefundsMenungguPeninjauan().isEmpty());
@@ -200,7 +205,7 @@ class RefundReviewTest {
     @Test
     void perbaruiDetailPencairan_afterApproval_isRefused() throws Exception {
         Refund refund = fileRefund(customer, "Budi Santoso");
-        refundController.setujuiRefund(refund.getId());
+        refundController.setujuiRefund(refund.getId(), reviewer.getID());
 
         // Once the money is authorised the payee is part of the record; changing it after
         // the decision is a redirect nobody reviewed.
@@ -213,7 +218,7 @@ class RefundReviewTest {
     @Test
     void perbaruiDetailPencairan_afterRejection_isRefused() throws Exception {
         Refund refund = fileRefund(customer, "Budi Santoso");
-        refundController.tolakRefund(refund.getId());
+        refundController.tolakRefund(refund.getId(), reviewer.getID());
 
         assertThrows(PemesananController.PemesananException.class,
                 () -> refundController.perbaruiDetailPencairan(refund.getId(), customer.getID(),
@@ -241,7 +246,7 @@ class RefundReviewTest {
         Refund refund = refundController.ajukanRefund(booking.getId(), customer.getID(),
                 "Berubah rencana", "Budi Santoso", "BCA 1234");
 
-        refundController.setujuiRefund(refund.getId());
+        refundController.setujuiRefund(refund.getId(), reviewer.getID());
 
         assertEquals(Refund.RefundStatus.APPROVED,
                 RefundDAO.getRefundById(refund.getId()).getStatus());
@@ -257,7 +262,7 @@ class RefundReviewTest {
         Refund refund = refundController.ajukanRefund(booking.getId(), customer.getID(),
                 "Berubah rencana", "Budi Santoso", "BCA 1234");
 
-        refundController.tolakRefund(refund.getId());
+        refundController.tolakRefund(refund.getId(), reviewer.getID());
 
         // The id-based overload loads the stored row, so it must recover status_sebelumnya
         // from the database rather than from the caller's copy.
@@ -270,27 +275,76 @@ class RefundReviewTest {
     @Test
     void decidingARefundTwice_isRefused() throws Exception {
         Refund refund = fileRefund(customer, "Budi Santoso");
-        refundController.setujuiRefund(refund.getId());
+        refundController.setujuiRefund(refund.getId(), reviewer.getID());
 
         // The second decision is taken against the stored status, not the in-memory copy
         // an administrator's screen is still holding.
         assertThrows(PemesananController.PemesananException.class,
-                () -> refundController.tolakRefund(refund.getId()));
+                () -> refundController.tolakRefund(refund.getId(), reviewer.getID()));
         assertEquals(Refund.RefundStatus.APPROVED,
                 RefundDAO.getRefundById(refund.getId()).getStatus());
     }
 
     @Test
+    void aDecisionRecordsWhoMadeItAndWhen() throws Exception {
+        Refund refund = fileRefund(customer, "Budi Santoso");
+        LocalDateTime before = LocalDateTime.now().minusSeconds(1);
+
+        refundController.setujuiRefund(refund.getId(), reviewer.getID());
+
+        // A payout with no reviewer recorded cannot be questioned afterwards, and nothing
+        // else in the schema says who acted.
+        Refund stored = RefundDAO.getRefundById(refund.getId());
+        assertEquals(reviewer.getID(), stored.getDireviewOleh());
+        assertNotNull(stored.getWaktuReview());
+        assertTrue(stored.getWaktuReview().isAfter(before));
+    }
+
+    @Test
+    void aRejectionAlsoRecordsItsReviewer() throws Exception {
+        Refund refund = fileRefund(customer, "Budi Santoso");
+
+        refundController.tolakRefund(refund.getId(), reviewer.getID());
+
+        assertEquals(reviewer.getID(), RefundDAO.getRefundById(refund.getId()).getDireviewOleh());
+    }
+
+    @Test
+    void anUndecidedRefundHasNoReviewer() throws Exception {
+        Refund refund = fileRefund(customer, "Budi Santoso");
+
+        Refund stored = RefundDAO.getRefundById(refund.getId());
+        assertNull(stored.getDireviewOleh());
+        assertNull(stored.getWaktuReview());
+    }
+
+    @Test
+    void anAdministratorCannotDecideTheirOwnRefund() throws Exception {
+        // The reviewer is also the customer here: an administrator who books, files a
+        // refund and then signs it off themselves.
+        Refund own = fileRefund(reviewer, "Admin Sendiri");
+
+        assertThrows(PemesananController.PemesananException.class,
+                () -> refundController.setujuiRefund(own.getId(), reviewer.getID()));
+        assertThrows(PemesananController.PemesananException.class,
+                () -> refundController.tolakRefund(own.getId(), reviewer.getID()));
+
+        // Being an administrator authorises deciding other people's refunds, not paying
+        // yourself; the refund has to stay in the queue for somebody else.
+        assertEquals(Refund.RefundStatus.PENDING_REVIEW,
+                RefundDAO.getRefundById(own.getId()).getStatus());
+    }
+
+    @Test
     void decidingARefundThatDoesNotExist_isRefused() {
         assertThrows(PemesananController.PemesananException.class,
-                () -> refundController.setujuiRefund("RFD-NOSUCH1"));
+                () -> refundController.setujuiRefund("RFD-NOSUCH1", reviewer.getID()));
         assertThrows(PemesananController.PemesananException.class,
-                () -> refundController.tolakRefund("RFD-NOSUCH1"));
-        // Cast because the overload set is (String) and (Refund); a null id must be
-        // refused with the same message as an unknown one.
+                () -> refundController.tolakRefund("RFD-NOSUCH1", reviewer.getID()));
+        // A null id must be refused with the same message as an unknown one.
         assertThrows(PemesananController.PemesananException.class,
-                () -> refundController.setujuiRefund((String) null));
+                () -> refundController.setujuiRefund((String) null, reviewer.getID()));
         assertThrows(PemesananController.PemesananException.class,
-                () -> refundController.tolakRefund((String) null));
+                () -> refundController.tolakRefund((String) null, reviewer.getID()));
     }
 }

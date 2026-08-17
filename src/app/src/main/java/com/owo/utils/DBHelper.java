@@ -150,7 +150,10 @@ public class DBHelper {
                     nama_penerima TEXT,
                     rekening_tujuan TEXT,
                     status_sebelumnya TEXT,
-                    FOREIGN KEY (pemesanan_id) REFERENCES pemesanan(id)
+                    direview_oleh INTEGER,
+                    waktu_review TEXT,
+                    FOREIGN KEY (pemesanan_id) REFERENCES pemesanan(id),
+                    FOREIGN KEY (direview_oleh) REFERENCES akun(id)
                 )
             """);
 
@@ -171,6 +174,10 @@ public class DBHelper {
             addColumnIfMissing(stmt, "akun", "is_admin", "INTEGER NOT NULL DEFAULT 0");
             addColumnIfMissing(stmt, "tiket", "kapasitas", "INTEGER NOT NULL DEFAULT 1");
             addColumnIfMissing(stmt, "pemesanan", "jumlah_peserta", "INTEGER NOT NULL DEFAULT 1");
+            // Who decided a refund and when. A payout with no reviewer recorded cannot be
+            // questioned afterwards, and nothing else in the schema says who acted.
+            addColumnIfMissing(stmt, "refund", "direview_oleh", "INTEGER");
+            addColumnIfMissing(stmt, "refund", "waktu_review", "TEXT");
         }
     }
 
@@ -178,9 +185,9 @@ public class DBHelper {
      * Adds a column to an existing table, or does nothing if it is already there.
      *
      * <p>{@code CREATE TABLE IF NOT EXISTS} never alters a table that already exists, so a
-     * database seeded by an earlier build keeps its original column set. Every column added
-     * this way needs a {@code DEFAULT}, because SQLite has to have something to write into
-     * the existing rows.
+     * database seeded by an earlier build keeps its original column set. A {@code NOT NULL}
+     * column added this way needs a {@code DEFAULT}, because SQLite has to have something
+     * to write into the existing rows; a nullable one takes NULL.
      */
     private static void addColumnIfMissing(Statement stmt, String table, String column,
             String definition) throws SQLException {
@@ -258,7 +265,10 @@ public class DBHelper {
                     nama_penerima TEXT,
                     rekening_tujuan TEXT,
                     status_sebelumnya TEXT,
-                    FOREIGN KEY (pemesanan_id) REFERENCES pemesanan(id)
+                    direview_oleh INTEGER,
+                    waktu_review TEXT,
+                    FOREIGN KEY (pemesanan_id) REFERENCES pemesanan(id),
+                    FOREIGN KEY (direview_oleh) REFERENCES akun(id)
                 )
             """);
             // The cardholder name carries over as the payee; the card number, expiry and

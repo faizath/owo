@@ -447,7 +447,8 @@ public class JavaScriptBridge {
             String refundId = Json.optString(args, "refundId", "");
 
             try {
-                Refund refund = refundController.setujuiRefund(refundId);
+                // The reviewer is the session user; the page never names who decided.
+                Refund refund = refundController.setujuiRefund(refundId, userId);
                 return success("Refund disetujui", refundJson(refund));
             } catch (PemesananController.PemesananException e) {
                 return error(e.getMessage(), ERR_INVALID_INPUT);
@@ -461,7 +462,7 @@ public class JavaScriptBridge {
             String refundId = Json.optString(args, "refundId", "");
 
             try {
-                Refund refund = refundController.tolakRefund(refundId);
+                Refund refund = refundController.tolakRefund(refundId, userId);
                 return success("Refund ditolak", refundJson(refund));
             } catch (PemesananController.PemesananException e) {
                 return error(e.getMessage(), ERR_INVALID_INPUT);

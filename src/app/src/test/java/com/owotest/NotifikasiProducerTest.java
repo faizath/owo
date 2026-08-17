@@ -37,6 +37,7 @@ class NotifikasiProducerTest {
     private PemesananController pemesanan;
     private RefundController refund;
     private Akun customer;
+    private Akun reviewer;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -44,6 +45,7 @@ class NotifikasiProducerTest {
         pemesanan = new PemesananController();
         refund = new RefundController(pemesanan);
         customer = Fixtures.customer();
+        reviewer = Fixtures.admin();
     }
 
     @AfterEach
@@ -111,13 +113,12 @@ class NotifikasiProducerTest {
 
     @Test
     void approvingARefundNotifiesTheBookingOwnerRatherThanTheReviewer() throws Exception {
-        Akun reviewer = Fixtures.admin();
         Pemesanan booking = Fixtures.booking(customer, Fixtures.flight(30),
                 PemesananStatus.CONFIRMED);
         Refund filed = refund.ajukanRefund(booking.getId(), customer.getID(),
                 "Berhalangan hadir", "Faiz A", "1234567890");
 
-        refund.setujuiRefund(filed.getId());
+        refund.setujuiRefund(filed.getId(), reviewer.getID());
 
         assertMentions(customer, "disetujui");
         // The decision is taken by an administrator; sending the outcome to the session
@@ -132,7 +133,7 @@ class NotifikasiProducerTest {
         Refund filed = refund.ajukanRefund(booking.getId(), customer.getID(),
                 "Berhalangan hadir", "Faiz A", "1234567890");
 
-        refund.tolakRefund(filed.getId());
+        refund.tolakRefund(filed.getId(), reviewer.getID());
 
         assertMentions(customer, "ditolak");
     }

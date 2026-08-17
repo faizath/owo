@@ -195,7 +195,7 @@ class SecurityClaimsTest {
         Refund refund = refunds.ajukanRefund(booking.getId(), owner.getID(),
                 "Perubahan rencana", "Pemilik", "1111111111");
 
-        refunds.setujuiRefund(refund.getId());
+        refunds.setujuiRefund(refund.getId(), Fixtures.admin().getID());
 
         // After approval the payee is part of the settled record; changing it then would
         // redirect money that has already been signed off.

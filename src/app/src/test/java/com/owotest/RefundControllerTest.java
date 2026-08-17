@@ -29,12 +29,14 @@ class RefundControllerTest {
     private TempDatabase db;
     private RefundController refundController;
     private Akun customer;
+    private Akun reviewer;
 
     @BeforeEach
     void setUp() throws Exception {
         db = new TempDatabase();
         refundController = new RefundController();
         customer = Fixtures.customer();
+        reviewer = Fixtures.admin();
     }
 
     @AfterEach
@@ -162,7 +164,7 @@ class RefundControllerTest {
 
         Refund refund = refundController.ajukanRefund(booking.getId(), customer.getID(),
                 "Alasan", "Budi", "BCA 1");
-        refundController.tolakRefund(refund);
+        refundController.tolakRefund(refund.getId(), reviewer.getID());
 
         // Rejection used to write CONFIRMED unconditionally, re-enabling check-in.
         assertEquals(PemesananStatus.CHECKED_IN.dbValue(),
@@ -176,7 +178,7 @@ class RefundControllerTest {
 
         Refund refund = refundController.ajukanRefund(booking.getId(), customer.getID(),
                 "Alasan", "Budi", "BCA 1");
-        refundController.setujuiRefund(refund);
+        refundController.setujuiRefund(refund.getId(), reviewer.getID());
 
         assertEquals(PemesananStatus.REFUNDED.dbValue(),
                 PemesananDAO.getPemesananById(booking.getId()).getStatus());

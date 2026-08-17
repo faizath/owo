@@ -273,32 +273,19 @@ public class RefundController {
     /** One wording for missing and for not-yours, so the two cannot be told apart. */
     private static final String REFUND_TIDAK_DITEMUKAN = "Refund tidak ditemukan.";
 
-    /** Approves by id, loading the current row rather than trusting a client-held copy. */
-    public Refund setujuiRefund(String refundId)
+    /**
+     * Approves by id, loading the current row rather than trusting a client-held copy.
+     *
+     * <p>Taking the id rather than a {@code Refund} is the point: the caller cannot hand
+     * in a stale or hand-built object and have its status believed. The reviewer's own id
+     * is required because the decision is recorded against them.
+     */
+    public Refund setujuiRefund(String refundId, int reviewerId)
             throws PemesananController.PemesananException, SQLException {
-        Refund refund = refundId == null ? null : RefundDAO.getRefundById(refundId);
-        if (refund == null) {
-            throw new PemesananController.PemesananException("Refund tidak ditemukan.");
-        }
-        setujuiRefund(refund);
-        return refund;
-    }
-
-    /** Rejects by id, loading the current row rather than trusting a client-held copy. */
-    public Refund tolakRefund(String refundId)
-            throws PemesananController.PemesananException, SQLException {
-        Refund refund = refundId == null ? null : RefundDAO.getRefundById(refundId);
-        if (refund == null) {
-            throw new PemesananController.PemesananException("Refund tidak ditemukan.");
-        }
-        tolakRefund(refund);
-        return refund;
-    }
-
-    public void setujuiRefund(Refund refund)
-            throws PemesananController.PemesananException, SQLException {
+        Refund refund = muatUntukKeputusan(refundId);
         // Approving releases the ticket: the booking is over and the unit is sellable.
-        decide(refund, RefundStatus.APPROVED, PemesananStatus.REFUNDED, true);
+        decide(refund, RefundStatus.APPROVED, PemesananStatus.REFUNDED, true, reviewerId);
+        return refund;
     }
 
     /**
@@ -307,16 +294,28 @@ public class RefundController {
      * <p>Rejection used to write CONFIRMED unconditionally, which silently downgraded a
      * checked-in booking and re-enabled check-in on it.
      */
-    public void tolakRefund(Refund refund)
+    public Refund tolakRefund(String refundId, int reviewerId)
             throws PemesananController.PemesananException, SQLException {
-        PemesananStatus restoreTo = refund == null ? null : refund.getStatusSebelumnya();
+        Refund refund = muatUntukKeputusan(refundId);
+
+        PemesananStatus restoreTo = refund.getStatusSebelumnya();
         if (restoreTo == null) {
             // Rows written before status_sebelumnya existed carry no previous status.
             // CONFIRMED is the only safe guess, and it is the one that downgrades a
             // checked-in booking — so it is used but never silently: see PR-REF-08.
             restoreTo = PemesananStatus.CONFIRMED;
         }
-        decide(refund, RefundStatus.REJECTED, restoreTo, false);
+        decide(refund, RefundStatus.REJECTED, restoreTo, false, reviewerId);
+        return refund;
+    }
+
+    private Refund muatUntukKeputusan(String refundId)
+            throws PemesananController.PemesananException, SQLException {
+        Refund refund = refundId == null ? null : RefundDAO.getRefundById(refundId);
+        if (refund == null) {
+            throw new PemesananController.PemesananException(REFUND_TIDAK_DITEMUKAN);
+        }
+        return refund;
     }
 
     /**
@@ -328,7 +327,7 @@ public class RefundController {
      * refund nothing can ever decide again.
      */
     private void decide(Refund refund, RefundStatus decision, PemesananStatus bookingStatus,
-            boolean releaseTiket)
+            boolean releaseTiket, int reviewerId)
             throws PemesananController.PemesananException, SQLException {
 
         if (refund == null || refund.getStatus() != RefundStatus.PENDING_REVIEW) {
@@ -342,6 +341,14 @@ public class RefundController {
                     "Pemesanan untuk refund ini tidak ditemukan.");
         }
 
+        // Being an administrator authorises deciding other people's refunds, not signing
+        // off a payment to yourself. Nothing else in the system separates the two roles,
+        // so this is the only place the conflict can be caught.
+        if (String.valueOf(reviewerId).equals(pemesanan.getCustomerId())) {
+            throw new PemesananController.PemesananException(
+                    "Anda tidak dapat meninjau refund atas pemesanan Anda sendiri.");
+        }
+
         PemesananStatus current = PemesananController.readStatus(pemesanan);
         if (current != bookingStatus && !current.canTransitionTo(bookingStatus)) {
             throw new PemesananController.PemesananException(
@@ -352,8 +359,9 @@ public class RefundController {
         Integer tiketId = releaseTiket && pemesanan.getTiket() != null
                 ? pemesanan.getTiket().getId() : null;
 
+        LocalDateTime waktuReview = LocalDateTime.now();
         boolean applied = RefundDAO.applyDecision(refund.getId(), RefundStatus.PENDING_REVIEW,
-                decision, pemesanan.getId(), bookingStatus, tiketId);
+                decision, pemesanan.getId(), bookingStatus, tiketId, reviewerId, waktuReview);
         if (!applied) {
             // The conditional update matched nothing: somebody else decided it first.
             throw new PemesananController.PemesananException(
@@ -361,6 +369,7 @@ public class RefundController {
         }
 
         refund.setStatus(decision);
+        refund.setReview(reviewerId, waktuReview);
         pemesanan.setStatus(bookingStatus.dbValue());
 
         beritahuPelanggan(pemesanan, pesanKeputusan(refund, decision));
