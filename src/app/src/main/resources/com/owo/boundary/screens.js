@@ -21,15 +21,24 @@
     return document.getElementById(id);
   }
 
-  /** Shows a message where the screen has room for one, falling back to an alert. */
+  /**
+   * Shows a message on the current screen.
+   *
+   * This used to fall back to `alert` when a screen had no banner. WebView shows nothing
+   * for `alert` unless an `onAlert` handler is installed, and nothing installs one — so on
+   * the two screens that never called `ensureBanner`, every booking failure was silent.
+   * The banner is created on demand instead, so there is no path that reports nothing.
+   */
   function fail(message) {
-    const banner = byId('screenError');
-    if (banner) {
-      banner.textContent = message;
-      banner.classList.remove('hidden');
-      return;
+    let banner = byId('screenError');
+    if (!banner) {
+      ensureBanner(document.getElementById('app') || document.body);
+      banner = byId('screenError');
     }
-    alert(message);
+    if (!banner) return;
+    banner.textContent = message;
+    banner.classList.remove('hidden');
+    banner.scrollIntoView({ block: 'nearest' });
   }
 
   /** Adds a dismissible error banner to the top of a screen. */
@@ -357,7 +366,7 @@
             })
             .catch(function (err) {
               busy(button, false);
-              alert(err.message);
+              fail(err.message);
             });
         });
       });
@@ -417,7 +426,7 @@
             })
             .catch(function (err) {
               busy(button, false);
-              alert(err.message);
+              fail(err.message);
             });
         });
       });
@@ -1114,25 +1123,54 @@
       button.addEventListener('click', function () {
         const id = button.dataset.editPayee;
         const refund = all.filter(function (r) { return r.id === id; })[0];
-        if (!refund) return;
+        const card = list.querySelector('[data-refund="' + id + '"]');
+        if (!refund || !card || card.querySelector('.payee-form')) return;
 
-        const nama = prompt('Nama penerima', refund.namaPenerima || '');
-        if (nama === null) return;
-        const rekening = prompt('Rekening tujuan', refund.rekeningTujuan || '');
-        if (rekening === null) return;
+        // An inline form, not window.prompt. WebView has no prompt handler unless one is
+        // installed, and nothing installs one — prompt() returns an empty string without
+        // ever showing a dialog, so this button used to submit two blank fields and be
+        // refused by the backend every time.
+        const form = document.createElement('div');
+        form.className = 'payee-form';
+        form.innerHTML =
+          '<label class="payee-label" for="payeeNama">Nama penerima</label>'
+          + '<input class="payee-input" id="payeeNama" type="text" value="'
+          + esc(refund.namaPenerima || '') + '">'
+          + '<label class="payee-label" for="payeeRekening">Rekening tujuan</label>'
+          + '<input class="payee-input" id="payeeRekening" type="text" value="'
+          + esc(refund.rekeningTujuan || '') + '">'
+          + '<div class="payee-actions">'
+          + '<button type="button" class="payee-cancel" id="payeeCancel">Batal</button>'
+          + '<button type="button" class="payee-save" id="payeeSave">Simpan</button>'
+          + '</div>';
+        card.appendChild(form);
+        button.disabled = true;
 
-        busy(button, true, 'Menyimpan...');
-        window.OwOAPI.updateRefundPayee(id, nama, rekening)
-          .then(function (updated) {
-            refund.namaPenerima = updated.namaPenerima;
-            refund.rekeningTujuan = updated.rekeningTujuan;
-            window.App.showNotification('Detail pencairan diperbarui.');
-            repaint();
-          })
-          .catch(function (err) {
-            busy(button, false);
-            fail(err.message);
-          });
+        form.querySelector('#payeeCancel').addEventListener('click', function () {
+          form.remove();
+          button.disabled = false;
+        });
+
+        form.querySelector('#payeeSave').addEventListener('click', function () {
+          const save = form.querySelector('#payeeSave');
+          busy(save, true, 'Menyimpan...');
+
+          window.OwOAPI.updateRefundPayee(
+            id,
+            form.querySelector('#payeeNama').value,
+            form.querySelector('#payeeRekening').value
+          )
+            .then(function (updated) {
+              refund.namaPenerima = updated.namaPenerima;
+              refund.rekeningTujuan = updated.rekeningTujuan;
+              window.App.showNotification('Detail pencairan diperbarui.');
+              repaint();
+            })
+            .catch(function (err) {
+              busy(save, false);
+              fail(err.message);
+            });
+        });
       });
     });
   }

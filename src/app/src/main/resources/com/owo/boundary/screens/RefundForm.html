@@ -251,6 +251,69 @@
             cursor: default;
         }
 
+        .payee-form {
+            margin-top: 16px;
+            padding: 16px;
+            border: 1px solid #E8E7E7;
+            border-radius: 8px;
+            background: #FCFCFD;
+        }
+
+        .payee-label {
+            display: block;
+            margin-bottom: 6px;
+            color: #2C0735;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .payee-input {
+            width: 100%;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            border: 1px solid #D9D9D9;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .payee-input:focus {
+            border-color: #613DC1;
+        }
+
+        .payee-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .payee-cancel, .payee-save {
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .payee-cancel {
+            border: 1px solid #D9D9D9;
+            background: white;
+            color: #555;
+        }
+
+        .payee-save {
+            border: none;
+            background: #613DC1;
+            color: white;
+        }
+
+        .payee-save:disabled {
+            opacity: 0.6;
+            cursor: default;
+        }
+
         .content-section {
             display: none;
         }
