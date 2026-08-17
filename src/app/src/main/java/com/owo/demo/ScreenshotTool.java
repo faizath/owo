@@ -59,6 +59,49 @@ public class ScreenshotTool {
      */
     private static final List<String> SCREENS = BridgeInstaller.routableScreens();
 
+    /**
+     * A JavaScript expression producing the navigation context for a screen.
+     *
+     * <p>Three screens take a context and render a "nothing selected" branch without one.
+     * Navigating to them bare produced an image of an error message and reported it as a
+     * screenshot, so the three most complex screens in the application were the three
+     * nobody had ever seen populated. Each expression resolves to the same shape the real
+     * user journey would hand over.
+     */
+    private static final java.util.Map<String, String> CONTEXTS = java.util.Map.of(
+            "CekKetersediaanPesawat",
+            "window.OwOAPI.searchFlights({}).then(function (r) {"
+                    + " return { criteria: {}, results: r, date: '' }; })",
+
+            "CekKetersediaanHotel",
+            "window.OwOAPI.searchHotels({}).then(function (r) {"
+                    + " return { criteria: {}, results: r }; })",
+
+            // Payment needs a booking that exists, so one is made and then cancelled again
+            // once the image is written; see CLEANUP.
+            "Pembayaran",
+            "window.OwOAPI.searchFlights({}).then(function (r) {"
+                    + " if (!r.length) { return null; }"
+                    + " return window.OwOAPI.createBooking(r[0].id, 1).then(function (b) {"
+                    + "   window.__shotBooking = b.id;"
+                    + "   return { booking: b, tiket: r[0] }; }); })",
+
+            "Informasi", "Promise.resolve({ topik: 'pembatalan' })");
+
+    /**
+     * Undoes what a context had to create, once the screenshot is written.
+     *
+     * <p>The tool runs against the development database. Leaving a PENDING booking behind
+     * would hold its unit out of the catalogue — the exact leak the cancel button exists
+     * to close — and every later run would claim another one.
+     */
+    private static final java.util.Map<String, String> CLEANUP = java.util.Map.of(
+            "Pembayaran",
+            "if (window.__shotBooking) {"
+                    + " window.OwOAPI.cancelBooking(window.__shotBooking)"
+                    + "   .catch(function (e) { console.error('cleanup failed', e); });"
+                    + " window.__shotBooking = null; }");
+
     private static final int WIDTH = 1400;
     private static final int HEIGHT = 1000;
 
@@ -156,19 +199,37 @@ public class ScreenshotTool {
         }
 
         String screen = SCREENS.get(index);
+        String context = CONTEXTS.getOrDefault(screen, "Promise.resolve(null)");
+
         pause(700, () -> {
             try {
                 // The router refuses private screens without a session, so log in first
-                // and let the shell decide what it is willing to show.
+                // and let the shell decide what it is willing to show. The context is
+                // resolved before navigating, because a screen given none renders its
+                // "nothing selected" branch and the image says nothing about the layout.
                 engine.executeScript(
-                        "if (window.App) { try { window.App.navigate('" + screen + "'); }"
-                                + " catch (e) { console.error(e); } }");
+                        "if (window.App) { Promise.resolve(" + context + ")"
+                                + " .then(function (ctx) { window.App.navigate('" + screen
+                                + "', ctx); })"
+                                + " .catch(function (e) { console.error('context for " + screen
+                                + "', e); window.App.navigate('" + screen + "'); }); }");
             } catch (Exception e) {
                 System.err.println("Could not navigate to " + screen + ": " + e.getMessage());
             }
 
-            pause(900, () -> {
+            // Longer than the bare navigation needed: a context that queries the database
+            // has to come back before there is anything worth photographing.
+            pause(1400, () -> {
                 write(view, screen);
+                String cleanup = CLEANUP.get(screen);
+                if (cleanup != null) {
+                    try {
+                        engine.executeScript(cleanup);
+                    } catch (Exception e) {
+                        System.err.println("Could not clean up after " + screen + ": "
+                                + e.getMessage());
+                    }
+                }
                 capture(engine, view, index + 1);
             });
         });

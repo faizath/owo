@@ -244,6 +244,44 @@ class BoundaryResourceTest {
     }
 
     @Test
+    void everyClassNameScreensJsEmitsIsStyledSomewhere() throws Exception {
+        Path boundary = resources();
+        Path screens = boundary.resolve("screens");
+
+        // Fragments carry their own styles, and App.html carries the shared ones.
+        StringBuilder css = new StringBuilder(
+                Files.readString(boundary.resolve("App.html"), StandardCharsets.UTF_8));
+        for (String screen : routableScreens()) {
+            css.append(Files.readString(
+                    screens.resolve(screen + ".html"), StandardCharsets.UTF_8));
+        }
+
+        List<String> defined = new ArrayList<>();
+        Matcher selector = Pattern.compile("\\.([A-Za-z][A-Za-z0-9_-]*)").matcher(css);
+        while (selector.find()) {
+            defined.add(selector.group(1));
+        }
+
+        // Result cards are built in JavaScript, so their class names are only connected to
+        // the stylesheet by spelling. Both availability screens emitted a whole parallel
+        // set — flight-main, hotel-side, select-button — that nothing styled, and every
+        // result rendered as bare text with a default browser button. No behavioural test
+        // can see that; the class names at least can be checked.
+        List<String> unstyled = new ArrayList<>();
+        String js = Files.readString(boundary.resolve("screens.js"), StandardCharsets.UTF_8);
+        Matcher emitted = Pattern.compile("class=\"([^\"'<>+]*)\"").matcher(js);
+        while (emitted.find()) {
+            for (String name : emitted.group(1).trim().split("\\s+")) {
+                if (!name.isEmpty() && !defined.contains(name) && !unstyled.contains(name)) {
+                    unstyled.add(name);
+                }
+            }
+        }
+
+        assertTrue(unstyled.isEmpty(), "class names no stylesheet defines: " + unstyled);
+    }
+
+    @Test
     void noProductionScreenReferencesTheMockDataFile() throws Exception {
         Path boundary = resources();
 

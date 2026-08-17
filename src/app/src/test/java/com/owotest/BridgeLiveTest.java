@@ -264,7 +264,7 @@ class BridgeLiveTest {
                         + "  .dispatchEvent(new Event('submit', {cancelable: true}));"));
 
         await("document.getElementById('flightList')");
-        await("document.querySelectorAll('#flightList .select-button').length === 2");
+        await("document.querySelectorAll('#flightList .book-button').length === 2");
     }
 
     @Test
@@ -335,9 +335,9 @@ class BridgeLiveTest {
         signIn("sari@example.com", "password123");
         submitHotelSearch();
 
-        await("document.querySelectorAll('#hotelList .select-button').length === 1");
+        await("document.querySelectorAll('#hotelList .book-button').length === 1");
         runOnFxThread(() -> engine.executeScript(
-                "document.querySelector('#hotelList .select-button').click()"));
+                "document.querySelector('#hotelList .book-button').click()"));
 
         // The hotel path had no live coverage at all: search, selection by primary key,
         // and the hand-off to payment were only ever reasoned about.
@@ -360,7 +360,7 @@ class BridgeLiveTest {
 
         // Only the four-guest room can hold the party. Before capacity was modelled the
         // count was discarded and both rooms were offered.
-        await("document.querySelectorAll('#hotelList .select-button').length === 1");
+        await("document.querySelectorAll('#hotelList .book-button').length === 1");
     }
 
     @Test
@@ -372,9 +372,9 @@ class BridgeLiveTest {
         runOnFxThread(() -> engine.executeScript(
                 "document.getElementById('flightForm')"
                         + "  .dispatchEvent(new Event('submit', {cancelable: true}));"));
-        await("document.querySelectorAll('#flightList .select-button').length === 1");
+        await("document.querySelectorAll('#flightList .book-button').length === 1");
         runOnFxThread(() -> engine.executeScript(
-                "document.querySelector('#flightList .select-button').click()"));
+                "document.querySelector('#flightList .book-button').click()"));
         await("document.getElementById('payment-button')");
 
         // 4111111111111112 is 4111111111111111 with the check digit broken: the right
@@ -403,9 +403,9 @@ class BridgeLiveTest {
         runOnFxThread(() -> engine.executeScript(
                 "document.getElementById('flightForm')"
                         + "  .dispatchEvent(new Event('submit', {cancelable: true}));"));
-        await("document.querySelectorAll('#flightList .select-button').length === 1");
+        await("document.querySelectorAll('#flightList .book-button').length === 1");
         runOnFxThread(() -> engine.executeScript(
-                "document.querySelector('#flightList .select-button').click()"));
+                "document.querySelector('#flightList .book-button').click()"));
         await("document.getElementById('payment-button')");
 
         runOnFxThread(() -> engine.executeScript(

@@ -121,6 +121,14 @@
       });
   }
 
+  /** One labelled cell in a result card's info grid. */
+  function infoItem(label, value) {
+    return '<div class="flight-info-item">'
+      + '<span class="flight-info-label">' + esc(label) + '</span>'
+      + '<span class="flight-info-value">' + esc(value) + '</span>'
+      + '</div>';
+  }
+
   /** An ISO date string for an `<input type="date">`, offset from today. */
   function isoDate(offsetDays) {
     const d = new Date();
@@ -418,24 +426,41 @@
         return;
       }
 
+      // Class names are the fragment's own. They used to be invented here — flight-main,
+      // flight-side, select-button — none of which the stylesheet defines, so every result
+      // rendered as unstyled text with a default browser button. No test can see that;
+      // ./gradlew screenshots can.
       list.innerHTML = results.map(function (f) {
         return '<div class="flight-card" data-id="' + esc(f.id) + '">'
-          + '<div class="flight-main">'
-          + '<div class="flight-airline">' + esc(f.maskapai) + ' • ' + esc(f.flightNumber) + '</div>'
-          + '<div class="flight-route">' + esc(f.origin) + ' → ' + esc(f.destination) + '</div>'
-          + '<div class="flight-time">' + esc(window.App.formatDateTime(f.departure)) + '</div>'
-          + '<div class="flight-class">' + esc(f.kelas) + '</div>'
+          + '<div class="flight-content">'
+          + '<div class="flight-header">'
+          + '<div class="flight-title">' + esc(f.maskapai) + '</div>'
+          + '<div class="flight-info-value">' + esc(f.flightNumber) + '</div>'
           + '</div>'
-          + '<div class="flight-side">'
-          + '<div class="flight-price">' + esc(window.App.formatRupiah(f.price)) + '</div>'
-          + '<button type="button" class="select-button" data-id="' + esc(f.id) + '">Pilih</button>'
+          + '<div class="flight-details">'
+          + '<div class="flight-time">' + esc(f.origin) + '</div>'
+          + '<div class="flight-duration"><div class="flight-path"></div></div>'
+          + '<div class="flight-time">' + esc(f.destination) + '</div>'
+          + '</div>'
+          + '<div class="flight-info">'
+          + infoItem('Keberangkatan', window.App.formatDateTime(f.departure))
+          + infoItem('Kelas', f.kelas)
+          + infoItem('Kapasitas', (f.kapasitas || 1) + ' orang')
+          + '</div>'
+          + '<div class="flight-footer">'
+          + '<div class="flight-price">'
+          + '<span class="price-amount">' + esc(window.App.formatRupiah(f.price)) + '</span>'
+          + '<span class="price-period">per orang</span>'
+          + '</div>'
+          + '<button type="button" class="book-button" data-id="' + esc(f.id) + '">Pilih</button>'
+          + '</div>'
           + '</div>'
           + '</div>';
       }).join('');
 
       // Selection is by primary key. Matching on the airline name booked whichever
       // flight happened to share it.
-      list.querySelectorAll('.select-button').forEach(function (button) {
+      list.querySelectorAll('.book-button').forEach(function (button) {
         button.addEventListener('click', function () {
           const id = parseInt(button.dataset.id, 10);
           const chosen = results.filter(function (f) { return f.id === id; })[0];
@@ -481,23 +506,33 @@
         return;
       }
 
+      // As on the flight screen: these class names are the ones the fragment styles,
+      // rather than a parallel set the stylesheet has never heard of.
       list.innerHTML = results.map(function (h) {
         return '<div class="hotel-card" data-id="' + esc(h.id) + '">'
-          + '<div class="hotel-main">'
-          + '<div class="hotel-name">' + esc(h.hotelName) + '</div>'
-          + '<div class="hotel-address">' + esc(h.address) + '</div>'
-          + '<div class="hotel-dates">' + esc(window.App.formatDate(h.checkin))
-          + ' - ' + esc(window.App.formatDate(h.checkout)) + '</div>'
-          + '<div class="hotel-room">Kamar ' + esc(h.roomNumber) + '</div>'
+          + '<div class="hotel-content">'
+          + '<div class="hotel-header">'
+          + '<div class="hotel-title">' + esc(h.hotelName) + '</div>'
           + '</div>'
-          + '<div class="hotel-side">'
-          + '<div class="hotel-price">' + esc(window.App.formatRupiah(h.price)) + '</div>'
-          + '<button type="button" class="select-button" data-id="' + esc(h.id) + '">Pilih</button>'
+          + '<div class="hotel-location">' + esc(h.address) + '</div>'
+          + '<div class="hotel-amenities">'
+          + '<span class="amenity">Kamar ' + esc(h.roomNumber) + '</span>'
+          + '<span class="amenity">' + esc(h.kapasitas || 1) + ' tamu</span>'
+          + '<span class="amenity">' + esc(window.App.formatDate(h.checkin)) + ' – '
+          + esc(window.App.formatDate(h.checkout)) + '</span>'
+          + '</div>'
+          + '<div class="hotel-footer">'
+          + '<div class="hotel-price">'
+          + '<span class="price-amount">' + esc(window.App.formatRupiah(h.price)) + '</span>'
+          + '<span class="price-period">per kamar</span>'
+          + '</div>'
+          + '<button type="button" class="book-button" data-id="' + esc(h.id) + '">Pilih</button>'
+          + '</div>'
           + '</div>'
           + '</div>';
       }).join('');
 
-      list.querySelectorAll('.select-button').forEach(function (button) {
+      list.querySelectorAll('.book-button').forEach(function (button) {
         button.addEventListener('click', function () {
           const id = parseInt(button.dataset.id, 10);
           const chosen = results.filter(function (h) { return h.id === id; })[0];
