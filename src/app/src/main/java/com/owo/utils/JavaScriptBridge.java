@@ -47,6 +47,7 @@ public class JavaScriptBridge {
     public static final String ERR_INVALID_INPUT = "ERR_INVALID_INPUT";
     public static final String ERR_CREDENTIALS = "ERR_CREDENTIALS";
     public static final String ERR_NOT_FOUND = "ERR_NOT_FOUND";
+    public static final String ERR_FORBIDDEN = "ERR_FORBIDDEN";
     public static final String ERR_INTERNAL = "ERR_INTERNAL";
 
     private final PemesananController pemesananController = new PemesananController();
@@ -59,6 +60,13 @@ public class JavaScriptBridge {
     private volatile Integer sessionUserId;
     private volatile String sessionNama;
     private volatile String sessionEmail;
+
+    /**
+     * Read from the account row at login. The page is told about it so it can show or hide
+     * the review queue, but every administrator operation re-checks this field — the client
+     * saying it is an administrator proves nothing.
+     */
+    private volatile boolean sessionAdmin;
 
     /**
      * Bounded so a burst of calls cannot spawn unbounded threads. Daemon threads, so a
@@ -138,13 +146,15 @@ public class JavaScriptBridge {
         return success("Sesi aktif", Json.obj()
                 .put("id", userId)
                 .put("nama", sessionNama)
-                .put("email", sessionEmail));
+                .put("email", sessionEmail)
+                .put("isAdmin", sessionAdmin));
     }
 
     private void startSession(Akun akun) {
         sessionUserId = akun.getID();
         sessionNama = akun.getNama();
         sessionEmail = akun.getEmail();
+        sessionAdmin = akun.isAdmin();
         NotifikasiHelper.initialize(akun.getID());
     }
 
@@ -152,6 +162,7 @@ public class JavaScriptBridge {
         sessionUserId = null;
         sessionNama = null;
         sessionEmail = null;
+        sessionAdmin = false;
         NotifikasiHelper.stop();
     }
 
@@ -159,7 +170,8 @@ public class JavaScriptBridge {
         return Json.obj()
                 .put("id", akun.getID())
                 .put("nama", akun.getNama())
-                .put("email", akun.getEmail());
+                .put("email", akun.getEmail())
+                .put("isAdmin", akun.isAdmin());
     }
 
     // -------------------------------------------------------------------- search
@@ -380,6 +392,78 @@ public class JavaScriptBridge {
         }));
     }
 
+    /** Every refund the signed-in customer has filed. Scoped by the session, not by argument. */
+    public void getUserRefunds(String callbackName) {
+        run(callbackName, () -> withSession(userId -> {
+            List<Refund> refunds = refundController.getRefundsForCustomer(userId);
+            Json.Arr items = Json.arr();
+            for (Refund refund : refunds) {
+                items.add(refundJson(refund));
+            }
+            return success("Daftar refund dimuat", items);
+        }));
+    }
+
+    /** Corrects the payee on a refund that is still awaiting review. */
+    public void updateRefundPayee(String argsJson, String callbackName) {
+        run(callbackName, () -> withSession(userId -> {
+            Map<String, Object> args = Json.parseObject(argsJson);
+            String refundId = Json.optString(args, "refundId", "");
+            String namaPenerima = Json.optString(args, "namaPenerima", "");
+            String rekeningTujuan = Json.optString(args, "rekeningTujuan", "");
+
+            try {
+                Refund refund = refundController.perbaruiDetailPencairan(
+                        refundId, userId, namaPenerima, rekeningTujuan);
+                return success("Detail pencairan diperbarui", refundJson(refund));
+            } catch (PemesananController.PemesananException e) {
+                return error(e.getMessage(), ERR_INVALID_INPUT);
+            }
+        }));
+    }
+
+    // --------------------------------------------------------------------- review
+
+    /** The administrator review queue. */
+    public void getPendingRefunds(String callbackName) {
+        run(callbackName, () -> withAdminSession(userId -> {
+            List<Refund> refunds = refundController.getRefundsMenungguPeninjauan();
+            Json.Arr items = Json.arr();
+            for (Refund refund : refunds) {
+                items.add(refundJson(refund));
+            }
+            return success("Antrean refund dimuat", items);
+        }));
+    }
+
+    public void approveRefund(String argsJson, String callbackName) {
+        run(callbackName, () -> withAdminSession(userId -> {
+            Map<String, Object> args = Json.parseObject(argsJson);
+            String refundId = Json.optString(args, "refundId", "");
+
+            try {
+                Refund refund = refundController.setujuiRefund(refundId);
+                return success("Refund disetujui", refundJson(refund));
+            } catch (PemesananController.PemesananException e) {
+                return error(e.getMessage(), ERR_INVALID_INPUT);
+            }
+        }));
+    }
+
+    public void rejectRefund(String argsJson, String callbackName) {
+        run(callbackName, () -> withAdminSession(userId -> {
+            Map<String, Object> args = Json.parseObject(argsJson);
+            String refundId = Json.optString(args, "refundId", "");
+
+            try {
+                Refund refund = refundController.tolakRefund(refundId);
+                return success("Refund ditolak", refundJson(refund));
+            } catch (PemesananController.PemesananException e) {
+                return error(e.getMessage(), ERR_INVALID_INPUT);
+            }
+        }));
+    }
+
     private Json.Obj refundJson(Refund refund) {
         return Json.obj()
                 .put("id", refund.getId())
@@ -419,7 +503,8 @@ public class JavaScriptBridge {
     /** Screens the router is allowed to load. Anything else is refused. */
     private static final List<String> SCREENS = List.of(
             "LoginForm", "RegisterForm", "Pemesanan", "CekKetersediaanPesawat",
-            "CekKetersediaanHotel", "Pembayaran", "RiwayatPemesanan", "RefundForm");
+            "CekKetersediaanHotel", "Pembayaran", "RiwayatPemesanan", "RefundForm",
+            "TinjauRefund");
 
     /**
      * Returns a screen fragment as markup.
@@ -467,6 +552,22 @@ public class JavaScriptBridge {
         Integer userId = sessionUserId;
         if (userId == null) {
             return error("Silakan masuk terlebih dahulu", ERR_UNAUTHENTICATED);
+        }
+        return operation.execute(userId);
+    }
+
+    /**
+     * As {@link #withSession}, and additionally refuses anyone whose account row is not
+     * flagged as an administrator. The flag comes from the database at login; nothing the
+     * page sends can set it.
+     */
+    private String withAdminSession(SessionOperation operation) throws Exception {
+        Integer userId = sessionUserId;
+        if (userId == null) {
+            return error("Silakan masuk terlebih dahulu", ERR_UNAUTHENTICATED);
+        }
+        if (!sessionAdmin) {
+            return error("Anda tidak berwenang meninjau refund", ERR_FORBIDDEN);
         }
         return operation.execute(userId);
     }
