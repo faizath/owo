@@ -178,6 +178,7 @@ public class DBHelper {
             // questioned afterwards, and nothing else in the schema says who acted.
             addColumnIfMissing(stmt, "refund", "direview_oleh", "INTEGER");
             addColumnIfMissing(stmt, "refund", "waktu_review", "TEXT");
+            backfillStatusSebelumnya(stmt);
         }
     }
 
@@ -201,6 +202,39 @@ public class DBHelper {
 
         System.out.println("Migrating " + table + " table: adding " + column + ".");
         stmt.execute("ALTER TABLE " + table + " ADD COLUMN " + column + " " + definition);
+    }
+
+    /**
+     * Fills in the previous booking status on refunds written before the column existed.
+     *
+     * <p>Rejecting a refund restores the booking to what it was before, and with nothing
+     * recorded the only guess available is CONFIRMED — which silently downgrades a
+     * booking that had already been checked into, and re-enables check-in on it.
+     *
+     * <p>The guess is avoidable for most rows. Check-in is same-day, so a booking whose
+     * departure or check-in date is still in the future <em>cannot</em> have been checked
+     * into: CONFIRMED is not a guess there, it is the only possibility. Those rows are
+     * filled in. Rows whose date has passed stay NULL, and rejection refuses them rather
+     * than guessing — an administrator asking why is a far better outcome than a booking
+     * quietly losing its check-in.
+     */
+    private static void backfillStatusSebelumnya(Statement stmt) throws SQLException {
+        int filled = stmt.executeUpdate("""
+            UPDATE refund
+               SET status_sebelumnya = 'CONFIRMED'
+             WHERE status_sebelumnya IS NULL
+               AND pemesanan_id IN (
+                    SELECT p.id FROM pemesanan p
+                      JOIN tiket t ON p.tiket_id = t.id
+                      LEFT JOIN tiket_pesawat tp ON tp.tiket_id = t.id
+                      LEFT JOIN tiket_hotel th ON th.tiket_id = t.id
+                     WHERE date(COALESCE(tp.waktu_keberangkatan, th.check_in)) > date('now')
+               )
+        """);
+        if (filled > 0) {
+            System.out.println("Migrating refund table: recovered the previous booking status "
+                    + "for " + filled + " refund(s).");
+        }
     }
 
     /**

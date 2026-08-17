@@ -286,6 +286,51 @@ class RefundReviewTest {
     }
 
     @Test
+    void aPreMigrationRefundOnAFutureBookingRecoversItsPreviousStatus() throws Exception {
+        Refund refund = fileRefund(customer, "Budi Santoso");
+        clearStatusSebelumnya(refund.getId());
+
+        // Check-in is same-day, so a booking that has not departed cannot have been
+        // checked into: CONFIRMED is the only possibility, not a guess.
+        com.owo.utils.DBHelper.initializeDatabase();
+
+        assertEquals(PemesananStatus.CONFIRMED,
+                RefundDAO.getRefundById(refund.getId()).getStatusSebelumnya());
+    }
+
+    @Test
+    void aRefundWithNoRecoverablePreviousStatus_isNotRejectedOnAGuess() throws Exception {
+        // Departing today, so it could legitimately have been checked into before the
+        // refund was filed — the migration cannot deduce anything for this row. The time
+        // is pinned to the end of today rather than an offset from now, which would slide
+        // into tomorrow when the suite runs in the evening and make the row deducible.
+        TiketPesawat flight = Fixtures.flightAt(
+                java.time.LocalDate.now().atTime(23, 59), 2_000_000f);
+        Pemesanan booking = Fixtures.booking(customer, flight, PemesananStatus.CHECKED_IN);
+        Refund refund = refundController.ajukanRefund(booking.getId(), customer.getID(),
+                "Berubah rencana", "Budi Santoso", "BCA 1234");
+        clearStatusSebelumnya(refund.getId());
+        com.owo.utils.DBHelper.initializeDatabase();
+
+        // Guessing CONFIRMED here downgrades a checked-in booking and re-enables check-in
+        // on it, without telling anybody.
+        assertThrows(PemesananController.PemesananException.class,
+                () -> refundController.tolakRefund(refund.getId(), reviewer.getID()));
+        assertEquals(PemesananStatus.REFUND_IN_PROGRESS.dbValue(),
+                PemesananDAO.getPemesananById(booking.getId()).getStatus());
+    }
+
+    /** Reproduces a row written before status_sebelumnya existed. */
+    private static void clearStatusSebelumnya(String refundId) throws Exception {
+        try (var conn = com.owo.utils.DBHelper.getConnection();
+             var stmt = conn.prepareStatement(
+                     "UPDATE refund SET status_sebelumnya = NULL WHERE id = ?")) {
+            stmt.setString(1, refundId);
+            stmt.executeUpdate();
+        }
+    }
+
+    @Test
     void aDecisionRecordsWhoMadeItAndWhen() throws Exception {
         Refund refund = fileRefund(customer, "Budi Santoso");
         LocalDateTime before = LocalDateTime.now().minusSeconds(1);

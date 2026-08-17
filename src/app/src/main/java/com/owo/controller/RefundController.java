@@ -300,10 +300,13 @@ public class RefundController {
 
         PemesananStatus restoreTo = refund.getStatusSebelumnya();
         if (restoreTo == null) {
-            // Rows written before status_sebelumnya existed carry no previous status.
-            // CONFIRMED is the only safe guess, and it is the one that downgrades a
-            // checked-in booking — so it is used but never silently: see PR-REF-08.
-            restoreTo = PemesananStatus.CONFIRMED;
+            // Falling back to CONFIRMED here silently downgraded a booking that had been
+            // checked into, and re-enabled check-in on it. The migration recovers the
+            // status for every row where it is deducible, so anything still missing is
+            // genuinely unknown and worth a question rather than a guess.
+            throw new PemesananController.PemesananException(
+                    "Refund ini tidak mencatat status pemesanan sebelumnya, sehingga "
+                            + "penolakan harus dikembalikan secara manual.");
         }
         decide(refund, RefundStatus.REJECTED, restoreTo, false, reviewerId);
         return refund;
