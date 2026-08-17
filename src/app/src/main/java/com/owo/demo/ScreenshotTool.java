@@ -43,15 +43,21 @@ public class ScreenshotTool {
      */
     public static void main(String[] args) {
         Application.launch(ScreenshotApp.class, args);
+        if (ScreenshotApp.hasFailed()) {
+            System.exit(1);
+        }
     }
 
     public static class ScreenshotApp extends Application {
 
-    /** Screens worth capturing, plus the login credentials needed to reach the private ones. */
-    private static final List<String> SCREENS = List.of(
-            "LoginForm", "RegisterForm", "Pemesanan", "CekKetersediaanPesawat",
-            "CekKetersediaanHotel", "Pembayaran", "RiwayatPemesanan", "RefundForm",
-            "TinjauRefund");
+    /**
+     * Screens to capture: whatever the router will actually serve.
+     *
+     * <p>This was a hand-written copy of the bridge's allow-list, which is the drift the
+     * boundary tests were changed to stop — a screen added to the router and not to the
+     * copy would simply never be looked at.
+     */
+    private static final List<String> SCREENS = BridgeInstaller.routableScreens();
 
     private static final int WIDTH = 1400;
     private static final int HEIGHT = 1000;
@@ -104,8 +110,35 @@ public class ScreenshotTool {
             } catch (Exception e) {
                 System.err.println("Could not sign in: " + e.getMessage());
             }
-            pause(1200, () -> capture(engine, view, 0));
+
+            pause(1200, () -> {
+                // The router sends an unauthenticated visitor back to the login screen, so
+                // without a session every private screen would be captured as a picture of
+                // the login form — and the tool would report nine screenshots written. For
+                // something whose only job is to show what tests cannot see, quietly
+                // producing wrong images is the failure that matters.
+                Object session = engine.executeScript("!!(window.App && window.App.session)");
+                if (!Boolean.TRUE.equals(session)) {
+                    System.err.println("Could not sign in as " + ADMIN_EMAIL
+                            + ". Run './gradlew seed' first — without a session every "
+                            + "private screen would render as the login form.");
+                    Platform.exit();
+                    failed = true;
+                    return;
+                }
+                capture(engine, view, 0);
+            });
         });
+    }
+
+    /** Credentials the seeder creates; see TestDataInserter. */
+    private static final String ADMIN_EMAIL = "admin@owo.id";
+
+    /** Set when the run produced nothing usable, so the process can exit non-zero. */
+    private static volatile boolean failed;
+
+    static boolean hasFailed() {
+        return failed;
     }
 
     /**

@@ -500,7 +500,12 @@ public class JavaScriptBridge {
         return "OwO Booking System v1.0";
     }
 
-    /** Screens the router is allowed to load. Anything else is refused. */
+    /**
+     * Screens the router is allowed to load. Anything else is refused.
+     *
+     * <p>Read by {@link #screens()} rather than copied, so nothing keeps a second list that
+     * can drift out of step with this one.
+     */
     private static final List<String> SCREENS = List.of(
             "LoginForm", "RegisterForm", "Pemesanan", "CekKetersediaanPesawat",
             "CekKetersediaanHotel", "Pembayaran", "RiwayatPemesanan", "RefundForm",
@@ -514,6 +519,16 @@ public class JavaScriptBridge {
      * {@code file:} origin used in development is treated as opaque. This is also why the
      * name is matched against a fixed list instead of being used as a path.
      */
+    /**
+     * The routable screen names.
+     *
+     * <p>Package-private: this is for tooling and tests inside {@code com.owo.utils}, not
+     * for the page — WebView exposes every public method of the injected object.
+     */
+    static List<String> screens() {
+        return SCREENS;
+    }
+
     public String getScreen(String name) {
         if (!SCREENS.contains(name)) {
             return error("Layar tidak dikenali", ERR_NOT_FOUND);

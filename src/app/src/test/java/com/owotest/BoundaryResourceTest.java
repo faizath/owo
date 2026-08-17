@@ -1,12 +1,11 @@
 package com.owotest;
 
-import com.owo.utils.JavaScriptBridge;
+import com.owo.utils.BridgeInstaller;
 
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,12 +38,8 @@ class BoundaryResourceTest {
      * and not to the copy was routable but exempt from every check below, which is exactly
      * the drift these tests exist to catch.
      */
-    private static List<String> routableScreens() throws Exception {
-        Field field = JavaScriptBridge.class.getDeclaredField("SCREENS");
-        field.setAccessible(true);
-        @SuppressWarnings("unchecked")
-        List<String> screens = (List<String>) field.get(null);
-        return screens;
+    private static List<String> routableScreens() {
+        return BridgeInstaller.routableScreens();
     }
 
     private static Path resources() throws URISyntaxException {

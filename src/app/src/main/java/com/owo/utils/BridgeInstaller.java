@@ -34,4 +34,16 @@ public final class BridgeInstaller {
     public static void shutdown(JavaScriptBridge bridge) {
         bridge.shutdown();
     }
+
+    /**
+     * The screen names the router will serve.
+     *
+     * <p>Exposed here rather than on the bridge because WebView publishes every public
+     * method of the injected object, and here rather than copied because a second list is
+     * exactly what drifts: a screen added to the allow-list and not to the copy stays
+     * routable while escaping whatever the copy drives.
+     */
+    public static java.util.List<String> routableScreens() {
+        return JavaScriptBridge.screens();
+    }
 }
