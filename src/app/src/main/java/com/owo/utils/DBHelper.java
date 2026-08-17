@@ -82,7 +82,8 @@ public class DBHelper {
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     nama TEXT NOT NULL,
                     email TEXT UNIQUE NOT NULL,
-                    hashed_password TEXT NOT NULL
+                    hashed_password TEXT NOT NULL,
+                    is_admin INTEGER NOT NULL DEFAULT 0
                 )
             """);
 
@@ -92,7 +93,8 @@ public class DBHelper {
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     harga REAL NOT NULL,
                     tersedia INTEGER NOT NULL,
-                    tipe TEXT NOT NULL
+                    tipe TEXT NOT NULL,
+                    kapasitas INTEGER NOT NULL DEFAULT 1
                 )
             """);
 
@@ -131,6 +133,7 @@ public class DBHelper {
                     tiket_id INTEGER NOT NULL,
                     tanggal_pesan TEXT NOT NULL,
                     status TEXT NOT NULL,
+                    jumlah_peserta INTEGER NOT NULL DEFAULT 1,
                     FOREIGN KEY (customer_id) REFERENCES akun(id),
                     FOREIGN KEY (tiket_id) REFERENCES tiket(id)
                 )
@@ -165,7 +168,32 @@ public class DBHelper {
 
             migrateRefundTable(conn, stmt);
             migrateNotifikasiTable(conn, stmt);
+            addColumnIfMissing(stmt, "akun", "is_admin", "INTEGER NOT NULL DEFAULT 0");
+            addColumnIfMissing(stmt, "tiket", "kapasitas", "INTEGER NOT NULL DEFAULT 1");
+            addColumnIfMissing(stmt, "pemesanan", "jumlah_peserta", "INTEGER NOT NULL DEFAULT 1");
         }
+    }
+
+    /**
+     * Adds a column to an existing table, or does nothing if it is already there.
+     *
+     * <p>{@code CREATE TABLE IF NOT EXISTS} never alters a table that already exists, so a
+     * database seeded by an earlier build keeps its original column set. Every column added
+     * this way needs a {@code DEFAULT}, because SQLite has to have something to write into
+     * the existing rows.
+     */
+    private static void addColumnIfMissing(Statement stmt, String table, String column,
+            String definition) throws SQLException {
+        try (var rs = stmt.executeQuery("PRAGMA table_info(" + table + ")")) {
+            while (rs.next()) {
+                if (column.equals(rs.getString("name"))) {
+                    return;
+                }
+            }
+        }
+
+        System.out.println("Migrating " + table + " table: adding " + column + ".");
+        stmt.execute("ALTER TABLE " + table + " ADD COLUMN " + column + " " + definition);
     }
 
     /**
