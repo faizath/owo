@@ -25,6 +25,11 @@ dependencies {
     implementation 'com.google.guava:guava:31.1-jre'
     implementation 'org.mindrot:jbcrypt:0.4'
     implementation 'org.xerial:sqlite-jdbc:3.45.1.0'
+
+    // sqlite-jdbc pulls in slf4j-api:1.7.36 with no binding, which prints a
+    // "no SLF4J providers were found" warning at startup. Provide the simple
+    // binding at the matching 1.7.x line so it resolves without a version clash.
+    runtimeOnly 'org.slf4j:slf4j-simple:1.7.36'
 }
 
 javafx {
