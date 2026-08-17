@@ -122,17 +122,48 @@ configuration is required.
    ./gradlew build
    ```
 
-4. **Run the application**
+4. **Seed the database** (optional; idempotent, safe to re-run)
+   ```bash
+   ./gradlew seed
+   ```
+
+5. **Run the application**
    ```bash
    ./gradlew run
    ```
+
+### Demo Account
+
+`./gradlew seed` creates a demo account alongside the sample flights and hotels:
+
+| Email | Password |
+|---|---|
+| `demo@owo.id` | `demo1234` |
 
 ### Alternative Commands (Windows)
 For Windows users, use `gradlew.bat` instead:
 ```cmd
 gradlew.bat build
+gradlew.bat seed
 gradlew.bat run
 ```
+
+### Troubleshooting: `Unsupported class file major version`
+
+If the daemon JVM criteria cannot be satisfied, Gradle falls back to the launcher JVM and
+the build fails while parsing the build script. Point `JAVA_HOME` at a Java 21 installation:
+
+```bash
+# Linux / macOS
+JAVA_HOME=/path/to/jdk-21 ./gradlew build
+
+# Windows
+set JAVA_HOME=C:\path\to\jdk-21
+gradlew.bat build
+```
+
+The number in the message identifies the JVM Gradle is running on: 65 = Java 21, 66 = 22,
+67 = 23, 68 = 24, 69 = 25.
 
 ## 📁 Project Structure
 

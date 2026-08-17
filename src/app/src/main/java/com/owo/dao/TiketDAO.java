@@ -163,6 +163,39 @@ public class TiketDAO {
         return null;
     }
 
+    /**
+     * Natural-key lookup used by the seeder to stay idempotent. Flight numbers are
+     * unique within the seed set, so this is enough to detect an already-seeded row.
+     */
+    public static boolean flightExists(String flightNumber) throws SQLException {
+        String sql = "SELECT 1 FROM tiket_pesawat WHERE flight_number = ? LIMIT 1";
+        try (Connection conn = DBHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, flightNumber);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    /**
+     * Natural-key lookup used by the seeder to stay idempotent. A hotel may appear
+     * more than once, so the room number is part of the key.
+     */
+    public static boolean hotelExists(String hotelName, String roomNumber) throws SQLException {
+        String sql = "SELECT 1 FROM tiket_hotel WHERE hotel_name = ? AND room_number = ? LIMIT 1";
+        try (Connection conn = DBHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, hotelName);
+            pstmt.setString(2, roomNumber);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
     public static void updateTiketAvailability(int id, boolean tersedia) throws SQLException {
         String sql = "UPDATE tiket SET tersedia = ? WHERE id = ?";
         try (Connection conn = DBHelper.getConnection();

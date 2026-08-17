@@ -134,8 +134,8 @@ public class SearchDemo {
         }
         
         // 4. Search hotels by date range
-        System.out.println("\n4. Hotels available from 2025-06-12:");
-        LocalDate searchDate = LocalDate.of(2025, 6, 12);
+        LocalDate searchDate = LocalDate.now();
+        System.out.println("\n4. Hotels available from " + searchDate + ":");
         List<TiketHotel> dateFilteredHotels = TiketDAO.searchTiketHotel(null, searchDate, null, null, 0, true);
         System.out.println("Found " + dateFilteredHotels.size() + " hotels available from " + searchDate);
         for (TiketHotel hotel : dateFilteredHotels) {

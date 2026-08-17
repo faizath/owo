@@ -44,6 +44,15 @@ application {
     mainClass = 'com.owo.App'
 }
 
+// Seed the database with sample flights, hotels and a demo account.
+// Idempotent: re-running leaves row counts unchanged.
+tasks.register('seed', JavaExec) {
+    group = 'application'
+    description = 'Seed the database with sample data (idempotent)'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.owo.utils.TestDataInserter'
+}
+
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
