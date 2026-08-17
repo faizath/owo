@@ -2,9 +2,9 @@ name: Gradle Unit Tests
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ showcase ]
   pull_request:
-    branches: [ develop ]
+    branches: [ showcase ]
 
 jobs:
   build:
