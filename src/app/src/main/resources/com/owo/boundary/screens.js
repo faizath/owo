@@ -625,13 +625,27 @@
           ? activeBookings.map(card).join('')
           : '<p style="padding:16px;color:#666;">Belum ada pesanan aktif.</p>';
 
-        if (history) {
-          history.innerHTML = pastBookings.length
-            ? pastBookings.map(historyCard).join('')
-            : '<p style="padding:16px;color:#666;">Belum ada histori pemesanan.</p>';
+        renderHistory(pastBookings);
+
+        // The status filter narrows the history list. It used to be a button with no
+        // handler, inside markup whose tags were never closed.
+        const filter = byId('historyFilter');
+        if (filter) {
+          filter.addEventListener('change', function () {
+            renderHistory(filter.value
+              ? pastBookings.filter(function (b) { return b.status === filter.value; })
+              : pastBookings);
+          });
         }
 
         wireActions(bookings);
+      }
+
+      function renderHistory(rows) {
+        if (!history) return;
+        history.innerHTML = rows.length
+          ? rows.map(historyCard).join('')
+          : '<p style="padding:16px;color:#666;">Belum ada histori pemesanan.</p>';
       }
 
       /**
@@ -717,24 +731,116 @@
               return;
             }
 
-            busy(button, true);
-            // Check-in used to be `Math.random() > 0.3`, with no backend call at all.
-            window.OwOAPI.performCheckIn(id)
-              .then(function () {
-                window.App.showNotification('Check-in berhasil.');
-                window.App.navigate('RiwayatPemesanan');
-              })
-              .catch(function (err) {
-                busy(button, false);
-                fail(err.message);
-              });
+            openCheckIn(booking);
           });
         });
+      }
+
+      /**
+       * Confirms a check-in before performing it.
+       *
+       * Check-in is not reversible by the customer, so it gets a confirmation step
+       * showing what is about to be checked into. The modal markup was already in the
+       * screen but nothing opened it, and the action fired straight from the card.
+       */
+      function openCheckIn(booking) {
+        const modal = byId('checkinModal');
+        if (!modal || !booking) {
+          performCheckIn(booking, null);
+          return;
+        }
+
+        setText('modal-booking-code', booking.transactionId);
+        setText('modal-booking-route', bookingTitle(booking));
+        setText('modal-booking-date', bookingWhen(booking));
+        setText('modal-booking-airline', bookingWhere(booking));
+        // The passenger block used to be a hardcoded name and seat number.
+        setText('modal-passenger-name',
+          window.App.session ? window.App.session.nama : '');
+        setText('modal-passenger-count', (booking.jumlahPeserta || 1) + ' orang');
+
+        show('modal-loading', false);
+        show('modal-success-message', false);
+        show('modal-error-message', false);
+        show('modal-action-buttons', true, 'flex');
+
+        modal.style.display = 'flex';
+
+        const confirm = modal.querySelector('.modal-btn-primary');
+        const cancel = modal.querySelector('.modal-btn-secondary');
+        const close = modal.querySelector('.close-button');
+
+        function dismiss() {
+          modal.style.display = 'none';
+        }
+
+        [cancel, close].forEach(function (el) {
+          if (el) el.addEventListener('click', dismiss);
+        });
+
+        if (confirm) {
+          confirm.addEventListener('click', function () {
+            show('modal-action-buttons', false);
+            show('modal-loading', true);
+            performCheckIn(booking, modal);
+          });
+        }
+      }
+
+      function performCheckIn(booking, modal) {
+        // Check-in used to be `Math.random() > 0.3`, with no backend call at all.
+        window.OwOAPI.performCheckIn(booking.id)
+          .then(function () {
+            if (!modal) {
+              window.App.showNotification('Check-in berhasil.');
+              window.App.navigate('RiwayatPemesanan');
+              return;
+            }
+            show('modal-loading', false);
+            show('modal-success-message', true);
+            setTimeout(function () {
+              modal.style.display = 'none';
+              window.App.navigate('RiwayatPemesanan');
+            }, 1800);
+          })
+          .catch(function (err) {
+            if (!modal) {
+              fail(err.message);
+              return;
+            }
+            show('modal-loading', false);
+            setText('error-detail', err.message);
+            show('modal-error-message', true);
+            show('modal-action-buttons', true, 'flex');
+          });
+      }
+
+      function setText(id, value) {
+        const el = byId(id);
+        // textContent, not innerHTML: these carry hotel names and reasons from the database.
+        if (el) el.textContent = value == null ? '' : String(value);
+      }
+
+      function show(id, visible, mode) {
+        const el = byId(id);
+        if (el) el.style.display = visible ? (mode || 'block') : 'none';
       }
     }
   };
 
   // --------------------------------------------------------------- RefundForm
+
+  /** Refund statuses that are still being decided or paid, versus finished. */
+  const REFUND_OPEN = ['PENDING_REVIEW', 'APPROVED', 'PROCESSING'];
+
+  const REFUND_LABEL = {
+    PENDING_REVIEW: 'Menunggu peninjauan',
+    APPROVED: 'Disetujui',
+    PROCESSING: 'Sedang diproses',
+    COMPLETED: 'Selesai',
+    REJECTED: 'Ditolak',
+    FAILED: 'Gagal'
+  };
 
   S.RefundForm = {
     init: function (context) {
@@ -742,8 +848,12 @@
       ensureBanner(document.querySelector('.container') || document.body);
 
       const booking = context.booking;
+
+      // Reached without a booking, the screen shows what the user has already filed
+      // rather than refusing to render. Filing needs a booking; reviewing does not.
       if (!booking) {
-        fail('Pilih pemesanan yang ingin direfund dari halaman Riwayat Pemesanan.');
+        showSection('refund-status');
+        loadRefundStatus();
         return;
       }
 

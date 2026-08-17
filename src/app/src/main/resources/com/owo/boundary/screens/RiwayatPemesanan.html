@@ -379,21 +379,30 @@
 
         .filter-container {
             margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .filter-button {
+        .filter-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .filter-select {
             padding: 8px 16px;
             border: 1px solid #D9D9D9;
             background: white;
             border-radius: 6px;
             font-size: 14px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
         .filter-icon {
+            display: inline-block;
             width: 16px;
             height: 16px;
             background-image: url('../assets/Filter.png');
@@ -845,10 +854,19 @@
                 <div class="history-section">
                     <h2 class="section-title">Histori Pemesanan</h2>
 
-                    
                     <div class="filter-container">
-                        <button class="filter-button">
-                            <div class="filter-icon"></div>
+                        <label class="filter-label" for="historyFilter">
+                            <span class="filter-icon"></span>
+                            Saring status
+                        </label>
+                        <select class="filter-select" id="historyFilter">
+                            <option value="">Semua</option>
+                            <option value="CANCELLED">Dibatalkan</option>
+                            <option value="REFUND_IN_PROGRESS">Refund diproses</option>
+                            <option value="REFUNDED">Refund selesai</option>
+                        </select>
+                    </div>
+
                     <div id="historyList"></div>
                 </div>
             </section>
@@ -926,10 +944,10 @@
                     <div class="modal-divider"></div>
                     
                     <div class="modal-passenger-section">
-                        <h3 class="modal-section-title">Penumpang</h3>
+                        <h3 class="modal-section-title">Peserta</h3>
                         <div class="modal-passenger-item">
-                            <div class="modal-passenger-name">Owo</div>
-                            <div class="modal-seat-number">12A</div>
+                            <div class="modal-passenger-name" id="modal-passenger-name"></div>
+                            <div class="modal-seat-number" id="modal-passenger-count"></div>
                         </div>
                     </div>
                     
