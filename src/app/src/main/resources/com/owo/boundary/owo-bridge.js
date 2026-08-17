@@ -126,6 +126,10 @@
     getUserBookings: function () {
       return call('getUserBookings');
     },
+    /** Base, tax and total for a booking. Computed in Java, never in the page. */
+    quoteBooking: function (pemesananId) {
+      return call('quoteBooking', { pemesananId: pemesananId });
+    },
     confirmPayment: function (pemesananId) {
       return call('confirmPayment', { pemesananId: pemesananId });
     },

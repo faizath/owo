@@ -18,6 +18,15 @@ import java.util.List;
  */
 public class PemesananController {
 
+    /**
+     * Tax and fees, as a fraction of the amount the booking is for.
+     *
+     * <p>The payment screen invented this figure itself and rendered a total the server
+     * never saw, so the page and the system could disagree about what was being charged
+     * with nothing to detect it.
+     */
+    public static final double TARIF_PAJAK = 0.10;
+
     /** Raised when a request is refused for a business reason, with a user-safe message. */
     public static class PemesananException extends Exception {
         public PemesananException(String message) {
@@ -82,6 +91,29 @@ public class PemesananController {
 
     public List<Pemesanan> getPemesananByCustomerId(int customerId) throws SQLException {
         return PemesananDAO.getPemesananByCustomerId(customerId);
+    }
+
+    /** What a booking costs, itemised. */
+    public record Tagihan(double dasar, double pajak, double total) {
+    }
+
+    /**
+     * Prices a booking the caller owns.
+     *
+     * <p>Every figure is derived here from the stored ticket and the stored party size.
+     * Nothing is taken from the request, and nothing is left for the page to work out.
+     */
+    public Tagihan hitungTagihan(int pemesananId, int customerId)
+            throws PemesananException, SQLException {
+        Pemesanan pemesanan = getOwnedPemesanan(pemesananId, customerId);
+        Tiket tiket = pemesanan.getTiket();
+        if (tiket == null) {
+            throw new PemesananException("Tiket pemesanan tidak ditemukan.");
+        }
+
+        double dasar = tiket.hitungTotalHarga(pemesanan.getJumlahPeserta());
+        double pajak = Math.round(dasar * TARIF_PAJAK);
+        return new Tagihan(dasar, pajak, dasar + pajak);
     }
 
     /** Marks a booking paid. */

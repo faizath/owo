@@ -308,6 +308,32 @@ public class JavaScriptBridge {
         }));
     }
 
+    /**
+     * Prices a booking for the payment screen.
+     *
+     * <p>The page used to compute tax as ten per cent of the ticket price and render a
+     * total the server never saw — a business rule living in the boundary, where nothing
+     * could check it against what was actually charged.
+     */
+    public void quoteBooking(String argsJson, String callbackName) {
+        run(callbackName, () -> withSession(userId -> {
+            Map<String, Object> args = Json.parseObject(argsJson);
+            int pemesananId = Json.requireInt(args, "pemesananId");
+
+            try {
+                PemesananController.Tagihan tagihan =
+                        pemesananController.hitungTagihan(pemesananId, userId);
+                return success("Rincian biaya dihitung", Json.obj()
+                        .put("pemesananId", pemesananId)
+                        .put("dasar", tagihan.dasar())
+                        .put("pajak", tagihan.pajak())
+                        .put("total", tagihan.total()));
+            } catch (PemesananController.PemesananException e) {
+                return error(e.getMessage(), ERR_INVALID_INPUT);
+            }
+        }));
+    }
+
     /** Marks a booking paid. The transaction reference is generated here, not by the client. */
     public void confirmPayment(String argsJson, String callbackName) {
         run(callbackName, () -> withSession(userId -> {

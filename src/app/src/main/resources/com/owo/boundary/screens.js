@@ -506,7 +506,6 @@
       }
 
       const tiket = booking.tiket || {};
-      const price = Number(tiket.price) || 0;
 
       // Guest details come from the session rather than being asked for again: the
       // booking is made by the signed-in account and nothing stores a separate guest.
@@ -551,11 +550,25 @@
           + '</div>';
       }
 
-      // Every figure comes from the ticket record rather than being invented here.
-      const tax = Math.round(price * 0.1);
-      if (byId('base-price')) byId('base-price').textContent = window.App.formatRupiah(price);
-      if (byId('taxes-fees')) byId('taxes-fees').textContent = window.App.formatRupiah(tax);
-      if (byId('total-price')) byId('total-price').textContent = window.App.formatRupiah(price + tax);
+      // Every figure is asked for rather than worked out here. The page used to invent
+      // tax as ten per cent of the ticket price and render a total the server never saw,
+      // so nothing could tell whether the amount shown matched the amount charged.
+      window.OwOAPI.quoteBooking(booking.id)
+        .then(function (tagihan) {
+          setMoney('base-price', tagihan.dasar);
+          setMoney('taxes-fees', tagihan.pajak);
+          setMoney('total-price', tagihan.total);
+        })
+        .catch(function (err) {
+          // Paying without knowing the amount is worse than not being able to pay.
+          busy(payButton, true, 'Biaya tidak tersedia');
+          fail(err.message);
+        });
+
+      function setMoney(id, value) {
+        if (byId(id)) byId(id).textContent = window.App.formatRupiah(value);
+      }
+
       if (byId('checkin-date')) byId('checkin-date').textContent = window.App.formatDate(tiket.checkin);
       if (byId('checkout-date')) byId('checkout-date').textContent = window.App.formatDate(tiket.checkout);
 

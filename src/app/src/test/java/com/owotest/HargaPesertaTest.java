@@ -70,6 +70,30 @@ class HargaPesertaTest {
     }
 
     @Test
+    void theBillIsItemisedInJavaRatherThanInThePage() throws Exception {
+        TiketPesawat flight = Fixtures.flightSeating(30, 4);
+        Pemesanan booking = pemesanan.createPemesanan(customer.getID(), flight, 3);
+
+        PemesananController.Tagihan bill =
+                pemesanan.hitungTagihan(booking.getId(), customer.getID());
+
+        double dasar = flight.getHarga() * 3;
+        assertEquals(dasar, bill.dasar(), 0.01);
+        assertEquals(Math.round(dasar * PemesananController.TARIF_PAJAK), bill.pajak(), 0.01);
+        assertEquals(bill.dasar() + bill.pajak(), bill.total(), 0.01);
+    }
+
+    @Test
+    void anotherCustomersBookingHasNoPriceForYou() throws Exception {
+        Pemesanan booking = pemesanan.createPemesanan(
+                customer.getID(), Fixtures.flightSeating(30, 4), 2);
+        Akun stranger = Fixtures.customer();
+
+        assertThrows(PemesananController.PemesananException.class,
+                () -> pemesanan.hitungTagihan(booking.getId(), stranger.getID()));
+    }
+
+    @Test
     void aRefundOnAFlightReturnsWhatThePartyPaid() throws Exception {
         TiketPesawat flight = Fixtures.flightSeating(30, 4);
         Pemesanan booking = pemesanan.createPemesanan(customer.getID(), flight, 4);
