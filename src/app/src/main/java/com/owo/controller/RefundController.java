@@ -181,12 +181,21 @@ public class RefundController {
             throws PemesananController.PemesananException, SQLException {
         Refund refund = refundId == null ? null : RefundDAO.getRefundById(refundId);
         if (refund != null) {
-            // Throws with the same wording if the booking is not the caller's.
-            pemesananController.getOwnedPemesanan(refund.getPemesananID(), customerId);
-            return refund;
+            try {
+                pemesananController.getOwnedPemesanan(refund.getPemesananID(), customerId);
+                return refund;
+            } catch (PemesananController.PemesananException e) {
+                // Deliberately re-worded. Letting the booking-level message through would
+                // distinguish "no such refund" from "somebody else's refund", which is
+                // enough to enumerate valid ids.
+                throw new PemesananController.PemesananException(REFUND_TIDAK_DITEMUKAN);
+            }
         }
-        throw new PemesananController.PemesananException("Refund tidak ditemukan.");
+        throw new PemesananController.PemesananException(REFUND_TIDAK_DITEMUKAN);
     }
+
+    /** One wording for missing and for not-yours, so the two cannot be told apart. */
+    private static final String REFUND_TIDAK_DITEMUKAN = "Refund tidak ditemukan.";
 
     /** Approves by id, loading the current row rather than trusting a client-held copy. */
     public Refund setujuiRefund(String refundId)
