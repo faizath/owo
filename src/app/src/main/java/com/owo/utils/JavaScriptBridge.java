@@ -1,541 +1,370 @@
 package com.owo.utils;
 
-import com.owo.controller.*;
-import com.owo.entity.*;
-import com.owo.dao.*;
+import com.owo.controller.AuthController;
+import com.owo.dao.PemesananDAO;
+import com.owo.dao.TiketDAO;
+import com.owo.entity.Akun;
+import com.owo.entity.Pemesanan;
+import com.owo.entity.Tiket;
+import com.owo.entity.TiketHotel;
+import com.owo.entity.TiketPesawat;
+
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import netscape.javascript.JSObject;
-import java.sql.SQLException;
+
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import java.util.function.Consumer;
-
+/**
+ * The only surface JavaScript can call.
+ *
+ * <p><strong>Parameter types are constrained by the platform.</strong> WebView's JS→Java
+ * bridge marshals values with a fixed LiveConnect-style table: numbers become numerics,
+ * strings become {@code String}, and any JS object, array or function becomes
+ * {@link JSObject}. There is no conversion to {@code java.util.Map} and no SAM adaptation
+ * to {@code java.util.function.Consumer}. Every asynchronous method therefore takes
+ * {@code (String argsJson, String callbackName)} — a payload produced by
+ * {@code JSON.stringify}, and the name of a function on {@code window}.
+ * {@code JavaScriptBridgeContractTest} enforces this.
+ *
+ * <p><strong>The session lives here, not in the client.</strong> No method accepts a user
+ * id. Operations on user data derive identity from {@link #sessionUserId}, so a client
+ * cannot ask for another user's data.
+ */
 public class JavaScriptBridge {
-    private JSObject jsObject;
-    private AuthController authController;
-    private PemesananController pemesananController;
-    private RefundController refundController;
-    private CheckInController checkInController;
-    
-    // Storage for controllers that need initial data
-    private Map<Integer, Pemesanan> pemesananMap;
-    private Map<String, Refund> refundMap;
 
-    public JavaScriptBridge() {
-        this.pemesananMap = new HashMap<>();
-        this.refundMap = new HashMap<>();
-        this.authController = new AuthController();
-        this.pemesananController = new PemesananController();
-        this.refundController = new RefundController(pemesananMap, refundMap);
-        this.checkInController = new CheckInController();
-    }
-    
+    /** Stable, machine-readable error identifiers so the UI can branch without string matching. */
+    public static final String ERR_UNAUTHENTICATED = "ERR_UNAUTHENTICATED";
+    public static final String ERR_INVALID_INPUT = "ERR_INVALID_INPUT";
+    public static final String ERR_CREDENTIALS = "ERR_CREDENTIALS";
+    public static final String ERR_NOT_FOUND = "ERR_NOT_FOUND";
+    public static final String ERR_INTERNAL = "ERR_INTERNAL";
+
+    private JSObject jsObject;
+
+    /** Null when unauthenticated. The single source of truth for who is acting. */
+    private volatile Integer sessionUserId;
+    private volatile String sessionNama;
+    private volatile String sessionEmail;
+
+    /**
+     * Bounded so a burst of calls cannot spawn unbounded threads. Daemon threads, so a
+     * pending task never keeps the JVM alive after the window closes.
+     */
+    private final ExecutorService executor = Executors.newFixedThreadPool(4, new ThreadFactory() {
+        private final AtomicInteger counter = new AtomicInteger(1);
+
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(r, "owo-bridge-" + counter.getAndIncrement());
+            t.setDaemon(true);
+            return t;
+        }
+    });
+
     public void setJSObject(JSObject jsObject) {
         this.jsObject = jsObject;
     }
-    
-    // Authentication Methods
-    public void register(String nama, String email, String password, Consumer<String> callback) {
-        Task<String> task = new Task<String>() {
-            @Override
-            protected String call() throws Exception {
-                try {
-                    // Create account using DAO directly since controller might not have register method
-                    Akun akun = AkunDAO.createAkun(nama, email, password);
-                    
-                    String jsonResponse = String.format(
-                        "{\"success\": true, \"message\": \"Registration successful\", \"data\": \"{\\\"id\\\": %d, \\\"nama\\\": \\\"%s\\\", \\\"email\\\": \\\"%s\\\"}\"}",
-                        akun.getID(), akun.getNama(), akun.getEmail()
-                    );
-                    return jsonResponse;
-                } catch (Exception e) {
-                    return String.format("{\"success\": false, \"message\": \"Registration failed: %s\"}", e.getMessage());
-                }
-            }
-        };
 
-        task.setOnSucceeded(e -> {
-            if (callback != null) {
-                callback.accept(task.getValue());
-            }
-        });
-
-        task.setOnFailed(e -> {
-            String errorResponse = String.format("{\"success\": false, \"message\": \"Registration failed: %s\"}", 
-                task.getException().getMessage());
-            if (callback != null) {
-                callback.accept(errorResponse);
-            }
-        });
-
-        new Thread(task).start();
+    public void shutdown() {
+        executor.shutdownNow();
     }
-    
-    public void login(String email, String password, Consumer<String> callback) {
-        Task<String> task = new Task<String>() {
-            @Override
-            protected String call() throws Exception {
-                try {
-                    Akun akun = authController.login(email, password);
-                    if (akun != null) {
-                        String jsonResponse = String.format(
-                            "{\"success\": true, \"message\": \"Login successful\", \"data\": \"{\\\"id\\\": %d, \\\"nama\\\": \\\"%s\\\", \\\"email\\\": \\\"%s\\\"}\"}",
-                            akun.getID(), akun.getNama(), akun.getEmail()
-                        );
-                        return jsonResponse;
-                    } else {
-                        return "{\"success\": false, \"message\": \"Invalid credentials\"}";
-                    }
-                } catch (Exception e) {
-                    return String.format("{\"success\": false, \"message\": \"Login failed: %s\"}", e.getMessage());
-                }
-            }
-        };
 
-        task.setOnSucceeded(e -> {
-            if (callback != null) {
-                callback.accept(task.getValue());
+    // ------------------------------------------------------------ authentication
+
+    public void register(String argsJson, String callbackName) {
+        run(callbackName, () -> {
+            Map<String, Object> args = Json.parseObject(argsJson);
+            String nama = Json.optString(args, "nama", "");
+            String email = Json.optString(args, "email", "");
+            String password = Json.optString(args, "password", "");
+
+            try {
+                Akun akun = AuthController.register(nama, email, password);
+                startSession(akun);
+                return success("Registrasi berhasil", akunJson(akun));
+            } catch (AuthController.AuthException e) {
+                return error(e.getMessage(), ERR_INVALID_INPUT);
             }
         });
-
-        task.setOnFailed(e -> {
-            String errorResponse = String.format("{\"success\": false, \"message\": \"Login failed: %s\"}", 
-                task.getException().getMessage());
-            if (callback != null) {
-                callback.accept(errorResponse);
-            }
-        });
-
-        new Thread(task).start();
     }
-    
-    // Booking Methods
-    public void createHotelBooking(Map<String, Object> bookingData, Consumer<String> callback) {
-        Task<String> task = new Task<String>() {
-            @Override
-            protected String call() throws Exception {
-                try {
-                    int customerId = ((Number) bookingData.get("customerId")).intValue();
-                    String hotelName = (String) bookingData.get("hotelName");
-                    String checkin = (String) bookingData.get("checkin");
-                    String checkout = (String) bookingData.get("checkout");
-                    int guests = ((Number) bookingData.get("guests")).intValue();
-                    int rooms = ((Number) bookingData.get("rooms")).intValue();
-                    double price = ((Number) bookingData.get("price")).doubleValue();
-                    String roomType = (String) bookingData.getOrDefault("roomType", "Standard Room");
-                    String address = (String) bookingData.getOrDefault("address", "");
 
-                    // Parse dates
-                    LocalDate checkinDate = LocalDate.parse(checkin);
-                    LocalDate checkoutDate = LocalDate.parse(checkout);
+    public void login(String argsJson, String callbackName) {
+        run(callbackName, () -> {
+            Map<String, Object> args = Json.parseObject(argsJson);
+            String email = Json.optString(args, "email", "");
+            String password = Json.optString(args, "password", "");
 
-                    // Create hotel ticket
-                    TiketHotel tiketHotel = TiketDAO.createTiketHotel((float) price, true, checkinDate, checkoutDate, hotelName, "101", address);
-
-                    // Create booking
-                    Pemesanan pemesanan = PemesananDAO.createPemesanan(customerId, tiketHotel);
-                    
-                    // Store in map for controller
-                    pemesananMap.put(pemesanan.getId(), pemesanan);
-
-                    String jsonResponse = String.format(
-                        "{\"success\": true, \"message\": \"Hotel booking created successfully\", \"data\": \"{\\\"id\\\": %d, \\\"customerId\\\": \\\"%s\\\", \\\"tiketId\\\": %d, \\\"hotelName\\\": \\\"%s\\\", \\\"checkin\\\": \\\"%s\\\", \\\"checkout\\\": \\\"%s\\\", \\\"transactionId\\\": \\\"TXN%d\\\"}\"}",
-                        pemesanan.getId(), pemesanan.getCustomerId(), tiketHotel.getId(), hotelName, checkin, checkout, pemesanan.getId()
-                    );
-                    return jsonResponse;
-                } catch (Exception e) {
-                    return String.format("{\"success\": false, \"message\": \"Hotel booking failed: %s\"}", e.getMessage());
-                }
-            }
-        };
-
-        task.setOnSucceeded(e -> {
-            if (callback != null) {
-                callback.accept(task.getValue());
+            try {
+                Akun akun = AuthController.login(email, password);
+                startSession(akun);
+                return success("Login berhasil", akunJson(akun));
+            } catch (AuthController.AuthException e) {
+                return error(e.getMessage(), ERR_CREDENTIALS);
             }
         });
-
-        task.setOnFailed(e -> {
-            String errorResponse = String.format("{\"success\": false, \"message\": \"Hotel booking failed: %s\"}", 
-                task.getException().getMessage());
-            if (callback != null) {
-                callback.accept(errorResponse);
-            }
-        });
-
-        new Thread(task).start();
     }
-    
-    public void createFlightBooking(Map<String, Object> bookingData, Consumer<String> callback) {
-        Task<String> task = new Task<String>() {
-            @Override
-            protected String call() throws Exception {
-                try {
-                    int customerId = ((Number) bookingData.get("customerId")).intValue();
-                    String flightNumber = (String) bookingData.get("flightNumber");
-                    String origin = (String) bookingData.get("origin");
-                    String destination = (String) bookingData.get("destination");
-                    String maskapai = (String) bookingData.get("maskapai");
-                    String kelas = (String) bookingData.get("kelas");
-                    String departureStr = (String) bookingData.get("departure");
-                    double price = ((Number) bookingData.get("price")).doubleValue();
-                    int passengers = ((Number) bookingData.get("passengers")).intValue();
 
-                    // Parse departure time
-                    LocalDateTime departure = LocalDateTime.parse(departureStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-
-                    // Create flight ticket
-                    TiketPesawat tiketPesawat = TiketDAO.createTiketPesawat((float) price, true, flightNumber, origin, destination, maskapai, kelas, departure);
-
-                    // Create booking
-                    Pemesanan pemesanan = PemesananDAO.createPemesanan(customerId, tiketPesawat);
-                    
-                    // Store in map for controller
-                    pemesananMap.put(pemesanan.getId(), pemesanan);
-
-                    String jsonResponse = String.format(
-                        "{\"success\": true, \"message\": \"Flight booking created successfully\", \"data\": \"{\\\"id\\\": %d, \\\"customerId\\\": \\\"%s\\\", \\\"tiketId\\\": %d, \\\"flightNumber\\\": \\\"%s\\\", \\\"origin\\\": \\\"%s\\\", \\\"destination\\\": \\\"%s\\\", \\\"departure\\\": \\\"%s\\\", \\\"transactionId\\\": \\\"TXN%d\\\"}\"}",
-                        pemesanan.getId(), pemesanan.getCustomerId(), tiketPesawat.getId(), flightNumber, origin, destination, departureStr, pemesanan.getId()
-                    );
-                    return jsonResponse;
-                } catch (Exception e) {
-                    return String.format("{\"success\": false, \"message\": \"Flight booking failed: %s\"}", e.getMessage());
-                }
-            }
-        };
-
-        task.setOnSucceeded(e -> {
-            if (callback != null) {
-                callback.accept(task.getValue());
-            }
-        });
-
-        task.setOnFailed(e -> {
-            String errorResponse = String.format("{\"success\": false, \"message\": \"Flight booking failed: %s\"}", 
-                task.getException().getMessage());
-            if (callback != null) {
-                callback.accept(errorResponse);
-            }
-        });
-
-        new Thread(task).start();
+    public void logout(String callbackName) {
+        endSession();
+        respond(callbackName, success("Logout berhasil", null));
     }
-    
-    // Booking Management Methods
-    public void getUserBookings(int userId, Consumer<String> callback) {
-        Task<String> task = new Task<String>() {
-            @Override
-            protected String call() throws Exception {
-                try {
-                    List<Pemesanan> bookings = PemesananDAO.getPemesananByCustomerId(userId);
-                    
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("[");
-                    for (int i = 0; i < bookings.size(); i++) {
-                        if (i > 0) sb.append(",");
-                        Pemesanan p = bookings.get(i);
-                        sb.append("{");
-                        sb.append(String.format("\"id\": %d,", p.getId()));
-                        sb.append(String.format("\"customerId\": \"%s\",", p.getCustomerId()));
-                        sb.append(String.format("\"status\": \"%s\",", p.getStatus()));
-                        sb.append(String.format("\"tanggalPesan\": \"%s\",", p.getTanggalPesan()));
-                        sb.append(String.format("\"transactionId\": \"TXN%d\",", p.getId()));
-                        sb.append(String.format("\"tiketId\": %d", p.getTiket().getId()));
-                        sb.append("}");
-                    }
-                    sb.append("]");
 
-                    String jsonResponse = String.format(
-                        "{\"success\": true, \"message\": \"Bookings retrieved successfully\", \"data\": \"%s\"}",
-                        sb.toString().replace("\"", "\\\"")
-                    );
-                    return jsonResponse;
-                } catch (Exception e) {
-                    return String.format("{\"success\": false, \"message\": \"Failed to retrieve bookings: %s\"}", e.getMessage());
-                }
-            }
-        };
-
-        task.setOnSucceeded(e -> {
-            if (callback != null) {
-                callback.accept(task.getValue());
-            }
-        });
-
-        task.setOnFailed(e -> {
-            String errorResponse = String.format("{\"success\": false, \"message\": \"Failed to retrieve bookings: %s\"}", 
-                task.getException().getMessage());
-            if (callback != null) {
-                callback.accept(errorResponse);
-            }
-        });
-
-        new Thread(task).start();
-    }
-    
-    // Refund Methods
-    public void createRefund(Map<String, Object> refundData, Consumer<String> callback) {
-        Task<String> task = new Task<String>() {
-            @Override
-            protected String call() throws Exception {
-                try {
-                    String refundId = (String) refundData.get("refundId");
-                    int pemesananId = ((Number) refundData.get("pemesananId")).intValue();
-                    String alasan = (String) refundData.get("alasan");
-                    double jumlahRefund = ((Number) refundData.get("jumlahRefund")).doubleValue();
-
-                    Refund refund = RefundDAO.createRefund(refundId, pemesananId, alasan, jumlahRefund);
-                    
-                    // Store in map for controller
-                    refundMap.put(refund.getId(), refund);
-
-                    String jsonResponse = String.format(
-                        "{\"success\": true, \"message\": \"Refund created successfully\", \"data\": \"{\\\"id\\\": \\\"%s\\\", \\\"pemesananId\\\": %d, \\\"alasan\\\": \\\"%s\\\", \\\"jumlahRefund\\\": %.2f, \\\"status\\\": \\\"%s\\\"}\"}",
-                        refund.getId(), pemesananId, alasan, jumlahRefund, refund.getStatus()
-                    );
-                    return jsonResponse;
-                } catch (Exception e) {
-                    return String.format("{\"success\": false, \"message\": \"Refund creation failed: %s\"}", e.getMessage());
-                }
-            }
-        };
-
-        task.setOnSucceeded(e -> {
-            if (callback != null) {
-                callback.accept(task.getValue());
-            }
-        });
-
-        task.setOnFailed(e -> {
-            String errorResponse = String.format("{\"success\": false, \"message\": \"Refund creation failed: %s\"}", 
-                task.getException().getMessage());
-            if (callback != null) {
-                callback.accept(errorResponse);
-            }
-        });
-
-        new Thread(task).start();
-    }
-    
-    // Check-in Methods
-    public void performCheckIn(Map<String, Object> checkInData, Consumer<String> callback) {
-        Task<String> task = new Task<String>() {
-            @Override
-            protected String call() throws Exception {
-                try {
-                    int pemesananId = ((Number) checkInData.get("pemesananId")).intValue();
-
-                    // Simulate check-in process by updating booking status
-                    PemesananDAO.updateStatus(pemesananId, "CHECKED_IN");
-
-                    String jsonResponse = String.format(
-                        "{\"success\": true, \"message\": \"Check-in successful\", \"data\": \"{\\\"pemesananId\\\": %d, \\\"status\\\": \\\"CHECKED_IN\\\", \\\"checkInTime\\\": \\\"%s\\\"}\"}",
-                        pemesananId, LocalDateTime.now().toString()
-                    );
-                    return jsonResponse;
-                } catch (Exception e) {
-                    return String.format("{\"success\": false, \"message\": \"Check-in failed: %s\"}", e.getMessage());
-                }
-            }
-        };
-
-        task.setOnSucceeded(e -> {
-            if (callback != null) {
-                callback.accept(task.getValue());
-            }
-        });
-
-        task.setOnFailed(e -> {
-            String errorResponse = String.format("{\"success\": false, \"message\": \"Check-in failed: %s\"}", 
-                task.getException().getMessage());
-            if (callback != null) {
-                callback.accept(errorResponse);
-            }
-        });
-
-        new Thread(task).start();
-    }
-    
-    // Search Methods
-    public void searchFlights(Map<String, Object> searchCriteria, Consumer<String> callback) {
-        Task<String> task = new Task<String>() {
-            @Override
-            protected String call() throws Exception {
-                try {
-                    String origin = (String) searchCriteria.get("origin");
-                    String destination = (String) searchCriteria.get("destination");
-                    String kelas = (String) searchCriteria.get("kelas");
-                    int passengers = searchCriteria.containsKey("passengers") ? 
-                        ((Number) searchCriteria.get("passengers")).intValue() : 0;
-
-                    List<TiketPesawat> flights = TiketDAO.searchTiketPesawat(origin, destination, kelas, passengers, true);
-
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("[");
-                    for (int i = 0; i < flights.size(); i++) {
-                        if (i > 0) sb.append(",");
-                        TiketPesawat flight = flights.get(i);
-                        sb.append("{");
-                        sb.append(String.format("\"id\": %d,", flight.getId()));
-                        sb.append(String.format("\"flightNumber\": \"%s\",", flight.getFlightNumber()));
-                        sb.append(String.format("\"origin\": \"%s\",", flight.getOrigin()));
-                        sb.append(String.format("\"destination\": \"%s\",", flight.getDestination()));
-                        sb.append(String.format("\"maskapai\": \"%s\",", flight.getMaskapai()));
-                        sb.append(String.format("\"kelas\": \"%s\",", flight.getKelas()));
-                        sb.append(String.format("\"price\": %.2f,", flight.getHarga()));
-                        sb.append(String.format("\"departure\": \"%s\"", flight.getWaktuKeberangkatan()));
-                        sb.append("}");
-                    }
-                    sb.append("]");
-
-                    String jsonResponse = String.format(
-                        "{\"success\": true, \"message\": \"Flights found\", \"data\": %s}",
-                        sb.toString()
-                    );
-                    return jsonResponse;
-                } catch (Exception e) {
-                    return String.format("{\"success\": false, \"message\": \"Flight search failed: %s\"}", e.getMessage());
-                }
-            }
-        };
-
-        task.setOnSucceeded(e -> {
-            if (callback != null) {
-                callback.accept(task.getValue());
-            }
-        });
-
-        task.setOnFailed(e -> {
-            String errorResponse = String.format("{\"success\": false, \"message\": \"Flight search failed: %s\"}", 
-                task.getException().getMessage());
-            if (callback != null) {
-                callback.accept(errorResponse);
-            }
-        });
-
-        new Thread(task).start();
-    }
-    
-    public void searchHotels(Map<String, Object> searchCriteria, Consumer<String> callback) {
-        Task<String> task = new Task<String>() {
-            @Override
-            protected String call() throws Exception {
-                try {
-                    String location = (String) searchCriteria.get("location");
-                    String checkin = (String) searchCriteria.get("checkin");
-                    String checkout = (String) searchCriteria.get("checkout");
-                    String hotelName = (String) searchCriteria.get("hotelName");
-                    int guests = searchCriteria.containsKey("guests") ? 
-                        ((Number) searchCriteria.get("guests")).intValue() : 0;
-
-                    LocalDate checkinDate = checkin != null ? LocalDate.parse(checkin) : null;
-                    LocalDate checkoutDate = checkout != null ? LocalDate.parse(checkout) : null;
-
-                    List<TiketHotel> hotels = TiketDAO.searchTiketHotel(location, checkinDate, checkoutDate, hotelName, guests, true);
-
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("[");
-                    for (int i = 0; i < hotels.size(); i++) {
-                        if (i > 0) sb.append(",");
-                        TiketHotel hotel = hotels.get(i);
-                        sb.append("{");
-                        sb.append(String.format("\"id\": %d,", hotel.getId()));
-                        sb.append(String.format("\"hotelName\": \"%s\",", hotel.getHotelName()));
-                        sb.append(String.format("\"address\": \"%s\",", hotel.getAddress()));
-                        sb.append(String.format("\"roomNumber\": \"%s\",", hotel.getRoomNumber()));
-                        sb.append(String.format("\"price\": %.2f,", hotel.getHarga()));
-                        sb.append(String.format("\"checkin\": \"%s\",", hotel.getCheckIn()));
-                        sb.append(String.format("\"checkout\": \"%s\"", hotel.getCheckOut()));
-                        sb.append("}");
-                    }
-                    sb.append("]");
-
-                    String jsonResponse = String.format(
-                        "{\"success\": true, \"message\": \"Hotels found\", \"data\": %s}",
-                        sb.toString()
-                    );
-                    return jsonResponse;
-                } catch (Exception e) {
-                    return String.format("{\"success\": false, \"message\": \"Hotel search failed: %s\"}", e.getMessage());
-                }
-            }
-        };
-
-        task.setOnSucceeded(e -> {
-            if (callback != null) {
-                callback.accept(task.getValue());
-            }
-        });
-
-        task.setOnFailed(e -> {
-            String errorResponse = String.format("{\"success\": false, \"message\": \"Hotel search failed: %s\"}", 
-                task.getException().getMessage());
-            if (callback != null) {
-                callback.accept(errorResponse);
-            }
-        });
-
-        new Thread(task).start();
-    }
-    
-    // Utility Methods
-    private String getValue(String[] parts, String key) {
-        for (String part : parts) {
-            if (part.startsWith(key + "=")) {
-                return part.substring(key.length() + 1);
-            }
+    /** Lets the UI restore itself after a reload without re-authenticating. */
+    public String getSession() {
+        Integer userId = sessionUserId;
+        if (userId == null) {
+            return error("Belum masuk", ERR_UNAUTHENTICATED);
         }
-        return "";
+        return success("Sesi aktif", Json.obj()
+                .put("id", userId)
+                .put("nama", sessionNama)
+                .put("email", sessionEmail));
     }
-    
-    private String createSuccessResponse(String message, String data) {
-        return String.format("{\"success\": true, \"message\": \"%s\", \"data\": %s}", message, data);
+
+    private void startSession(Akun akun) {
+        sessionUserId = akun.getID();
+        sessionNama = akun.getNama();
+        sessionEmail = akun.getEmail();
+        NotifikasiHelper.initialize(akun.getID());
     }
-    
-    private String createErrorResponse(String message) {
-        return String.format("{\"success\": false, \"message\": \"%s\", \"data\": null}", message);
+
+    private void endSession() {
+        sessionUserId = null;
+        sessionNama = null;
+        sessionEmail = null;
+        NotifikasiHelper.stop();
     }
-    
-    private void executeAsyncTask(Task<String> task, String callback) {
-        task.setOnSucceeded(e -> {
-            Platform.runLater(() -> {
-                if (jsObject != null && callback != null && !callback.isEmpty()) {
-                    jsObject.call(callback, task.getValue());
-                }
-            });
+
+    private Json.Obj akunJson(Akun akun) {
+        return Json.obj()
+                .put("id", akun.getID())
+                .put("nama", akun.getNama())
+                .put("email", akun.getEmail());
+    }
+
+    // -------------------------------------------------------------------- search
+
+    public void searchFlights(String argsJson, String callbackName) {
+        run(callbackName, () -> {
+            Map<String, Object> args = Json.parseObject(argsJson);
+            String origin = Json.optString(args, "origin", null);
+            String destination = Json.optString(args, "destination", null);
+            String kelas = Json.optString(args, "kelas", null);
+            int passengers = Json.optInt(args, "passengers", 0);
+
+            List<TiketPesawat> flights =
+                    TiketDAO.searchTiketPesawat(origin, destination, kelas, passengers, true);
+
+            Json.Arr items = Json.arr();
+            for (TiketPesawat flight : flights) {
+                items.add(flightJson(flight));
+            }
+            return success(flights.isEmpty() ? "Tidak ada penerbangan yang cocok" : "Penerbangan ditemukan",
+                    items);
         });
-        
-        task.setOnFailed(e -> {
-            Platform.runLater(() -> {
-                if (jsObject != null && callback != null && !callback.isEmpty()) {
-                    String errorResponse = createErrorResponse("Operation failed: " + task.getException().getMessage());
-                    jsObject.call(callback, errorResponse);
-                }
-            });
-        });
-        
-        Thread thread = new Thread(task);
-        thread.setDaemon(true);
-        thread.start();
     }
-    
-    // Direct methods for immediate operations (non-async)
+
+    public void searchHotels(String argsJson, String callbackName) {
+        run(callbackName, () -> {
+            Map<String, Object> args = Json.parseObject(argsJson);
+            String location = Json.optString(args, "location", null);
+            String hotelName = Json.optString(args, "hotelName", null);
+            int guests = Json.optInt(args, "guests", 0);
+            LocalDate checkIn = optDate(args, "checkin");
+            LocalDate checkOut = optDate(args, "checkout");
+
+            List<TiketHotel> hotels =
+                    TiketDAO.searchTiketHotel(location, checkIn, checkOut, hotelName, guests, true);
+
+            Json.Arr items = Json.arr();
+            for (TiketHotel hotel : hotels) {
+                items.add(hotelJson(hotel));
+            }
+            return success(hotels.isEmpty() ? "Tidak ada hotel yang cocok" : "Hotel ditemukan", items);
+        });
+    }
+
+    private static LocalDate optDate(Map<String, Object> args, String key) {
+        String raw = Json.optString(args, key, null);
+        if (raw == null) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(raw);
+        } catch (Exception e) {
+            throw new Json.JsonException("Field '" + key + "' is not an ISO date: " + raw);
+        }
+    }
+
+    private Json.Obj flightJson(TiketPesawat flight) {
+        return Json.obj()
+                .put("id", flight.getId())
+                .put("flightNumber", flight.getFlightNumber())
+                .put("origin", flight.getOrigin())
+                .put("destination", flight.getDestination())
+                .put("maskapai", flight.getMaskapai())
+                .put("kelas", flight.getKelas())
+                .put("price", (double) flight.getHarga())
+                .put("departure", SqlDates.format(flight.getWaktuKeberangkatan()))
+                .put("tersedia", flight.isTersedia());
+    }
+
+    private Json.Obj hotelJson(TiketHotel hotel) {
+        return Json.obj()
+                .put("id", hotel.getId())
+                .put("hotelName", hotel.getHotelName())
+                .put("address", hotel.getAddress())
+                .put("roomNumber", hotel.getRoomNumber())
+                .put("price", (double) hotel.getHarga())
+                .put("checkin", SqlDates.format(hotel.getCheckIn()))
+                .put("checkout", SqlDates.format(hotel.getCheckOut()))
+                .put("tersedia", hotel.isTersedia());
+    }
+
+    // ------------------------------------------------------------------ bookings
+
+    /** Books an existing ticket by id. The client never supplies a price or a user id. */
+    public void createBooking(String argsJson, String callbackName) {
+        run(callbackName, () -> {
+            Integer userId = sessionUserId;
+            if (userId == null) {
+                return error("Silakan masuk terlebih dahulu", ERR_UNAUTHENTICATED);
+            }
+
+            Map<String, Object> args = Json.parseObject(argsJson);
+            int tiketId = Json.requireInt(args, "tiketId");
+
+            Tiket tiket = TiketDAO.getTiketById(tiketId);
+            if (tiket == null) {
+                return error("Tiket tidak ditemukan", ERR_NOT_FOUND);
+            }
+
+            Pemesanan pemesanan = PemesananDAO.createPemesanan(userId, tiket);
+            return success("Pemesanan dibuat", bookingJson(pemesanan));
+        });
+    }
+
+    public void getUserBookings(String callbackName) {
+        run(callbackName, () -> {
+            Integer userId = sessionUserId;
+            if (userId == null) {
+                return error("Silakan masuk terlebih dahulu", ERR_UNAUTHENTICATED);
+            }
+
+            List<Pemesanan> bookings = PemesananDAO.getPemesananByCustomerId(userId);
+            Json.Arr items = Json.arr();
+            for (Pemesanan booking : bookings) {
+                items.add(bookingJson(booking));
+            }
+            return success("Riwayat pemesanan dimuat", items);
+        });
+    }
+
+    private Json.Obj bookingJson(Pemesanan pemesanan) {
+        Json.Obj json = Json.obj()
+                .put("id", pemesanan.getId())
+                .put("status", pemesanan.getStatus())
+                .put("tanggalPesan", SqlDates.format(pemesanan.getTanggalPesan()))
+                .put("transactionId", "TXN" + pemesanan.getId());
+
+        Tiket tiket = pemesanan.getTiket();
+        if (tiket instanceof TiketPesawat flight) {
+            json.put("tipe", "PESAWAT").put("tiket", flightJson(flight));
+        } else if (tiket instanceof TiketHotel hotel) {
+            json.put("tipe", "HOTEL").put("tiket", hotelJson(hotel));
+        } else {
+            json.put("tipe", "UNKNOWN").putNull("tiket");
+        }
+        return json;
+    }
+
+    // ------------------------------------------------------------------- utility
+
     public String getVersion() {
         return "OwO Booking System v1.0";
     }
-    
+
     public void showNotification(String message) {
         Platform.runLater(() -> {
             if (jsObject != null) {
+                // Passed as an argument, never concatenated into JavaScript source.
                 jsObject.call("showNotification", message);
             }
         });
     }
-} 
+
+    // ------------------------------------------------------------------ plumbing
+
+    /** The body of a bridge operation: runs off the FX thread, returns a JSON response. */
+    @FunctionalInterface
+    interface Operation {
+        String execute() throws Exception;
+    }
+
+    /**
+     * Runs {@code operation} on the bridge executor and delivers its result to
+     * {@code callbackName} on the FX thread.
+     */
+    private void run(String callbackName, Operation operation) {
+        Task<String> task = new Task<>() {
+            @Override
+            protected String call() {
+                try {
+                    return operation.execute();
+                } catch (Json.JsonException e) {
+                    return error(e.getMessage(), ERR_INVALID_INPUT);
+                } catch (Exception e) {
+                    // The exception text may name tables and columns; log it, do not ship it.
+                    System.err.println("Bridge operation failed: " + e);
+                    return error("Terjadi kesalahan pada sistem", ERR_INTERNAL);
+                }
+            }
+        };
+        executeAsyncTask(task, callbackName);
+    }
+
+    private void executeAsyncTask(Task<String> task, String callbackName) {
+        task.setOnSucceeded(e -> respond(callbackName, task.getValue()));
+        task.setOnFailed(e -> {
+            System.err.println("Bridge task failed: " + task.getException());
+            respond(callbackName, error("Terjadi kesalahan pada sistem", ERR_INTERNAL));
+        });
+        executor.execute(task);
+    }
+
+    private void respond(String callbackName, String responseJson) {
+        Platform.runLater(() -> {
+            if (jsObject != null && callbackName != null && !callbackName.isEmpty()) {
+                jsObject.call(callbackName, responseJson);
+            }
+        });
+    }
+
+    private static String success(String message, Object data) {
+        Json.Obj response = Json.obj().put("success", true).put("message", message);
+        if (data instanceof Json.Obj o) {
+            response.put("data", o);
+        } else if (data instanceof Json.Arr a) {
+            response.put("data", a);
+        } else {
+            response.putNull("data");
+        }
+        return response.toString();
+    }
+
+    private static String error(String message, String code) {
+        return Json.obj()
+                .put("success", false)
+                .put("message", message)
+                .putNull("data")
+                .put("code", code)
+                .toString();
+    }
+}
