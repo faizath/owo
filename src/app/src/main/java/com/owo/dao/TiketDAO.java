@@ -15,6 +15,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
 
+/**
+ * Ticket persistence and search.
+ *
+ * <p>Search takes no passenger or guest count. The schema models one ticket as one
+ * bookable unit and has no capacity column, so those arguments used to be accepted and
+ * then silently dropped into an empty {@code if} block — a filter the caller believed was
+ * applied. The UI still asks how many people are travelling, for the booking summary; it
+ * is not a search filter until capacity is modelled.
+ */
 public class TiketDAO {
     public static TiketPesawat createTiketPesawat(float harga, boolean tersedia, String flightNumber,
             String origin, String destination, String maskapai, String kelas, LocalDateTime waktuKeberangkatan)
@@ -197,12 +206,11 @@ public class TiketDAO {
      * @param origin Flight origin (null to ignore)
      * @param destination Flight destination (null to ignore)
      * @param kelas Flight class (null to ignore)
-     * @param passengers Number of passengers (0 to ignore)
      * @param tersediaOnly If true, only return available tickets
      * @return List of matching flight tickets
      */
-    public static List<TiketPesawat> searchTiketPesawat(String origin, String destination, 
-            String kelas, int passengers, boolean tersediaOnly) throws SQLException {
+    public static List<TiketPesawat> searchTiketPesawat(String origin, String destination,
+            String kelas, boolean tersediaOnly) throws SQLException {
         List<TiketPesawat> results = new ArrayList<>();
         
         // Build dynamic SQL query
@@ -233,12 +241,6 @@ public class TiketDAO {
             sqlBuilder.append(" AND t.tersedia = 1");
         }
         
-        // For passengers, we currently don't have seat capacity in the schema
-        // This is a placeholder for future implementation
-        if (passengers > 0) {
-            // Could add seat availability check here in the future
-            // For now, we'll just include it as a comment for extensibility
-        }
         
         sqlBuilder.append(" ORDER BY tp.waktu_keberangkatan ASC, t.harga ASC");
         
@@ -279,12 +281,11 @@ public class TiketDAO {
      * @param checkIn Check-in date (null to ignore)
      * @param checkOut Check-out date (null to ignore)
      * @param hotelName Hotel name (null to ignore)
-     * @param guests Number of guests (0 to ignore)
      * @param tersediaOnly If true, only return available tickets
      * @return List of matching hotel tickets
      */
-    public static List<TiketHotel> searchTiketHotel(String location, LocalDate checkIn, 
-            LocalDate checkOut, String hotelName, int guests, boolean tersediaOnly) throws SQLException {
+    public static List<TiketHotel> searchTiketHotel(String location, LocalDate checkIn,
+            LocalDate checkOut, String hotelName, boolean tersediaOnly) throws SQLException {
         List<TiketHotel> results = new ArrayList<>();
         
         // Build dynamic SQL query
@@ -321,12 +322,6 @@ public class TiketDAO {
             sqlBuilder.append(" AND t.tersedia = 1");
         }
         
-        // For guests, we currently don't have room capacity in the schema
-        // This is a placeholder for future implementation
-        if (guests > 0) {
-            // Could add room capacity check here in the future
-            // For now, we'll just include it as a comment for extensibility
-        }
         
         sqlBuilder.append(" ORDER BY th.check_in ASC, t.harga ASC");
         
@@ -363,13 +358,13 @@ public class TiketDAO {
      * Get all available flight tickets (shortcut method)
      */
     public static List<TiketPesawat> getAllAvailableFlights() throws SQLException {
-        return searchTiketPesawat(null, null, null, 0, true);
+        return searchTiketPesawat(null, null, null, true);
     }
 
     /**
      * Get all available hotel tickets (shortcut method)
      */
     public static List<TiketHotel> getAllAvailableHotels() throws SQLException {
-        return searchTiketHotel(null, null, null, null, 0, true);
+        return searchTiketHotel(null, null, null, null, true);
     }
 } 

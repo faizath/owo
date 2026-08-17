@@ -170,10 +170,9 @@ public class JavaScriptBridge {
             String origin = Json.optString(args, "origin", null);
             String destination = Json.optString(args, "destination", null);
             String kelas = Json.optString(args, "kelas", null);
-            int passengers = Json.optInt(args, "passengers", 0);
 
             List<TiketPesawat> flights =
-                    TiketDAO.searchTiketPesawat(origin, destination, kelas, passengers, true);
+                    TiketDAO.searchTiketPesawat(origin, destination, kelas, true);
 
             Json.Arr items = Json.arr();
             for (TiketPesawat flight : flights) {
@@ -189,12 +188,11 @@ public class JavaScriptBridge {
             Map<String, Object> args = Json.parseObject(argsJson);
             String location = Json.optString(args, "location", null);
             String hotelName = Json.optString(args, "hotelName", null);
-            int guests = Json.optInt(args, "guests", 0);
             LocalDate checkIn = optDate(args, "checkin");
             LocalDate checkOut = optDate(args, "checkout");
 
             List<TiketHotel> hotels =
-                    TiketDAO.searchTiketHotel(location, checkIn, checkOut, hotelName, guests, true);
+                    TiketDAO.searchTiketHotel(location, checkIn, checkOut, hotelName, true);
 
             Json.Arr items = Json.arr();
             for (TiketHotel hotel : hotels) {

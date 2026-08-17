@@ -71,7 +71,7 @@ class AcceptanceTest {
                 "Denpasar (DPS)", "Garuda Indonesia", "Bisnis", departure.plusHours(6));
 
         List<TiketPesawat> results = TiketDAO.searchTiketPesawat(
-                "Jakarta", "Denpasar", null, 1, true);
+                "Jakarta", "Denpasar", null, true);
         assertEquals(2, results.size());
 
         // 7. Select a specific flight, at its own price.

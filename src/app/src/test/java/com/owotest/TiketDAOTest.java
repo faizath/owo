@@ -46,7 +46,7 @@ class TiketDAOTest {
 
         // A stay of days 5-8 sits inside the listing's 3-13 window.
         List<TiketHotel> found = TiketDAO.searchTiketHotel(null,
-                LocalDate.now().plusDays(5), LocalDate.now().plusDays(8), null, 0, true);
+                LocalDate.now().plusDays(5), LocalDate.now().plusDays(8), null, true);
 
         assertEquals(1, found.size(), "a stay inside the listing window was not matched");
     }
@@ -59,7 +59,7 @@ class TiketDAOTest {
 
         // A stay of days 20-25 is entirely outside the listing's 3-6 window.
         List<TiketHotel> found = TiketDAO.searchTiketHotel(null,
-                LocalDate.now().plusDays(20), LocalDate.now().plusDays(25), null, 0, true);
+                LocalDate.now().plusDays(20), LocalDate.now().plusDays(25), null, true);
 
         assertTrue(found.isEmpty(), "a stay outside the listing window was matched");
     }
@@ -132,7 +132,7 @@ class TiketDAOTest {
         TiketDAO.createTiketPesawat(2_500_000f, true, "GA403", "Jakarta", "Denpasar",
                 "Garuda Indonesia", "Bisnis", departure);
 
-        List<TiketPesawat> bisnis = TiketDAO.searchTiketPesawat(null, null, "Bisnis", 0, true);
+        List<TiketPesawat> bisnis = TiketDAO.searchTiketPesawat(null, null, "Bisnis", true);
 
         assertEquals(1, bisnis.size());
         assertEquals("GA403", bisnis.get(0).getFlightNumber());

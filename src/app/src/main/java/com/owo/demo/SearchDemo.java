@@ -57,7 +57,7 @@ public class SearchDemo {
         
         // 2. Search flights by destination
         System.out.println("\n2. Flights to Bali:");
-        List<TiketPesawat> baliFlights = TiketDAO.searchTiketPesawat(null, "Bali", null, 0, true);
+        List<TiketPesawat> baliFlights = TiketDAO.searchTiketPesawat(null, "Bali", null, true);
         System.out.println("Found " + baliFlights.size() + " flights to Bali");
         for (TiketPesawat flight : baliFlights.subList(0, Math.min(3, baliFlights.size()))) {
             System.out.println("   • " + flight.getFlightNumber() + " - " + flight.getMaskapai() + 
@@ -67,7 +67,7 @@ public class SearchDemo {
         
         // 3. Search flights by origin and destination
         System.out.println("\n3. Flights from Jakarta to Surabaya:");
-        List<TiketPesawat> jakartaSurabaya = TiketDAO.searchTiketPesawat("Jakarta", "Surabaya", null, 0, true);
+        List<TiketPesawat> jakartaSurabaya = TiketDAO.searchTiketPesawat("Jakarta", "Surabaya", null, true);
         System.out.println("Found " + jakartaSurabaya.size() + " flights from Jakarta to Surabaya");
         for (TiketPesawat flight : jakartaSurabaya) {
             System.out.println("   • " + flight.getFlightNumber() + " - " + flight.getMaskapai() + 
@@ -76,7 +76,7 @@ public class SearchDemo {
         
         // 4. Search flights by class
         System.out.println("\n4. Business Class Flights:");
-        List<TiketPesawat> businessFlights = TiketDAO.searchTiketPesawat(null, null, "Bisnis", 0, true);
+        List<TiketPesawat> businessFlights = TiketDAO.searchTiketPesawat(null, null, "Bisnis", true);
         System.out.println("Found " + businessFlights.size() + " business class flights");
         for (TiketPesawat flight : businessFlights.subList(0, Math.min(3, businessFlights.size()))) {
             System.out.println("   • " + flight.getFlightNumber() + " - " + flight.getMaskapai() + 
@@ -86,7 +86,7 @@ public class SearchDemo {
         
         // 5. Search flights by airline (using destination filter with airline name)
         System.out.println("\n5. Garuda Indonesia Flights:");
-        List<TiketPesawat> garudaFlights = TiketDAO.searchTiketPesawat(null, null, null, 0, true);
+        List<TiketPesawat> garudaFlights = TiketDAO.searchTiketPesawat(null, null, null, true);
         int garudaCount = 0;
         for (TiketPesawat flight : garudaFlights) {
             if (flight.getMaskapai().toLowerCase().contains("garuda")) {
@@ -115,7 +115,7 @@ public class SearchDemo {
         
         // 2. Search hotels by location
         System.out.println("\n2. Hotels in Ubud:");
-        List<TiketHotel> ubudHotels = TiketDAO.searchTiketHotel("Ubud", null, null, null, 0, true);
+        List<TiketHotel> ubudHotels = TiketDAO.searchTiketHotel("Ubud", null, null, null, true);
         System.out.println("Found " + ubudHotels.size() + " hotels in Ubud");
         for (TiketHotel hotel : ubudHotels) {
             System.out.println("   • " + hotel.getHotelName() + " - Room " + hotel.getRoomNumber() + 
@@ -124,7 +124,7 @@ public class SearchDemo {
         
         // 3. Search hotels by name
         System.out.println("\n3. Hotels with 'Nandini' in name:");
-        List<TiketHotel> nandiniHotels = TiketDAO.searchTiketHotel(null, null, null, "Nandini", 0, true);
+        List<TiketHotel> nandiniHotels = TiketDAO.searchTiketHotel(null, null, null, "Nandini", true);
         System.out.println("Found " + nandiniHotels.size() + " hotels with 'Nandini' in name");
         for (TiketHotel hotel : nandiniHotels) {
             System.out.println("   • " + hotel.getHotelName() + " - Room " + hotel.getRoomNumber() + 
@@ -134,7 +134,7 @@ public class SearchDemo {
         // 4. Search hotels by date range
         LocalDate searchDate = LocalDate.now();
         System.out.println("\n4. Hotels available from " + searchDate + ":");
-        List<TiketHotel> dateFilteredHotels = TiketDAO.searchTiketHotel(null, searchDate, null, null, 0, true);
+        List<TiketHotel> dateFilteredHotels = TiketDAO.searchTiketHotel(null, searchDate, null, null, true);
         System.out.println("Found " + dateFilteredHotels.size() + " hotels available from " + searchDate);
         for (TiketHotel hotel : dateFilteredHotels) {
             System.out.println("   • " + hotel.getHotelName() + " - Check-in: " + hotel.getCheckIn() + 
@@ -143,7 +143,7 @@ public class SearchDemo {
         
         // 5. Complex search: Hotels in Bali with specific criteria
         System.out.println("\n5. Hotels in Bali (complex search):");
-        List<TiketHotel> baliHotels = TiketDAO.searchTiketHotel("Bali", null, null, null, 0, true);
+        List<TiketHotel> baliHotels = TiketDAO.searchTiketHotel("Bali", null, null, null, true);
         System.out.println("Found " + baliHotels.size() + " hotels in Bali");
         for (TiketHotel hotel : baliHotels) {
             System.out.println("   • " + hotel.getHotelName() + " - Room " + hotel.getRoomNumber() + 
