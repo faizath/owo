@@ -100,6 +100,15 @@
         });
       });
 
+    // The header greeting was the literal text "Hi, Owo!" on every screen, so it read as
+    // a signed-in name without ever being one.
+    const session = window.App.session;
+    if (session) {
+      document.querySelectorAll('.user-greeting').forEach(function (el) {
+        el.textContent = 'Hi, ' + session.nama + '!';
+      });
+    }
+
     // The history screen is the entry point for check-in and refunds.
     document.querySelectorAll('.user-section, .user-avatar').forEach(function (el) {
       el.addEventListener('click', function () {
