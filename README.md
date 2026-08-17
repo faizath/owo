@@ -98,8 +98,12 @@ The application follows a clean architecture pattern with clear separation of co
 ## 🚀 Installation & Setup
 
 ### Prerequisites
-- Java 21 or higher
 - Git
+- Any JVM between 17 and 24 to launch the Gradle wrapper
+
+Gradle selects a Java 21 JVM for its own daemon via `src/gradle/gradle-daemon-jvm.properties`,
+and provisions one through the foojay resolver if none is installed. No `JAVA_HOME`
+configuration is required.
 
 ### Steps to Run Locally
 
