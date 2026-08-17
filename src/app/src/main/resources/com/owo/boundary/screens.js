@@ -139,7 +139,9 @@
           });
       });
 
-      linkTo('.login-link a, .register-link a, .forgot-link', 'RegisterForm');
+      // No password reset exists, so there is no "forgot password" link to wire. It used
+      // to point at registration, which recovered nothing.
+      linkTo('.login-link a, .register-link a', 'RegisterForm');
     }
   };
 
