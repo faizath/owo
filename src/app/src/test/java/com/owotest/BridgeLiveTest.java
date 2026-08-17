@@ -257,6 +257,30 @@ class BridgeLiveTest {
     }
 
     @Test
+    void hostileNotificationTextRendersAsLiteralText() throws Exception {
+        await("window.App");
+
+        String hostile = "quote ' double \" backslash \\ tag </script><img src=x>";
+        runOnFxThread(() -> engine.executeScript(
+                "window.showNotification(" + com.owo.utils.Json.quote(hostile) + ")"));
+
+        await("document.querySelector('.notification-content')");
+
+        // Rendered with textContent, so the markup is shown rather than parsed.
+        assertEquals(hostile, eval("document.querySelector('.notification-content').textContent"));
+        assertEquals(Boolean.FALSE,
+                eval("!!document.querySelector('.notification-content img')"));
+    }
+
+    @Test
+    void screenContentIsEscapedBeforeItReachesTheDocument() throws Exception {
+        await("window.App");
+
+        assertEquals("&lt;img src=x onerror=alert(1)&gt;",
+                eval("window.App.escapeHtml('<img src=x onerror=alert(1)>')"));
+    }
+
+    @Test
     void anUnauthenticatedRequestForBookingsIsRefused() throws Exception {
         await("window.App");
 
